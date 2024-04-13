@@ -9,7 +9,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     
     float dx = (float)getWidth()/1200.0f; //width of individual pixel on this display object
     float dy = (float)getHeight()/600.0f; //height of individual pixel on this display object
-    
+    float dotWidth = 1200.0f/(float)getParentWidth(); //scale single pixel to roughly the right size
+    float dotHeight = 600.0f/(float)getParentHeight(); //scale single pixel to roughly the right size
+
     g.setColour(juce::Colours::lightgrey);
     g.fillRect(0.0,  60.0f*dy, (float)getWidth(),1.0); // -6dB markings
     g.fillRect(0.0, 100.0f*dy, (float)getWidth(),1.0); //-12dB markings
@@ -46,10 +48,10 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         if (slewL > 197.0f) slewL = 197.0;
         float slewR = sqrt(dataF[count])*275.0f;
         if (slewR > 197.0f) slewR = 197.0;
-        float zeroL = (sqrt(dataG[count])*6.0f)-6.0f;
-        if (zeroL > 198.0f) zeroL = 198.0f;
-        float zeroR = (sqrt(dataH[count])*6.0f)-6.0f;
-        if (zeroR > 198.0f) zeroR = 198.0f;
+        float meterZeroL = (sqrt(dataG[count])*6.0f)-6.0f;
+        if (meterZeroL > 198.0f) meterZeroL = 198.0f;
+        float meterZeroR = (sqrt(dataH[count])*6.0f)-6.0f;
+        if (meterZeroR > 198.0f) meterZeroR = 198.0f;
         
         if (dataA[count] > dataB[count]) {
             //draw grey to R point, then green to L
@@ -97,7 +99,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.setColour(juce::Colour(255, 0, 0));
             g.fillRect((float)count*dx, (200.0f - peakL)*dy, 2.0f*dx, 2.0f*dy);
             g.fillRect((float)count*dx, (400.0f - slewL)*dy, dx, dy);
-            g.fillRect((float)count*dx, (400.0f + zeroL)*dy, dx, dy);
+            g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, dx, dy);
 
         } else if (peakL != 0.0f) {
             float psDotSizeL = 2.5f / (fabs((peakL-slewL)*0.08f)+1.0f);
@@ -105,9 +107,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             juce::uint8 blueSpot = (juce::uint8)fmin((psDotSizeL-1.5f)*618.0f,255.0f);
             if (psDotSizeL > 1.5f) g.setColour(juce::Colour(0, 0, blueSpot));
             else if (psDotSizeL < 1.0f) psDotSizeL = 1.0f;
-            g.fillRect((float)count*dx, (200.0f - peakL)*dy, psDotSizeL*dx, psDotSizeL*dy);
-            g.fillRect((float)count*dx, (400.0f - slewL)*dy, psDotSizeL*dx, psDotSizeL*dy);
-            g.fillRect((float)count*dx, (400.0f + zeroL)*dy, psDotSizeL*dx, psDotSizeL*dy);
+            g.fillRect((float)count*dx, (200.0f - peakL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
+            g.fillRect((float)count*dx, (400.0f - slewL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
+            g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
         }
         
         
@@ -116,7 +118,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.setColour(juce::Colour(255, 0, 0));
             g.fillRect((float)count*dx, (200.0f - peakR)*dy, 2.0f*dx, 2.0f*dy);
             g.fillRect((float)count*dx, (400.0f - slewR)*dy, dx, dy);
-            g.fillRect((float)count*dx, (400.0f + zeroR)*dy, dx, dy);
+            g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, dx, dy);
 
         } else if (peakR != 0.0f) {
             float psDotSizeR = 2.5f / (fabs((peakR-slewR)*0.08f)+1.0f);
@@ -124,9 +126,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             juce::uint8 blueSpot = (juce::uint8)fmin((psDotSizeR-1.5f)*618.0f,255.0f);
             if (psDotSizeR > 1.5f) g.setColour(juce::Colour(0, 0, blueSpot));
             else if (psDotSizeR < 1.0f) psDotSizeR = 1.0f;
-            g.fillRect((float)count*dx, (200.0f - peakR)*dy, psDotSizeR*dx, psDotSizeR*dy);
-            g.fillRect((float)count*dx, (400.0f - slewR)*dy, psDotSizeR*dx, psDotSizeR*dy);
-            g.fillRect((float)count*dx, (400.0f + zeroR)*dy, psDotSizeR*dx, psDotSizeR*dy);
+            g.fillRect((float)count*dx, (200.0f - peakR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
+            g.fillRect((float)count*dx, (400.0f - slewR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
+            g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
             //done with peak, slew, zero cross
         }
     }

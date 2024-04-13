@@ -203,30 +203,31 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
                
         *outL = *inL;
         *outR = *inR; //this is a meter. Raw pass-through
-    }
-
-
-    if (rmsCount > rmsSize)
-    {
-        AudioToUIMessage msg; //define the thing we're telling JUCE
-        msg.what = AudioToUIMessage::RMS_LEFT; msg.newValue = (float)sqrt(sqrt(rmsLeft/rmsCount)); audioToUI.push(msg);
-        msg.what = AudioToUIMessage::RMS_RIGHT; msg.newValue = (float)sqrt(sqrt(rmsRight/rmsCount)); audioToUI.push(msg);
-        msg.what = AudioToUIMessage::PEAK_LEFT; msg.newValue = (float)sqrt(peakLeft); audioToUI.push(msg);
-        msg.what = AudioToUIMessage::PEAK_RIGHT; msg.newValue = (float)sqrt(peakRight); audioToUI.push(msg);
-        msg.what = AudioToUIMessage::SLEW_LEFT; msg.newValue = (float)slewLeft; audioToUI.push(msg);
-        msg.what = AudioToUIMessage::SLEW_RIGHT; msg.newValue = (float)slewRight; audioToUI.push(msg);
-        msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
-        msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
-        msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
-        rmsLeft = 0.0;
-        rmsRight = 0.0;
-        peakLeft = 0.0;
-        peakRight = 0.0;
-        slewLeft = 0.0;
-        slewRight = 0.0; //reset our variables to do the RMS again
-        longestZeroLeft = 0.0;
-        longestZeroRight = 0.0;
-        rmsCount = 0;
+        
+        if (rmsCount > rmsSize)
+        {
+            AudioToUIMessage msg; //define the thing we're telling JUCE
+            msg.what = AudioToUIMessage::RMS_LEFT; msg.newValue = (float)sqrt(sqrt(rmsLeft/rmsCount)); audioToUI.push(msg);
+            msg.what = AudioToUIMessage::RMS_RIGHT; msg.newValue = (float)sqrt(sqrt(rmsRight/rmsCount)); audioToUI.push(msg);
+            msg.what = AudioToUIMessage::PEAK_LEFT; msg.newValue = (float)sqrt(peakLeft); audioToUI.push(msg);
+            msg.what = AudioToUIMessage::PEAK_RIGHT; msg.newValue = (float)sqrt(peakRight); audioToUI.push(msg);
+            msg.what = AudioToUIMessage::SLEW_LEFT; msg.newValue = (float)slewLeft; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::SLEW_RIGHT; msg.newValue = (float)slewRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
+            rmsLeft = 0.0;
+            rmsRight = 0.0;
+            peakLeft = 0.0;
+            peakRight = 0.0;
+            slewLeft = 0.0;
+            slewRight = 0.0; //reset our variables to do the RMS again
+            zeroLeft = 0.0;
+            zeroRight = 0.0;
+            longestZeroLeft = 0.0;
+            longestZeroRight = 0.0;
+            rmsCount = 0;
+        }
     }
 }
 
@@ -261,8 +262,9 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         }
     } //Handle inbound messages from the UI thread
     
-   double rmsSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
-    
+    double rmsSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
+    double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
+
     for (int i = 0; i < buffer.getNumSamples(); ++i)
     {
         auto outL = mainOutput.getWritePointer(0, i);
@@ -286,7 +288,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         rmsRight += (rectifiedR * rectifiedR);
         rmsCount++; //rms loudness IS rectified
         
-        zeroLeft += 1.0;
+        zeroLeft += zeroCrossScale;
+        if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
         if (wasPositiveL && *inL < 0.0) {
             wasPositiveL = false;
             zeroLeft = 0.0;
@@ -294,7 +297,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             wasPositiveL = true;
             zeroLeft = 0.0;
         }
-        zeroRight += 1.0;
+        zeroRight += zeroCrossScale;
+        if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
         if (wasPositiveR && *inR < 0.0) {
             wasPositiveR = false;
             zeroRight = 0.0;
@@ -302,33 +306,34 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             wasPositiveR = true;
             zeroRight = 0.0;
         }
-               
+
         *outL = *inL;
         *outR = *inR; //this is a meter. Raw pass-through
-    }
-
-
-    if (rmsCount > rmsSize)
-    {
-        AudioToUIMessage msg; //define the thing we're telling JUCE
-        msg.what = AudioToUIMessage::RMS_LEFT; msg.newValue = (float)sqrt(sqrt(rmsLeft/rmsCount)); audioToUI.push(msg);
-        msg.what = AudioToUIMessage::RMS_RIGHT; msg.newValue = (float)sqrt(sqrt(rmsRight/rmsCount)); audioToUI.push(msg);
-        msg.what = AudioToUIMessage::PEAK_LEFT; msg.newValue = (float)sqrt(peakLeft); audioToUI.push(msg);
-        msg.what = AudioToUIMessage::PEAK_RIGHT; msg.newValue = (float)sqrt(peakRight); audioToUI.push(msg);
-        msg.what = AudioToUIMessage::SLEW_LEFT; msg.newValue = (float)slewLeft; audioToUI.push(msg);
-        msg.what = AudioToUIMessage::SLEW_RIGHT; msg.newValue = (float)slewRight; audioToUI.push(msg);
-        msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
-        msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
-        msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
-        rmsLeft = 0.0;
-        rmsRight = 0.0;
-        peakLeft = 0.0;
-        peakRight = 0.0;
-        slewLeft = 0.0;
-        slewRight = 0.0; //reset our variables to do the RMS again
-        longestZeroLeft = 0.0;
-        longestZeroRight = 0.0;
-        rmsCount = 0;
+        
+        if (rmsCount > rmsSize)
+        {
+            AudioToUIMessage msg; //define the thing we're telling JUCE
+            msg.what = AudioToUIMessage::RMS_LEFT; msg.newValue = (float)sqrt(sqrt(rmsLeft/rmsCount)); audioToUI.push(msg);
+            msg.what = AudioToUIMessage::RMS_RIGHT; msg.newValue = (float)sqrt(sqrt(rmsRight/rmsCount)); audioToUI.push(msg);
+            msg.what = AudioToUIMessage::PEAK_LEFT; msg.newValue = (float)sqrt(peakLeft); audioToUI.push(msg);
+            msg.what = AudioToUIMessage::PEAK_RIGHT; msg.newValue = (float)sqrt(peakRight); audioToUI.push(msg);
+            msg.what = AudioToUIMessage::SLEW_LEFT; msg.newValue = (float)slewLeft; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::SLEW_RIGHT; msg.newValue = (float)slewRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
+            rmsLeft = 0.0;
+            rmsRight = 0.0;
+            peakLeft = 0.0;
+            peakRight = 0.0;
+            slewLeft = 0.0;
+            slewRight = 0.0; //reset our variables to do the RMS again
+            zeroLeft = 0.0;
+            zeroRight = 0.0;
+            longestZeroLeft = 0.0;
+            longestZeroRight = 0.0;
+            rmsCount = 0;
+        }
     }
 }
 
