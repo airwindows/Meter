@@ -30,12 +30,15 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0.0, 165.0f*dy, (float)getWidth(),1.0); //-30dB markings
     g.fillRect(0.0, 175.0f*dy, (float)getWidth(),1.0); //-36dB markings
 
-    g.fillRect(0.0, 260.0f*dy, (float)getWidth(),1.0); // -6dB markings for slew
-    g.fillRect(0.0, 300.0f*dy, (float)getWidth(),1.0); //-12dB markings
-    g.fillRect(0.0, 330.0f*dy, (float)getWidth(),1.0); //-18dB markings
-    g.fillRect(0.0, 350.0f*dy, (float)getWidth(),1.0); //-24dB markings
-    g.fillRect(0.0, 365.0f*dy, (float)getWidth(),1.0); //-30dB markings
-    g.fillRect(0.0, 375.0f*dy, (float)getWidth(),1.0); //-36dB markings
+    //g.fillRect(0.0, 260.0f*dy, (float)getWidth(),1.0); // -6dB markings for slew
+    //g.fillRect(0.0, 300.0f*dy, (float)getWidth(),1.0); //-12dB markings
+    //g.fillRect(0.0, 330.0f*dy, (float)getWidth(),1.0); //-18dB markings
+    //g.fillRect(0.0, 350.0f*dy, (float)getWidth(),1.0); //-24dB markings
+    //g.fillRect(0.0, 365.0f*dy, (float)getWidth(),1.0); //-30dB markings
+    //g.fillRect(0.0, 375.0f*dy, (float)getWidth(),1.0); //-36dB markings
+    //I've decided not to draw these on the slew section, but if you want them they're here.
+    //Slew does not really have to do with these markings, only the pale grey RMS at bottom
+    //and the intensity of the actual markings tells the main story about this section, not the lines.
 
     g.fillRect(0.0, 403.0f*dy, (float)getWidth(),1.0); //20k markings
     g.fillRect(0.0, 415.0f*dy, (float)getWidth(),1.0); //2k markings
@@ -77,7 +80,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             float extent = fabs(h-lastLOutline)+1.0f;
             if (extent > h) extent = h;
             g.fillRect((float)count*dx, (200.0f - h)*dy, dx, extent*dy);
-            g.setColour(juce::Colour::fromFloatRGBA (0.9f, 0.9f, 0.9f, 1.0f));
+            g.setColour(juce::Colour::fromFloatRGBA (0.92f, 0.92f, 0.92f, 1.0f));
             g.fillRect((float)count*dx, (400.0f - h)*dy, dx, h*dy);
             lastLOutline = h;
         } else {
@@ -96,7 +99,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             float extent = fabs(h-lastROutline)+1.0f;
             if (extent > h) extent = h;
             g.fillRect((float)count*dx, (200.0f - h)*dy, dx, extent*dy);
-            g.setColour(juce::Colour::fromFloatRGBA (0.9f, 0.9f, 0.9f, 1.0f));
+            g.setColour(juce::Colour::fromFloatRGBA (0.92f, 0.92f, 0.92f, 1.0f));
             g.fillRect((float)count*dx, (400.0f - h)*dy, dx, h*dy);
             lastROutline = h;
         } //done with RMS chunk and sound density
@@ -124,9 +127,10 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.fillRect((float)count*dx, (200.0f - peakL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
             if (slewL > 197.0f) {
                 slewL -= 197.0f;
-                blueSpot = (dataA[count] * 800.0f) - slewL;
+                blueSpot = fabs((dataA[count] * 690.0f)-slewL);
                 g.setColour(juce::Colour(blueSpot, blueSpot, blueSpot));
                 g.fillRect((float)count*dx, (400.0f - slewL)*dy, psDotSizeL*dotWidth*dx, slewL*dy);
+                //slew is so high we're drawing the spike that cuts across the RMS grey shadow
             } else {
                 g.fillRect((float)count*dx, (400.0f - slewL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
             }
@@ -156,9 +160,10 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.fillRect((float)count*dx, (200.0f - peakR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
             if (slewR > 197.0f) {
                 slewR -= 197.0f;
-                blueSpot = (dataB[count] * 800.0f) - slewL;
+                blueSpot = fabs((dataB[count] * 690.0f)-slewR);
                 g.setColour(juce::Colour(blueSpot, blueSpot, blueSpot));
-               g.fillRect((float)count*dx, (400.0f - slewR)*dy, psDotSizeR*dotWidth*dx, slewR*dy);
+                g.fillRect((float)count*dx, (400.0f - slewR)*dy, psDotSizeR*dotWidth*dx, slewR*dy);
+                //slew is so high we're drawing the spike that cuts across the RMS grey shadow
             } else {
                 g.fillRect((float)count*dx, (400.0f - slewR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
             }
