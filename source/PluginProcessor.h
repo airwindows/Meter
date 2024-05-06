@@ -33,7 +33,13 @@ public:
     void changeProgramName (int index, const juce::String& newName) override;
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
-    //now we can declare variables used in the audio thread
+    // updateTrackProperties may be called by the host if it feels like it
+    // this method calls a similar one in the editor class that updates the editor
+    void updateTrackProperties(const TrackProperties& properties) override;
+    
+    TrackProperties trackProperties;
+
+   //now we can declare variables used in the audio thread
     
     enum Parameters
     {

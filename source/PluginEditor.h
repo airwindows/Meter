@@ -17,6 +17,7 @@ public:
     void sliderDragStarted(juce::Slider *) override;
     void sliderDragEnded(juce::Slider *) override;
     void sliderDragInternal(juce::Slider *, bool started);
+    void updateTrackProperties();
     void idle();
 
     struct IdleTimer : juce::Timer
@@ -34,7 +35,9 @@ private:
     PluginProcessor& processorRef; //quick ref
     
    std::unique_ptr<IdleTimer> idleTimer;
+    AirwindowsLookAndFeel airwindowsLookAndFeel;
     AirwindowsMeter meter;
-    juce::Colour pluginColour = juce::Colours::lightgrey;
+    juce::Colour hostTrackColour = juce::Colours::lightgrey;
+    juce::String hostTrackName = juce::String();
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

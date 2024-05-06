@@ -5,11 +5,62 @@
 #define AIRWINDOWSUI_H
 #include "PluginProcessor.h"
 
+class AirwindowsLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+   // void drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height, float sliderPos, const float rotaryStartAngle, const float rotaryEndAngle, juce::Slider&) override;
+    
+    AirwindowsLookAndFeel()
+    {
+        setColour(juce::Slider::backgroundColourId, juce::Colours::red);
+        setColour(juce::Slider::thumbColourId, juce::Colours::lightgrey);
+        setColour(juce::Slider::trackColourId, juce::Colours::grey);
+        setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::grey);
+        setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::black); //track after thumb
+        setColour(juce::Slider::textBoxTextColourId, juce::Colours::grey);
+        setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::grey);
+        setColour(juce::Slider::textBoxHighlightColourId, juce::Colours::grey);
+        setColour(juce::Slider::textBoxOutlineColourId, juce::Colours::grey);
+        setColour(juce::TextButton::buttonColourId, juce::Colours::lightgrey);
+        setColour(juce::TextButton::buttonOnColourId, juce::Colours::lightgrey);
+        setColour(juce::TextButton::textColourOffId, juce::Colours::lightgrey);
+        setColour(juce::TextButton::textColourOnId, juce::Colours::lightgrey);
+        setColour(juce::ResizableWindow::backgroundColourId, juce::Colours::lightgrey);
+        
+        juce::String newName = juce::String();
+        juce::String newColour = juce::String();
+        
+        juce::File customSettings = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userDocumentsDirectory).getChildFile ("AirwindowsGlobals.txt");
+        juce::String xmlFile = customSettings.loadFileAsString();
+        std::unique_ptr<juce::XmlElement> body (juce::XmlDocument::parse (xmlFile));
+        for (auto* e : body->getChildIterator()) {
+            if (e->hasTagName ("PARAM")) { // find the "PARAM" sub-element
+                juce::String attributeValueAsString = e->getStringAttribute("id");
+                if (attributeValueAsString.equalsIgnoreCase("userFont")) {
+                    newName = e->getStringAttribute("value");
+                }
+                if (attributeValueAsString.equalsIgnoreCase("userColour")) {
+                    newColour = e->getStringAttribute("value");
+                }
+            }
+        }
+        body.release();
+               
+        if (newName == juce::String()) newName = "Jost";
+        setDefaultSansSerifTypefaceName(newName);
+        defaultColour = juce::Colours::findColourForName(newColour, juce::Colours::lightgrey);
+    }
+    juce::Colour defaultColour = juce::Colours::lightgrey;
+};
+
+
 struct AirwindowsMeter : public juce::Component
 {
     void paint(juce::Graphics &g) override;
     
-    static constexpr int dataPoints = 1200;
+    static constexpr int dataPoints = 2000;
+    int displayWidth = 1200;
+    int displayHeight = 675;
     int dataPosition = 0;
     std::array<float, dataPoints> dataA;
     std::array<float, dataPoints> dataB;
@@ -30,7 +81,7 @@ struct AirwindowsMeter : public juce::Component
     void pushH(float X) {dataH[dataPosition] = X;}
     void pushIncrement(float limit) {
         dataPosition++;
-        if (dataPosition >= limit) dataPosition = 0;
+        if (dataPosition >= displayWidth) dataPosition = 0;
     }
     void resetArrays(){
         for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
@@ -53,6 +104,7 @@ struct AirwindowsMeter : public juce::Component
     float lastRSlew = 0.0;
 };
 
+extern AirwindowsLookAndFeel airwindowsLookAndFeel;
 extern AirwindowsMeter meter;
 
 #endif // AIRWINDOWSUI_H

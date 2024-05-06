@@ -119,6 +119,14 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
     juce::ignoreUnused (data, sizeInBytes);
 }
 
+void PluginProcessor::updateTrackProperties(const TrackProperties& properties)
+{
+    trackProperties = properties;
+    // call the verison in the editor to update there
+    if (auto* editor = dynamic_cast<PluginEditor*> (getActiveEditor()))
+        editor->updateTrackProperties();
+}
+
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
