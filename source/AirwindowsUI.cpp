@@ -10,17 +10,17 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     auto linewidth = getWidth();
     if (getHeight() > linewidth) linewidth = getHeight();
     linewidth = (int)cbrt(linewidth/2)/2;
-    float dx = 1.0;//(float)getWidth()/displayWidth; //width of individual pixel on this display object
+    float dx = 1.0f;//(float)getWidth()/displayWidth; //width of individual pixel on this display object
     float dotWidth = 1.0f;//fmax(displayWidth/(float)getParentWidth(),1.0); //scale single pixel to roughly the right size
     if (displayWidth > 2000) {
-        dx = (float)getWidth()/2000; //width of individual pixel on this display object
-        dotWidth = fmax(2000/(float)getParentWidth(),1.0); //scale single pixel to roughly the right size
+        dx = (float)getWidth()/2000.0f; //width of individual pixel on this display object
+        dotWidth = fmax(2000.0f/(float)getParentWidth(),1.0f); //scale single pixel to roughly the right size
     }
-    float dy = 1.0; //(float)getHeight()/600.0f; //height of individual pixel on this display object
-    float dotHeight = 1.0; //fmax(600.0f/(float)getParentHeight(),1.0); //scale single pixel to roughly the right size
+    float dy = 1.0f; //(float)getHeight()/600.0f; //height of individual pixel on this display object
+    float dotHeight = 1.0f; //fmax(600.0f/(float)getParentHeight(),1.0); //scale single pixel to roughly the right size
     if (displayHeight > 720) {
         dy = (float)getHeight()/720.0f; //height of individual pixel on this display object
-        dotHeight = fmax(720.0f/(float)getParentHeight(),1.0); //scale single pixel to roughly the right size
+        dotHeight = fmax(720.0f/(float)getParentHeight(),1.0f); //scale single pixel to roughly the right size
     }
     g.setColour(juce::Colours::lightgrey);
     g.fillRect(0.0,  60.0f*dy, (float)getWidth(),1.0); // -6dB markings
@@ -49,7 +49,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0.0,  200.0f*dy, (float)getWidth(),1.0); // border with slew meter
     g.fillRect(0.0,  400.0f*dy, (float)getWidth(),1.0); // border with zero cross meter
 
-    for (int count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
+    for (u_long count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
     {
         g.setColour(juce::Colours::grey);
         g.fillRect((float)dataPosition*dx, 0.0f, 1.0f, (float)getHeight()); //the moving line
@@ -127,7 +127,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.fillRect((float)count*dx, (200.0f - peakL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
             if (slewL > 197.0f) {
                 slewL -= 197.0f;
-                blueSpot = fabs((dataA[count] * 690.0f)-slewL);
+                blueSpot = (juce::uint8)fabs((dataA[count] * 690.0f)-slewL);
                 g.setColour(juce::Colour(blueSpot, blueSpot, blueSpot));
                 g.fillRect((float)count*dx, (400.0f - slewL)*dy, psDotSizeL*dotWidth*dx, slewL*dy);
                 //slew is so high we're drawing the spike that cuts across the RMS grey shadow
@@ -160,7 +160,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.fillRect((float)count*dx, (200.0f - peakR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
             if (slewR > 197.0f) {
                 slewR -= 197.0f;
-                blueSpot = fabs((dataB[count] * 690.0f)-slewR);
+                blueSpot = (juce::uint8)fabs((dataB[count] * 690.0f)-slewR);
                 g.setColour(juce::Colour(blueSpot, blueSpot, blueSpot));
                 g.fillRect((float)count*dx, (400.0f - slewR)*dy, psDotSizeR*dotWidth*dx, slewR*dy);
                 //slew is so high we're drawing the spike that cuts across the RMS grey shadow

@@ -29,7 +29,8 @@ public:
         
         juce::String newName = juce::String();
         juce::String newColour = juce::String();
-        
+        juce::String newLED = juce::String();
+        juce::String newImage = juce::String();
         juce::File customSettings = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userDocumentsDirectory).getChildFile ("AirwindowsGlobals.txt");
         juce::String xmlFile = customSettings.loadFileAsString();
         std::unique_ptr<juce::XmlElement> body (juce::XmlDocument::parse (xmlFile));
@@ -42,15 +43,32 @@ public:
                 if (attributeValueAsString.equalsIgnoreCase("userColour")) {
                     newColour = e->getStringAttribute("value");
                 }
+                if (attributeValueAsString.equalsIgnoreCase("LEDColour")) {
+                    newLED = e->getStringAttribute("value");
+                }
+                if (attributeValueAsString.equalsIgnoreCase("userImage")) {
+                    newImage = e->getStringAttribute("value");
+                }
             }
         }
         body.release();
-               
+        
+        juce::File customBackground = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userDocumentsDirectory).getChildFile (newImage);
+        if (customBackground.existsAsFile()) {
+            backgroundImage = juce::ImageFileFormat::loadFrom(juce::File(customBackground));
+            blurImage = backgroundImage.rescaled(2, 2);
+         }
+
         if (newName == juce::String()) newName = "Jost";
         setDefaultSansSerifTypefaceName(newName);
+        
         defaultColour = juce::Colours::findColourForName(newColour, juce::Colours::lightgrey);
-    }
+        LEDColour = juce::Colours::findColourForName(newLED, juce::Colours::red);
+     }
     juce::Colour defaultColour = juce::Colours::lightgrey;
+    juce::Colour LEDColour = juce::Colours::red;
+    juce::Image backgroundImage = juce::Image();
+    juce::Image blurImage = juce::Image();
 };
 
 
@@ -61,7 +79,7 @@ struct AirwindowsMeter : public juce::Component
     static constexpr int dataPoints = 2000;
     int displayWidth = 1200;
     int displayHeight = 675;
-    int dataPosition = 0;
+    u_long dataPosition = 0;
     std::array<float, dataPoints> dataA;
     std::array<float, dataPoints> dataB;
     std::array<float, dataPoints> dataC;
@@ -81,10 +99,10 @@ struct AirwindowsMeter : public juce::Component
     void pushH(float X) {dataH[dataPosition] = X;}
     void pushIncrement(float limit) {
         dataPosition++;
-        if (dataPosition >= displayWidth) dataPosition = 0;
+        if (dataPosition >= (u_long)displayWidth) dataPosition = 0;
     }
     void resetArrays(){
-        for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
+        for (u_long count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
             dataA[count] = 0.0f;
             dataB[count] = 0.0f;
