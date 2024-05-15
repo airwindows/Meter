@@ -3,7 +3,8 @@ name: Pamplejuce
 on:
   workflow_dispatch: # lets you run a build from the UI
   push:
-
+  pull_request:
+  
 # When pushing new commits, cancel any running builds on that branch
 concurrency:
   group: ${{ github.ref }}
@@ -51,15 +52,17 @@ jobs:
       # Thanks to McMartin & co https://forum.juce.com/t/list-of-juce-dependencies-under-linux/15121/44
       run: |
         sudo apt-get update && sudo apt install libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev libwebkit2gtk-4.0-dev libglu1-mesa-dev xvfb ninja-build
-        # downgrade gcc to workaround 22.04 and C++20 issue 
+        # downgrade gcc to workaround 22.04 and C++20 issue
         # see: https://github.com/actions/runner-images/issues/8659
-        sudo apt-get install -y --allow-downgrades libc6=2.35-0ubuntu3.6 libc6-dev=2.35-0ubuntu3.6 libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
+        sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
+        sudo apt-get update
+        sudo apt-get install -y --allow-downgrades libc6=2.35-0ubuntu3.7 libc6-dev=2.35-0ubuntu3.7 libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
         sudo /usr/bin/Xvfb $DISPLAY &
 
     - name: Cache IPP (Windows)
       if: runner.os == 'Windows'
       id: cache-ipp
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         key: ipp-v4
         path: C:\Program Files (x86)\Intel
@@ -74,7 +77,7 @@ jobs:
 
     - name: Save IPP cache (even on CI fail)
       if: runner.os == 'Windows' && (steps.cache-ipp.outputs.cache-hit != 'true')
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         path: C:\Program Files (x86)\Intel
         key: ipp-v4
@@ -96,12 +99,12 @@ jobs:
         xcode-version: latest-stable
 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: true # Get JUCE populated
 
     - name: Cache the build
-      uses: mozilla-actions/sccache-action@v0.0.3
+      uses: mozilla-actions/sccache-action@v0.0.4
 
     - name: Import Certificates (macOS)
       uses: apple-actions/import-codesign-certs@v2 # only exists as a tag right now
@@ -175,7 +178,7 @@ jobs:
       if: ${{ matrix.name == 'macOS' }}
       run: |
         # workaround for https://github.com/LinusU/node-appdmg/issues/234
-        python3 -m pip install setuptools
+        python3 -m pip install setuptools --break-system-packages
         npm install -g appdmg
         mkdir -p packaging/dmg
         
@@ -196,34 +199,32 @@ jobs:
     - name: Zip
       if: ${{ matrix.name == 'Linux' }}
       working-directory: ${{ env.ARTIFACTS_PATH }}
-      run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" .
+      run: 7z a -tzip "${{ env.ARTIFACT_NAME }}.zip" "-xr!lib${{ env.PRODUCT_NAME }}_SharedCode.a" .
 
-    - name: Generate Installer and Sign with EV cert on Azure (Windows)
+    - name: Generate Installer (Windows)
       if: ${{ matrix.name == 'Windows' }}
       shell: bash
       run: |
         iscc "packaging\installer.iss"
         mv "packaging/Output/${{ env.ARTIFACT_NAME }}.exe" "${{ env.ARTIFACTS_PATH }}/"
-        dotnet tool install --global AzureSignTool 
-        AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe"
 
     - name: Upload Exe (Windows)
       if: ${{ matrix.name == 'Windows' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}.exe
         path: '${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.exe'
 
     - name: Upload Zip (Linux)
       if: ${{ matrix.name == 'Linux' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}.zip
         path: '${{ env.ARTIFACTS_PATH }}/${{ env.ARTIFACT_NAME }}.zip'
 
     - name: Upload DMG (macOS)
       if: ${{ matrix.name == 'macOS' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}.dmg
         path: packaging/${{ env.ARTIFACT_NAME }}.dmg
@@ -235,7 +236,7 @@ jobs:
 
     steps:
     - name: Get Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
