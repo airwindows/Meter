@@ -35,7 +35,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 }
 
 PluginEditor::~PluginEditor(){
-    setLookAndFeel(nullptr);
+    setLookAndFeel(nullptr); //we do need to remove the L&F upon closing
 }
 
 void PluginEditor::paint (juce::Graphics& g)
