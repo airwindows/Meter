@@ -23,6 +23,12 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible(meter);
 
     setSize (1200, 675);
+    // Make sure that before the constructor has finished, you've set the editor's size to whatever you need it to be.
+    if (airwindowsLookAndFeel.usingNamedImage) {
+        getConstrainer()->setFixedAspectRatio(1200.0/675.0); //the aspect ratio stuff leads to cropping the content area off the top
+        setResizeLimits(32, 32, 4196, 4196); //this will not honor resize limits correctly in all the DAWs
+    }
+
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     //the aspect ratio stuff leads to cropping the content area off the top
@@ -33,19 +39,27 @@ PluginEditor::~PluginEditor(){}
 void PluginEditor::paint (juce::Graphics& g)
 {
     if (airwindowsLookAndFeel.blurImage == juce::Image()) {
-        g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+        g.fillAll (airwindowsLookAndFeel.defaultColour);
+        if (hostTrackColour != juce::Colour()) {
+            g.setFillType(juce::FillType(hostTrackColour)); g.setOpacity(airwindowsLookAndFeel.applyTrackColour); g.fillAll();
+        }
+        airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
+        airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
     } else {
-        g.setTiledImageFill(airwindowsLookAndFeel.backgroundImage, 0, 0, 1.0); g.fillAll();
+        if (airwindowsLookAndFeel.usingNamedImage) {
+            g.drawImageWithin(airwindowsLookAndFeel.backgroundImage, 0, 0, getLocalBounds().getWidth(), getLocalBounds().getHeight(), 0);
+        } else {
+            g.setTiledImageFill(airwindowsLookAndFeel.backgroundImage, 0, 0, 1.0f); g.fillAll();
+        }
+                
+        if (hostTrackColour != juce::Colour()) {
+            g.setFillType(juce::FillType(hostTrackColour)); g.setOpacity(airwindowsLookAndFeel.applyTrackColour); g.fillAll();
+        }
         airwindowsLookAndFeel.defaultColour = juce::Colour::fromRGBA(airwindowsLookAndFeel.blurImage.getPixelAt(1,1).getRed(),airwindowsLookAndFeel.blurImage.getPixelAt(1,1).getGreen(),airwindowsLookAndFeel.blurImage.getPixelAt(1,1).getBlue(),1.0);
-    } //find the color of the background tile or image, if there is one. Please use low-contrast stuff, but I'm not your mom :)
-    
-    if ((hostTrackColour != juce::Colour()) && (airwindowsLookAndFeel.blurImage == juce::Image())) {
-        airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, hostTrackColour);
-        airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, hostTrackColour); } else {
         airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, airwindowsLookAndFeel.defaultColour);
         airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour);
-    } //if we do NOT have a background texture, and we DO have a track color, use the track color where applicable
-
+    } //find the color of the background tile or image, if there is one. Please use low-contrast stuff, but I'm not your mom :)
+    
     auto linewidth = getLocalBounds().getWidth(); if (getLocalBounds().getHeight() > linewidth) linewidth = getLocalBounds().getHeight();  linewidth = (int)cbrt(linewidth/2)/2;
     if ((hostTrackName == juce::String()) || (hostTrackName.length() < 1.0f)) hostTrackName = juce::String("Hit Record Meter"); //if not track name, then name of plugin
     float radius = getLocalBounds().getWidth(); if (radius > (getLocalBounds().getHeight())*0.0618f) radius = (getLocalBounds().getHeight())*0.0618f;

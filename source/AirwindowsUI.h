@@ -27,48 +27,53 @@ public:
         setColour(juce::TextButton::textColourOnId, juce::Colours::lightgrey);
         setColour(juce::ResizableWindow::backgroundColourId, juce::Colours::lightgrey);
         
-        juce::String newName = juce::String();
-        juce::String newColour = juce::String();
-        juce::String newLED = juce::String();
-        juce::String newImage = juce::String();
-        juce::File customSettings = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userDocumentsDirectory).getChildFile ("AirwindowsGlobals.txt");
+        juce::String newFont = juce::String(); juce::String namedFont = JucePlugin_Name; namedFont.append("Font",1024);
+        juce::String newColour = juce::String(); juce::String namedColour = JucePlugin_Name; namedColour.append("Colour",1024);
+        juce::String newImage = juce::String(); juce::String namedImage = JucePlugin_Name; namedImage.append("Image",1024);
+        juce::String newApplyTrackColourAmount = juce::String(); juce::String namedApplyTrackColourAmount = JucePlugin_Name; namedApplyTrackColourAmount.append("TrackColourAmount",1024);
+        juce::String newLEDColour = juce::String(); juce::String namedLEDColour = JucePlugin_Name; namedLEDColour.append("LEDColour",1024);
+
+        juce::File customSettings = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userDocumentsDirectory).getChildFile("Airwindows").getChildFile("AirwindowsGlobals.txt");
         juce::String xmlFile = customSettings.loadFileAsString();
         std::unique_ptr<juce::XmlElement> body (juce::XmlDocument::parse (xmlFile));
-        for (auto* e : body->getChildIterator()) {
-            if (e->hasTagName ("PARAM")) { // find the "PARAM" sub-element
-                juce::String attributeValueAsString = e->getStringAttribute("id");
-                if (attributeValueAsString.equalsIgnoreCase("userFont")) {
-                    newName = e->getStringAttribute("value");
-                }
-                if (attributeValueAsString.equalsIgnoreCase("userColour")) {
-                    newColour = e->getStringAttribute("value");
-                }
-                if (attributeValueAsString.equalsIgnoreCase("LEDColour")) {
-                    newLED = e->getStringAttribute("value");
-                }
-                if (attributeValueAsString.equalsIgnoreCase("userImage")) {
-                    newImage = e->getStringAttribute("value");
+        if ((xmlFile != juce::String()) && (xmlFile.length() > 0)) {
+            for (auto* e : body->getChildIterator()) {
+                if (e->hasTagName ("option")) { // find the "PARAM" sub-element
+                    juce::String attributeValueAsString = e->getStringAttribute("id");
+                    if (attributeValueAsString.equalsIgnoreCase("userFont") && newFont == juce::String()) newFont = e->getStringAttribute("value");
+                    if (attributeValueAsString.equalsIgnoreCase(namedFont)) newFont = e->getStringAttribute("value");
+                    if (attributeValueAsString.equalsIgnoreCase("userColour") && newColour == juce::String()) newColour = e->getStringAttribute("value");
+                    if (attributeValueAsString.equalsIgnoreCase(namedColour)) newColour = e->getStringAttribute("value");
+                    if (attributeValueAsString.equalsIgnoreCase("userImage") && newImage == juce::String()) newImage = e->getStringAttribute("value");
+                    if (attributeValueAsString.equalsIgnoreCase(namedImage)) {newImage = e->getStringAttribute("value"); usingNamedImage = true;}
+                    if (attributeValueAsString.equalsIgnoreCase("userTrackColourAmount") && newApplyTrackColourAmount == juce::String()) newApplyTrackColourAmount = e->getStringAttribute("value");
+                    if (attributeValueAsString.equalsIgnoreCase(namedApplyTrackColourAmount)) newApplyTrackColourAmount = e->getStringAttribute("value");
+                    if (attributeValueAsString.equalsIgnoreCase("userLEDColour") && newLEDColour == juce::String()) newLEDColour = e->getStringAttribute("value");
+                    if (attributeValueAsString.equalsIgnoreCase(namedLEDColour)) newLEDColour = e->getStringAttribute("value");
                 }
             }
+            body.release();
         }
-        body.release();
         
-        juce::File customBackground = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userDocumentsDirectory).getChildFile (newImage);
+        juce::File customBackground = juce::File::getSpecialLocation(juce::File::SpecialLocationType::userDocumentsDirectory).getChildFile("Airwindows").getChildFile (newImage);
         if (customBackground.existsAsFile()) {
             backgroundImage = juce::ImageFileFormat::loadFrom(juce::File(customBackground));
-            blurImage = backgroundImage.rescaled(2, 2);
+            blurImage = backgroundImage.rescaled(3, 3);
          }
 
-        if (newName == juce::String()) newName = "Jost";
-        setDefaultSansSerifTypefaceName(newName);
+        if (newFont == juce::String()) newFont = "Jost";
+        setDefaultSansSerifTypefaceName(newFont);
         
         defaultColour = juce::Colours::findColourForName(newColour, juce::Colours::lightgrey);
-        LEDColour = juce::Colours::findColourForName(newLED, juce::Colours::red);
+        applyTrackColour = fmax(fmin(newApplyTrackColourAmount.getFloatValue(),1.0f),0.0f);
+        LEDColour = juce::Colours::findColourForName(newLEDColour, juce::Colours::red);
      }
     juce::Colour defaultColour = juce::Colours::lightgrey;
-    juce::Colour LEDColour = juce::Colours::red;
     juce::Image backgroundImage = juce::Image();
     juce::Image blurImage = juce::Image();
+    bool usingNamedImage = false;
+    float applyTrackColour = 0.5;
+    juce::Colour LEDColour = juce::Colours::red;
 };
 
 
@@ -79,7 +84,7 @@ struct AirwindowsMeter : public juce::Component
     static constexpr int dataPoints = 2000;
     int displayWidth = 1200;
     int displayHeight = 675;
-    u_long dataPosition = 0;
+    int dataPosition = 0;
     std::array<float, dataPoints> dataA;
     std::array<float, dataPoints> dataB;
     std::array<float, dataPoints> dataC;
@@ -99,10 +104,10 @@ struct AirwindowsMeter : public juce::Component
     void pushH(float X) {dataH[dataPosition] = X;}
     void pushIncrement(float limit) {
         dataPosition++;
-        if (dataPosition >= (u_long)displayWidth) dataPosition = 0;
+        if (dataPosition >= (int)displayWidth) dataPosition = 0;
     }
     void resetArrays(){
-        for (u_long count = 0; count < dataPoints; ++count) //count through all the points in the array
+        for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
             dataA[count] = 0.0f;
             dataB[count] = 0.0f;
