@@ -34,7 +34,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     //the aspect ratio stuff leads to cropping the content area off the top
 }
 
-PluginEditor::~PluginEditor(){}
+PluginEditor::~PluginEditor(){
+    setLookAndFeel(nullptr);
+}
 
 void PluginEditor::paint (juce::Graphics& g)
 {
