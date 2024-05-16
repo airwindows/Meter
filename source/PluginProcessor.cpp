@@ -224,6 +224,11 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
+            
+            //if (getPlayHead()->getPosition().hasValue() && !getPlayHead()->getPosition()->getIsPlaying()){}
+            //this was a start on making it not update when Reaper's playhead is not in motion
+            //in this state, it works in TwistedWave and does nothing in Reaper
+            
             rmsLeft = 0.0;
             rmsRight = 0.0;
             peakLeft = 0.0;

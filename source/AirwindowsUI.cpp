@@ -51,8 +51,6 @@ void AirwindowsMeter::paint(juce::Graphics &g)
 
     for (int count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
     {
-        g.setColour(juce::Colours::grey);
-        g.fillRect((float)dataPosition*dx, 0.0f, 1.0f, (float)getHeight()); //the moving line
         g.setColour(juce::Colours::black);
 
         float peakL = dataC[count] * 200.0f;
@@ -117,8 +115,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             }
             g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, dx, dy);
 
-        } else if (peakL != 0.0f) {
+        } else if (peakL > 1.0f) {
             float psDotSizeL = 4.2f / (fabs((peakL-slewL)*0.5f)+1.0f);
+            if (count > dataPosition-2 && count < dataPosition) maxScore += (psDotSizeL*peakL);
             float minSizeL = fmaxf(sqrt(42.0f/(fabs(peakL-slewL)+1.0f)),1.0f);
             g.setColour(juce::Colours::black);
             juce::uint8 blueSpot = (juce::uint8)fmin((psDotSizeL)*512.0f,255.0f);
@@ -137,7 +136,6 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
         }
         
-        
         if (peakR > 197.0f) {
             peakR = 197.0;
             g.setColour(juce::Colour(255, 0, 0));
@@ -150,8 +148,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             }
             g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, dx, dy);
 
-        } else if (peakR != 0.0f) {
+        } else if (peakR > 1.0f) {
             float psDotSizeR = 4.2f / (fabs((peakR-slewR)*0.5f)+1.0f);
+            if (count > dataPosition-2 && count < dataPosition) maxScore += (psDotSizeR*peakR);
             float minSizeR = fmaxf(sqrt(42.0f/(fabs(peakR-slewR)+1.0f)),1.0f);
            g.setColour(juce::Colours::black);
             juce::uint8 blueSpot = (juce::uint8)fmin((psDotSizeR)*512.0f,255.0f);
@@ -170,7 +169,20 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
             //done with peak, slew, zero cross
         }
-    }
+        
+        if (count > dataPosition-2 && count < dataPosition) {
+            hitScore[count] = sqrt(maxScore);
+            lingerScore += (sqrt(maxScore) * 1.618f);
+            lingerScore /= (sqrt(lingerScore) * 0.1f);
+            maxScore = fmax(maxScore-lingerScore,0.0f);
+        }
+        g.setColour(juce::Colours::blue);
+        if (hitScore[count] > 1.0) g.fillRect((float)count*dx, (200.0f-hitScore[count])*dy, 2.0*dotWidth*dx, 2.0*dotHeight*dy);
+        }
+    
+    g.setColour(juce::Colours::grey);
+    g.fillRect((float)dataPosition*dx, 0.0f, 1.0f, (float)getHeight()); //the moving line
+
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.382f));
     g.fillRect(0, 0, getWidth(), linewidth);
     g.fillRect(0, 0, linewidth, getHeight());

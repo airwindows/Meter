@@ -84,6 +84,14 @@ struct AirwindowsMeter : public juce::Component
     int displayWidth = 1200;
     int displayHeight = 675;
     int dataPosition = 0;
+    
+    float maxScore = 0.0f;
+    float lastScore = 0.0f;
+    float prevLastScore = 0.0f;
+    float lingerScore = 0.0f;
+    std::array<float, dataPoints> hitScore;
+    std::array<float, dataPoints> prevScore;
+
     std::array<float, dataPoints> dataA;
     std::array<float, dataPoints> dataB;
     std::array<float, dataPoints> dataC;
@@ -108,6 +116,8 @@ struct AirwindowsMeter : public juce::Component
     void resetArrays(){
         for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
+            hitScore[count] = 0.0f;
+            prevScore[count] = 0.0f;
             dataA[count] = 0.0f;
             dataB[count] = 0.0f;
             dataC[count] = 0.0f;
