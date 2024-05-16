@@ -21,7 +21,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     meter.setOpaque(true);
     meter.resetArrays();
     addAndMakeVisible(meter);
-
+    
     setSize (1200, 675);
     // Make sure that before the constructor has finished, you've set the editor's size to whatever you need it to be.
     if (airwindowsLookAndFeel.usingNamedImage) {
@@ -35,7 +35,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 }
 
 PluginEditor::~PluginEditor(){
-    setLookAndFeel(nullptr); //we do need to remove the L&F upon closing
+    setLookAndFeel(nullptr); //we do need to set the look and feel to null pointer
 }
 
 void PluginEditor::paint (juce::Graphics& g)
@@ -61,9 +61,10 @@ void PluginEditor::paint (juce::Graphics& g)
         airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, airwindowsLookAndFeel.defaultColour);
         airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour);
     } //find the color of the background tile or image, if there is one. Please use low-contrast stuff, but I'm not your mom :)
-    
+    if (airwindowsLookAndFeel.newFont == juce::String()) airwindowsLookAndFeel.newFont = "Jost";
+    g.setFont(juce::Font(airwindowsLookAndFeel.newFont, g.getCurrentFont().getHeight(), 0));
     auto linewidth = getLocalBounds().getWidth(); if (getLocalBounds().getHeight() > linewidth) linewidth = getLocalBounds().getHeight();  linewidth = (int)cbrt(linewidth/2)/2;
-    if ((hostTrackName == juce::String()) || (hostTrackName.length() < 1.0f)) hostTrackName = juce::String("Hit Record Meter"); //if not track name, then name of plugin
+    if ((hostTrackName == juce::String()) || (hostTrackName.length() < 1.0f)) hostTrackName = juce::String("Hit Record Meter"); //if not track name, then name of pluginu
     float radius = getLocalBounds().getWidth(); if (radius > (getLocalBounds().getHeight())*0.0618f) radius = (getLocalBounds().getHeight())*0.0618f;
     auto embossScale = sqrt(sqrt(radius*0.618f)*1.618f)*0.618f; //this is customized to the needs of the plugin title text area
     g.setFont ((radius*12.0f) / (float)g.getCurrentFont().getHeight());

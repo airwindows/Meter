@@ -27,7 +27,8 @@ public:
         setColour(juce::TextButton::textColourOnId, juce::Colours::lightgrey);
         setColour(juce::ResizableWindow::backgroundColourId, juce::Colours::lightgrey);
         
-        juce::String newFont = juce::String(); juce::String namedFont = JucePlugin_Name; namedFont.append("Font",1024);
+        juce::String namedFont = JucePlugin_Name; namedFont.append("Font",1024);
+        
         juce::String newColour = juce::String(); juce::String namedColour = JucePlugin_Name; namedColour.append("Colour",1024);
         juce::String newImage = juce::String(); juce::String namedImage = JucePlugin_Name; namedImage.append("Image",1024);
         juce::String newApplyTrackColourAmount = juce::String(); juce::String namedApplyTrackColourAmount = JucePlugin_Name; namedApplyTrackColourAmount.append("TrackColourAmount",1024);
@@ -61,9 +62,6 @@ public:
             blurImage = backgroundImage.rescaled(3, 3);
          }
 
-        if (newFont == juce::String()) newFont = "Jost";
-        setDefaultSansSerifTypefaceName(newFont);
-        
         defaultColour = juce::Colours::findColourForName(newColour, juce::Colours::lightgrey);
         applyTrackColour = fmax(fmin(newApplyTrackColourAmount.getFloatValue(),1.0f),0.0f);
         LEDColour = juce::Colours::findColourForName(newLEDColour, juce::Colours::red);
@@ -71,6 +69,7 @@ public:
     juce::Colour defaultColour = juce::Colours::lightgrey;
     juce::Image backgroundImage = juce::Image();
     juce::Image blurImage = juce::Image();
+    juce::String newFont = juce::String();
     bool usingNamedImage = false;
     float applyTrackColour = 0.5;
     juce::Colour LEDColour = juce::Colours::red;
