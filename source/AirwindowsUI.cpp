@@ -117,7 +117,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
 
         } else if (peakL > 1.0f) {
             float psDotSizeL = 4.2f / (fabs((peakL-slewL)*0.5f)+1.0f);
-            if (count > dataPosition-2 && count < dataPosition) maxScore += (psDotSizeL*peakL);
+            if (count > dataPosition-2 && count < dataPosition) maxScore += (psDotSizeL*(90.0f+peakL));
             float minSizeL = fmaxf(sqrt(42.0f/(fabs(peakL-slewL)+1.0f)),1.0f);
             g.setColour(juce::Colours::black);
             juce::uint8 blueSpot = (juce::uint8)fmin((psDotSizeL)*512.0f,255.0f);
@@ -150,7 +150,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
 
         } else if (peakR > 1.0f) {
             float psDotSizeR = 4.2f / (fabs((peakR-slewR)*0.5f)+1.0f);
-            if (count > dataPosition-2 && count < dataPosition) maxScore += (psDotSizeR*peakR);
+            if (count > dataPosition-2 && count < dataPosition) maxScore += (psDotSizeR*(90.0f+peakR));
             float minSizeR = fmaxf(sqrt(42.0f/(fabs(peakR-slewR)+1.0f)),1.0f);
            g.setColour(juce::Colours::black);
             juce::uint8 blueSpot = (juce::uint8)fmin((psDotSizeR)*512.0f,255.0f);
@@ -172,12 +172,15 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         
         if (count > dataPosition-2 && count < dataPosition) {
             hitScore[count] = sqrt(maxScore);
-            lingerScore += (sqrt(maxScore) * 1.618f);
-            lingerScore /= (sqrt(lingerScore) * 0.1f);
+            if (dataA[count] < 0.04f) maxScore *= ((dataA[count])+0.96f); //brake for score, L
+            if (dataB[count] < 0.04f) maxScore *= ((dataB[count])+0.96f); //brake for score, R
+            //if (hitScore[count] > 198.0f) maxScore -= pow(hitScore[count]-197.0f, 4.0f); //additional brake!
+            lingerScore += (hitScore[count] * 1.618f);
+            lingerScore /= ((sqrt(lingerScore) * 0.089f));
             maxScore = fmax(maxScore-lingerScore,0.0f);
         }
         g.setColour(juce::Colours::blue);
-        if (hitScore[count] > 1.0) g.fillRect((float)count*dx, (200.0f-hitScore[count])*dy, 2.0*dotWidth*dx, 2.0*dotHeight*dy);
+        if (hitScore[count] > 1.0) g.fillRect((float)count*dx, (400.0f-hitScore[count])*dy, 2.0*dotWidth*dx, 2.0*dotHeight*dy);
         }
     
     g.setColour(juce::Colours::grey);
