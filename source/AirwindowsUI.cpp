@@ -172,9 +172,6 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         
         if (count > dataPosition-2 && count < dataPosition) {
             hitScore[count] = sqrt(maxScore);
-            if (dataA[count] < 0.04f) maxScore *= ((dataA[count])+0.96f); //brake for score, L
-            if (dataB[count] < 0.04f) maxScore *= ((dataB[count])+0.96f); //brake for score, R
-            //if (hitScore[count] > 198.0f) maxScore -= pow(hitScore[count]-197.0f, 4.0f); //additional brake!
             lingerScore += (hitScore[count] * 1.618f);
             lingerScore /= ((sqrt(lingerScore) * 0.089f));
             maxScore = fmax(maxScore-lingerScore,0.0f);
