@@ -177,7 +177,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             maxScore = fmax(maxScore-lingerScore,0.0f);
         }
         g.setColour(juce::Colours::blue);
-        if (hitScore[count] > 1.0) g.fillRect((float)count*dx, (400.0f-hitScore[count])*dy, 2.0*dotWidth*dx, 2.0*dotHeight*dy);
+        if (hitScore[count] > 1.0) g.fillRect((float)count*dx, (400.0f-(hitScore[count])*0.618f)*dy, 2.0*dotWidth*dx, 2.0*dotHeight*dy);
         }
     
     g.setColour(juce::Colours::grey);
