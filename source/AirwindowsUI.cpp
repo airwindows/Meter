@@ -150,7 +150,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
 
         } else if (peakR > 1.0f) {
             float psDotSizeR = 4.2f / (fabs((peakR-slewR)*0.5f)+1.0f);
-            if (count > dataPosition-2 && count < dataPosition) maxScore += (psDotSizeR*(90.0f+peakR));
+            if (count > dataPosition-2 && count < dataPosition) maxScore += (psDotSizeR*(100.0f+peakR));
             float minSizeR = fmaxf(sqrt(42.0f/(fabs(peakR-slewR)+1.0f)),1.0f);
            g.setColour(juce::Colours::black);
             juce::uint8 blueSpot = (juce::uint8)fmin((psDotSizeR)*512.0f,255.0f);
@@ -171,9 +171,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         }
         
         if (count > dataPosition-2 && count < dataPosition) {
-            hitScore[count] = sqrt(maxScore);
-            lingerScore += (hitScore[count] * 1.618f);
-            lingerScore /= ((sqrt(lingerScore) * 0.089f));
+            hitScore[count] = sqrt(maxScore); lingerScore += (hitScore[count]); lingerScore *= 0.5f;
             maxScore = fmax(maxScore-lingerScore,0.0f);
         }
         g.setColour(juce::Colours::blue);
