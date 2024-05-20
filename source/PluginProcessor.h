@@ -40,7 +40,6 @@ public:
     TrackProperties trackProperties;
 
    //now we can declare variables used in the audio thread
-    
     enum Parameters
     {
         BLANK
@@ -118,7 +117,6 @@ public:
     
     LockFreeQueue<UIToAudioMessage> uiToAudio;
     LockFreeQueue<AudioToUIMessage> audioToUI;
-    
 
     double rmsLeft = 0.0;
     double rmsRight = 0.0;

@@ -94,7 +94,6 @@ void PluginEditor::resized()
     meter.displayHeight = (int)((0.95f-(((float)linewidth*2.0f)/area.getHeight()))*(float)area.getHeight());
     area.reduce(linewidth, linewidth);
     //getProportion sets first start X and Y placement, then size X and Y placement
-    
     meter.setBounds(area.getProportion(juce::Rectangle{((float)linewidth*2.0f)/area.getWidth(), 0.05f, 1.0f-(((float)linewidth*4.0f)/area.getWidth()), 0.95f-(((float)linewidth*2.0f)/area.getHeight())}));
 }
 

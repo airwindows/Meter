@@ -228,7 +228,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             //if (getPlayHead()->getPosition().hasValue() && !getPlayHead()->getPosition()->getIsPlaying()){}
             //this was a start on making it not update when Reaper's playhead is not in motion
             //in this state, it works in TwistedWave and does nothing in Reaper
-            
+            //Note however it's not in the double processing? and so not in Reaper?
+
             rmsLeft = 0.0;
             rmsRight = 0.0;
             peakLeft = 0.0;

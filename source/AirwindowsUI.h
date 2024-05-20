@@ -100,7 +100,7 @@ struct AirwindowsMeter : public juce::Component
     std::array<float, dataPoints> dataF;
     std::array<float, dataPoints> dataG;
     std::array<float, dataPoints> dataH;
-    
+     
     void pushA(float X) {dataA[dataPosition] = X;}
     void pushB(float X) {dataB[dataPosition] = X;}
     void pushC(float X) {dataC[dataPosition] = X;}
