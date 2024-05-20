@@ -21,7 +21,12 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     meter.setOpaque(true);
     meter.resetArrays();
     addAndMakeVisible(meter);
-    
+    addAndMakeVisible (resetButton);
+    resetButton.onClick = [&] {
+        meter.resetArrays();
+        meter.repaint();
+    };
+
     setSize (1200, 675);
     // Make sure that before the constructor has finished, you've set the editor's size to whatever you need it to be.
     if (airwindowsLookAndFeel.usingNamedImage) {
@@ -47,6 +52,8 @@ void PluginEditor::paint (juce::Graphics& g)
         }
         airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
         airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
+        airwindowsLookAndFeel.setColour(juce::TextButton::buttonColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
+        airwindowsLookAndFeel.setColour(juce::TextButton::buttonOnColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
     } else {
         if (airwindowsLookAndFeel.usingNamedImage) {
             g.drawImageWithin(airwindowsLookAndFeel.backgroundImage, 0, 0, getLocalBounds().getWidth(), getLocalBounds().getHeight(), 0);
@@ -60,6 +67,8 @@ void PluginEditor::paint (juce::Graphics& g)
         airwindowsLookAndFeel.defaultColour = juce::Colour::fromRGBA(airwindowsLookAndFeel.blurImage.getPixelAt(1,1).getRed(),airwindowsLookAndFeel.blurImage.getPixelAt(1,1).getGreen(),airwindowsLookAndFeel.blurImage.getPixelAt(1,1).getBlue(),1.0);
         airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, airwindowsLookAndFeel.defaultColour);
         airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour);
+        airwindowsLookAndFeel.setColour(juce::TextButton::buttonColourId, airwindowsLookAndFeel.defaultColour);
+        airwindowsLookAndFeel.setColour(juce::TextButton::buttonOnColourId, airwindowsLookAndFeel.defaultColour);
     } //find the color of the background tile or image, if there is one. Please use low-contrast stuff, but I'm not your mom :)
     if (airwindowsLookAndFeel.newFont == juce::String()) airwindowsLookAndFeel.newFont = "Jost";
     g.setFont(juce::Font(airwindowsLookAndFeel.newFont, g.getCurrentFont().getHeight(), 0));
@@ -95,6 +104,7 @@ void PluginEditor::resized()
     area.reduce(linewidth, linewidth);
     //getProportion sets first start X and Y placement, then size X and Y placement
     meter.setBounds(area.getProportion(juce::Rectangle{((float)linewidth*2.0f)/area.getWidth(), 0.05f, 1.0f-(((float)linewidth*4.0f)/area.getWidth()), 0.95f-(((float)linewidth*2.0f)/area.getHeight())}));
+    resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.052f, 0.032f}));
 }
 
 void PluginEditor::sliderValueChanged(juce::Slider *s) {sliderDragInternal(s, false);} //no knobs

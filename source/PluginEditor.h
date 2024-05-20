@@ -37,6 +37,7 @@ private:
    std::unique_ptr<IdleTimer> idleTimer;
     AirwindowsLookAndFeel airwindowsLookAndFeel;
     AirwindowsMeter meter;
+    juce::TextButton resetButton {""};
     
     juce::Colour hostTrackColour = juce::Colours::lightgrey;
     juce::String hostTrackName = juce::String();

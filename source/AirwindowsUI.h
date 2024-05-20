@@ -84,7 +84,6 @@ struct AirwindowsMeter : public juce::Component
     int displayWidth = 1200;
     int displayHeight = 675;
     int dataPosition = 0;
-    
     float maxScore = 0.0f;
     float lastScore = 0.0f;
     float prevLastScore = 0.0f;
@@ -126,6 +125,17 @@ struct AirwindowsMeter : public juce::Component
             dataF[count] = 0.0f;
             dataG[count] = 0.0f;
             dataH[count] = 0.0f;
+            dataPosition = 0;
+            maxScore = 0.0f;
+            lastScore = 0.0f;
+            prevLastScore = 0.0f;
+            lingerScore = 0.0f;
+            lastLOutline = 0.0;
+            lastROutline = 0.0;
+            lastLPeak = 0.0;
+            lastRPeak = 0.0;
+            lastLSlew = 0.0;
+            lastRSlew = 0.0;
         }
     }
     float lastLOutline = 0.0;

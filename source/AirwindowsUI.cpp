@@ -173,10 +173,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             maxScore = fmax(maxScore-lingerScore,0.0f);
         }
         float lineDotSize = 0.25+sqrt(dataA[count]*dataB[count]); //below the RMS level, line small
-        if (hitScore[count]*0.5f > lineDotSize) lineDotSize *= 2.0f; //bumps up as it gets bigger
-        if ((hitScore[count]*0.5f > peakL) && (hitScore[count]*0.5f > peakR)) lineDotSize *= 2.0f;
+        float drawScore = pow(hitScore[count],2.0)*0.001f;
+        if (drawScore > lineDotSize) lineDotSize *= 2.0f; //bumps up as it gets bigger
+        if ((drawScore > peakL) && (drawScore > peakR)) lineDotSize *= 2.0f;
         g.setColour(juce::Colours::blue);
-        if (hitScore[count] > 1.0) g.fillRect((float)count*dx, (400.0f-(hitScore[count])*0.5f)*dy, lineDotSize*dotWidth*dx, lineDotSize*dotHeight*dy);
+        if (hitScore[count] > 1.0) g.fillRect((float)count*dx, (400.0f-drawScore)*dy, lineDotSize*dotWidth*dx, lineDotSize*dotHeight*dy);
         }
     
     g.setColour(juce::Colours::grey);
