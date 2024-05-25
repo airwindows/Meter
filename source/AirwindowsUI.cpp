@@ -48,6 +48,8 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.setColour(juce::Colours::black);
     g.fillRect(0.0,  200.0f*dy, (float)getWidth(),1.0); // border with slew meter
     g.fillRect(0.0,  400.0f*dy, (float)getWidth(),1.0); // border with zero cross meter
+    g.setColour(juce::Colours::lightgrey);
+    g.setFont(18.0f); g.drawText(textScore, 7, 2, 200, 20, juce::Justification::bottomLeft);
 
     for (int count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
     {
@@ -172,6 +174,93 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             hitScore[count] = sqrt(maxScore); lingerScore += (hitScore[count]); lingerScore *= 0.5f;
             maxScore = fmax(maxScore-lingerScore,0.0f);
         }
+        if ((hitScore[count]*0.0602) > highestScore) highestScore = (int)(hitScore[count]*0.0602);
+        //calibrated so, at default size and conditions, if you break into the upper RMS meter you break into AA etc.
+        if (highestScore > 39) highestScore = 39;
+        switch (highestScore) {
+            case 0:
+                textScore = juce::String("Z"); break;
+            case 1:
+                textScore = juce::String("Y"); break;
+            case 2:
+                textScore = juce::String("X"); break;
+            case 3:
+                textScore = juce::String("W"); break;
+            case 4:
+                textScore = juce::String("V"); break;
+            case 5:
+                textScore = juce::String("U"); break;
+            case 6:
+                textScore = juce::String("T"); break;
+            case 7:
+                textScore = juce::String("S"); break;
+            case 8:
+                textScore = juce::String("R"); break;
+            case 9:
+                textScore = juce::String("Q"); break;
+            case 10:
+                textScore = juce::String("P"); break;
+            case 11:
+                textScore = juce::String("O"); break;
+            case 12:
+                textScore = juce::String("N"); break;
+            case 13:
+                textScore = juce::String("M"); break;
+            case 14:
+                textScore = juce::String("L"); break;
+            case 15:
+                textScore = juce::String("K"); break;
+            case 16:
+                textScore = juce::String("J"); break;
+            case 17:
+                textScore = juce::String("I"); break;
+            case 18:
+                textScore = juce::String("H"); break;
+            case 19:
+                textScore = juce::String("G"); break;
+            case 20:
+                textScore = juce::String("F"); break;
+            case 21:
+                textScore = juce::String("E"); break;
+            case 22:
+                textScore = juce::String("D"); break;
+            case 23:
+                textScore = juce::String("C"); break;
+            case 24:
+                textScore = juce::String("B"); break;
+            case 25:
+                textScore = juce::String("A"); break;
+            case 26:
+                textScore = juce::String("A"); break;
+            case 27:
+                textScore = juce::String("AA"); break;
+            case 28:
+                textScore = juce::String("AA"); break;
+            case 29:
+                textScore = juce::String("AA"); break;
+            case 30:
+                textScore = juce::String("AA"); break;
+            case 31:
+                textScore = juce::String("AAA"); break;
+            case 32:
+                textScore = juce::String("AAA"); break;
+            case 33:
+                textScore = juce::String("AAA"); break;
+            case 34:
+                textScore = juce::String("AAA"); break;
+            case 35:
+                textScore = juce::String("AAA"); break;
+            case 36:
+                textScore = juce::String("AAA"); break;
+            case 37:
+                textScore = juce::String("AAA"); break;
+            case 38:
+                textScore = juce::String("AAA"); break;
+            case 39:
+                textScore = juce::String("AAAA"); break;
+        }
+        //we are building the ability to assign a letter score
+        
         float lineDotSize = 0.25+sqrt(dataA[count]*dataB[count]); //below the RMS level, line small
         float drawScore = pow(hitScore[count],2.0)*0.001f;
         if (drawScore > lineDotSize) lineDotSize *= 2.0f; //bumps up as it gets bigger

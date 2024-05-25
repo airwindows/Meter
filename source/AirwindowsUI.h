@@ -136,6 +136,8 @@ struct AirwindowsMeter : public juce::Component
             lastRPeak = 0.0;
             lastLSlew = 0.0;
             lastRSlew = 0.0;
+            highestScore = 0;
+            textScore = juce::String();
         }
     }
     float lastLOutline = 0.0;
@@ -144,6 +146,8 @@ struct AirwindowsMeter : public juce::Component
     float lastRPeak = 0.0;
     float lastLSlew = 0.0;
     float lastRSlew = 0.0;
+    int highestScore = 0;
+    juce::String textScore = juce::String();
 };
 
 extern AirwindowsLookAndFeel airwindowsLookAndFeel;

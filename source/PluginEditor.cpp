@@ -73,7 +73,7 @@ void PluginEditor::paint (juce::Graphics& g)
     if (airwindowsLookAndFeel.newFont == juce::String()) airwindowsLookAndFeel.newFont = "Jost";
     g.setFont(juce::Font(airwindowsLookAndFeel.newFont, g.getCurrentFont().getHeight(), 0));
     auto linewidth = getLocalBounds().getWidth(); if (getLocalBounds().getHeight() > linewidth) linewidth = getLocalBounds().getHeight();  linewidth = (int)cbrt(linewidth/2)/2;
-    if ((hostTrackName == juce::String()) || (hostTrackName.length() < 1.0f)) hostTrackName = juce::String("Hit Record Meter"); //if not track name, then name of pluginu
+    if ((hostTrackName == juce::String()) || (hostTrackName.length() < 1.0f)) hostTrackName = juce::String("Hit Record Meter"); //if not track name, then name of plugin
     float radius = getLocalBounds().getWidth(); if (radius > (getLocalBounds().getHeight())*0.0618f) radius = (getLocalBounds().getHeight())*0.0618f;
     auto embossScale = sqrt(sqrt(radius*0.618f)*1.618f)*0.618f; //this is customized to the needs of the plugin title text area
     g.setFont ((radius*12.0f) / (float)g.getCurrentFont().getHeight());
