@@ -194,7 +194,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
 
         } else if (peakL > 1.0f) {
             float psDotHypeL = (11.0f * sqrt(dataA[count] * dataB[count])) / (fabs((peakL-slewL) * (7.0f/meterZeroL) )+1.0f);
-            float psDotVibeL = sin(pow(fmin(dataC[count]*11.0f,6.18f) / (fabs((peakL-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * M_PI;
+            float psDotVibeL = sin(pow(fmin(dataC[count]*11.0f,6.18f) / (fabs((peakL-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 3.141592f;
             float psDotSizeL = (psDotVibeL*(1.0f-hype))+(psDotHypeL*hype);
             if (count > dataPosition-2 && count < dataPosition) maxScore += ((psDotSizeL*140.0f*(1.0f-hype))+(psDotSizeL*peakL*hype)); //increase score
             
@@ -229,7 +229,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
 
         } else if (peakR > 1.0f) {
             float psDotHypeR = (11.0f * sqrt(dataB[count] * dataA[count])) / (fabs((peakR-slewR) * (7.0f/meterZeroR) )+1.0f);
-            float psDotVibeR = sin(pow(fmin(dataD[count]*11.0f,6.18f) / (fabs((peakR-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * M_PI;
+            float psDotVibeR = sin(pow(fmin(dataD[count]*11.0f,6.18f) / (fabs((peakR-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 3.141592f;
             float psDotSizeR = (psDotVibeR*(1.0f-hype))+(psDotHypeR*hype);
             if (count > dataPosition-2 && count < dataPosition) maxScore += ((psDotSizeR*140.0f*(1.0f-hype))+(psDotSizeR*peakR*hype)); //increase score
             
