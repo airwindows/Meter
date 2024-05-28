@@ -8,8 +8,8 @@
 class AirwindowsLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-   // void drawRotarySlider (juce::Graphics& g, int x, int y, int width, int height, float sliderPos, const float rotaryStartAngle, const float rotaryEndAngle, juce::Slider&) override;
-    
+    void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const juce::Slider::SliderStyle style, juce::Slider& slider) override;
+
     AirwindowsLookAndFeel()
     {
         setColour(juce::Slider::backgroundColourId, juce::Colours::red);
@@ -112,6 +112,8 @@ struct AirwindowsMeter : public juce::Component
         dataPosition++;
         if (dataPosition >= (int)displayWidth) dataPosition = 0;
     }
+    void pushHype(float X) {hype = X;}
+
     void resetArrays(){
         for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
@@ -130,24 +132,26 @@ struct AirwindowsMeter : public juce::Component
             lastScore = 0.0f;
             prevLastScore = 0.0f;
             lingerScore = 0.0f;
-            lastLOutline = 0.0;
-            lastROutline = 0.0;
-            lastLPeak = 0.0;
-            lastRPeak = 0.0;
-            lastLSlew = 0.0;
-            lastRSlew = 0.0;
+            lastLOutline = 0.0f;
+            lastROutline = 0.0f;
+            lastLPeak = 0.0f;
+            lastRPeak = 0.0f;
+            lastLSlew = 0.0f;
+            lastRSlew = 0.0f;
             highestScore = 0;
             textScore = juce::String();
+            hype = 0.5f;
         }
     }
-    float lastLOutline = 0.0;
-    float lastROutline = 0.0;
-    float lastLPeak = 0.0;
-    float lastRPeak = 0.0;
-    float lastLSlew = 0.0;
-    float lastRSlew = 0.0;
+    float lastLOutline = 0.0f;
+    float lastROutline = 0.0f;
+    float lastLPeak = 0.0f;
+    float lastRPeak = 0.0f;
+    float lastLSlew = 0.0f;
+    float lastRSlew = 0.0f;
     int highestScore = 0;
     juce::String textScore = juce::String();
+    float hype = 0.5f;
 };
 
 extern AirwindowsLookAndFeel airwindowsLookAndFeel;

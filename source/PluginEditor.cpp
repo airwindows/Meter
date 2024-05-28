@@ -21,6 +21,14 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     meter.setOpaque(true);
     meter.resetArrays();
     addAndMakeVisible(meter);
+    
+    hypeKnob.setSliderStyle(juce::Slider::LinearHorizontal);
+    hypeKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 100, 20);
+    hypeKnob.setRange(0.0f, 1.0f);
+    hypeKnob.setValue(processorRef.params[PluginProcessor::KNOBA]->get(), juce::NotificationType::dontSendNotification);
+    hypeKnob.addListener(this);
+    addAndMakeVisible(hypeKnob);
+
     addAndMakeVisible (resetButton);
     resetButton.onClick = [&] {
         meter.resetArrays();
@@ -70,6 +78,8 @@ void PluginEditor::paint (juce::Graphics& g)
         airwindowsLookAndFeel.setColour(juce::TextButton::buttonColourId, airwindowsLookAndFeel.defaultColour);
         airwindowsLookAndFeel.setColour(juce::TextButton::buttonOnColourId, airwindowsLookAndFeel.defaultColour);
     } //find the color of the background tile or image, if there is one. Please use low-contrast stuff, but I'm not your mom :)
+    
+    
     if (airwindowsLookAndFeel.newFont == juce::String()) airwindowsLookAndFeel.newFont = "Jost";
     g.setFont(juce::Font(airwindowsLookAndFeel.newFont, g.getCurrentFont().getHeight(), 0));
     auto linewidth = getLocalBounds().getWidth(); if (getLocalBounds().getHeight() > linewidth) linewidth = getLocalBounds().getHeight();  linewidth = (int)cbrt(linewidth/2)/2;
@@ -77,6 +87,7 @@ void PluginEditor::paint (juce::Graphics& g)
     float radius = getLocalBounds().getWidth(); if (radius > (getLocalBounds().getHeight())*0.0618f) radius = (getLocalBounds().getHeight())*0.0618f;
     auto embossScale = sqrt(sqrt(radius*0.618f)*1.618f)*0.618f; //this is customized to the needs of the plugin title text area
     g.setFont ((radius*12.0f) / (float)g.getCurrentFont().getHeight());
+    
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.75f)); //highlight
     g.drawFittedText(hostTrackName, juce::Rectangle<int>((int)(getLocalBounds().getWidth()+embossScale),(int)((getLocalBounds().getHeight()*0.0618f)+embossScale)), juce::Justification::centredBottom, 1);
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.75f)); //shadow
@@ -104,10 +115,23 @@ void PluginEditor::resized()
     area.reduce(linewidth, linewidth);
     //getProportion sets first start X and Y placement, then size X and Y placement
     meter.setBounds(area.getProportion(juce::Rectangle{((float)linewidth*2.0f)/area.getWidth(), 0.05f, 1.0f-(((float)linewidth*4.0f)/area.getWidth()), 0.95f-(((float)linewidth*2.0f)/area.getHeight())}));
-    resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.052f, 0.032f}));
+    
+    hypeKnob.setColour (juce::Slider::backgroundColourId, juce::Colours::grey);
+    //hypeKnob.setBounds(area.getProportion(juce::Rectangle{0.618f, 0.01f, 0.382f, 0.033f}));
+    hypeKnob.setBounds(area.getWidth()-122, area.getHeight()*0.006f, 130, area.getHeight()*0.05f);
+    resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.054f, 0.033f}));
 }
 
-void PluginEditor::sliderValueChanged(juce::Slider *s) {sliderDragInternal(s, false);} //no knobs
+void PluginEditor::sliderValueChanged(juce::Slider *s) {
+    if (s == &hypeKnob)
+    {
+        PluginProcessor::UIToAudioMessage msg;
+        msg.what = PluginProcessor::UIToAudioMessage::NEW_VALUE;
+        msg.which = (PluginProcessor::Parameters)PluginProcessor::KNOBA;
+        msg.newValue = (float)s->getValue();
+        processorRef.uiToAudio.push(msg);
+    }
+}
 void PluginEditor::sliderDragStarted(juce::Slider *s) {sliderDragInternal(s, true);} //on this plugin
 void PluginEditor::sliderDragEnded(juce::Slider *s) {sliderDragInternal(s, false);} //so this section does
 void PluginEditor::sliderDragInternal(juce::Slider *s, bool bv) {if (bv) sliderValueChanged(s);} //nothing
@@ -133,6 +157,9 @@ void PluginEditor::idle()
                 
         case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(msg.newValue); repaintTS = true; break;
+                
+        case PluginProcessor::AudioToUIMessage::HYPE: meter.pushHype(msg.newValue); break;
+
         
         default: std::cout << "Unhandled message type " << msg.what << std::endl; break;
         } //end of switch statement for msg.what
