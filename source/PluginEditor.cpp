@@ -118,7 +118,7 @@ void PluginEditor::resized()
     
     hypeKnob.setColour (juce::Slider::backgroundColourId, juce::Colours::grey);
     //hypeKnob.setBounds(area.getProportion(juce::Rectangle{0.618f, 0.01f, 0.382f, 0.033f}));
-    hypeKnob.setBounds(area.getWidth()-122, area.getHeight()*0.006f, 130, area.getHeight()*0.05f);
+    hypeKnob.setBounds(area.getWidth()-123, area.getHeight()*0.006f, 130, area.getHeight()*0.05f);
     resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.054f, 0.033f}));
 }
 
