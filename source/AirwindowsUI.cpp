@@ -193,9 +193,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, dx, dy);
 
         } else if (peakL > 1.0f) {
-            float psDotHypeL = (11.0f * sqrt(dataA[count] * dataB[count])) / (fabs((peakL-slewL) * (7.0f/meterZeroL) )+1.0f);
-            float psDotVibeL = sin(pow(fmin(dataC[count]*11.0f,6.18f) / (fabs((peakL-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 3.141592f;
-            float psDotSizeL = (psDotVibeL*(1.0f-hype))+(psDotHypeL*hype);
+            float psDotHypeL = (11.0f * sqrt(dataA[count] * dataB[count])) / (fabs(((peakL*((hype+6.0f)/7.0f))-slewL) * (7.0f/meterZeroL) )+1.0f);
+            float psDotVibeL = sin(pow(fmin(dataC[count]*8.5f,6.18f) / (fabs(((peakL*((hype+4.0f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 3.141592f;
+            float psDotSizeL = ((psDotVibeL*(1.0f-hype))+(psDotHypeL*hype))*(1.0+(sin(hype*3.141592f)*0.25f));
             if (count > dataPosition-2 && count < dataPosition) maxScore += ((psDotSizeL*140.0f*(1.0f-hype))+(psDotSizeL*peakL*hype)); //increase score
             
             g.setColour(juce::Colours::black);
@@ -228,9 +228,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, dx, dy);
 
         } else if (peakR > 1.0f) {
-            float psDotHypeR = (11.0f * sqrt(dataB[count] * dataA[count])) / (fabs((peakR-slewR) * (7.0f/meterZeroR) )+1.0f);
-            float psDotVibeR = sin(pow(fmin(dataD[count]*11.0f,6.18f) / (fabs((peakR-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 3.141592f;
-            float psDotSizeR = (psDotVibeR*(1.0f-hype))+(psDotHypeR*hype);
+            float psDotHypeR = (11.0f * sqrt(dataB[count] * dataA[count])) / (fabs(((peakR*((hype+6.0f)/7.0f))-slewR) * (7.0f/meterZeroR) )+1.0f);
+            float psDotVibeR = sin(pow(fmin(dataD[count]*8.5f,6.18f) / (fabs(((peakR*((hype+4.0f)/5.0f))-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 3.141592f;
+            float psDotSizeR = ((psDotVibeR*(1.0f-hype))+(psDotHypeR*hype))*(1.0+(sin(hype*3.141592f)*0.25f));
             if (count > dataPosition-2 && count < dataPosition) maxScore += ((psDotSizeR*140.0f*(1.0f-hype))+(psDotSizeR*peakR*hype)); //increase score
             
             g.setColour(juce::Colours::black);

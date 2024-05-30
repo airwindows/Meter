@@ -13,7 +13,7 @@ PluginProcessor::PluginProcessor():AudioProcessor (
 ){
     hype = 0.5f;
     // (internal ID, how it's shown in DAW generic view, {min, max}, default)
-    addParameter(params[KNOBA] =      new juce::AudioParameterFloat("hype", "Hype", {0.0f, 1.0f}, 0.5)); params[KNOBA]->addListener(this);
+    addParameter(params[KNOBA] =      new juce::AudioParameterFloat("hype", "Hype", {0.0f, 1.0f}, 0.618033988749894f)); params[KNOBA]->addListener(this);
  }
 
 PluginProcessor::~PluginProcessor() {}
