@@ -123,8 +123,8 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.setColour(juce::Colours::black);
     g.fillRect(0.0,  200.0f*dy, (float)getWidth(),1.0); // border with slew meter
     g.fillRect(0.0,  400.0f*dy, (float)getWidth(),1.0); // border with zero cross meter
-    g.setColour(juce::Colours::lightgrey);
-    g.setFont(48.0f); g.drawText(textScore, 7, 2, 200, 50, juce::Justification::bottomLeft);
+    g.setColour(juce::Colours::darkgrey);
+    g.setFont(28.0f); g.drawText(textScore, 7, 2, 200, 30, juce::Justification::bottomLeft);
 
     for (int count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
     {
@@ -255,90 +255,98 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             hitScore[count] = sqrt(maxScore); lingerScore += (hitScore[count]); lingerScore *= 0.5f;
             maxScore = fmax(maxScore-lingerScore,0.0f);
         }
+        
+        
+        
+        
+        
+        
+        //if ((hitScore[count]/4.48f) > highestScore) highestScore = (int)(hitScore[count]/4.48f);
+        //textScore = juce::String(highestScore).paddedLeft('0', 3);
+        //169 for Tomorrow Never Knows
+        
         if ((hitScore[count]*0.0602) > highestScore) highestScore = (int)(hitScore[count]*0.0602);
-        //calibrated so, at default size and conditions, if you break into the upper RMS meter you break into AA etc.
-        if (highestScore > 39) highestScore = 39;
+        //calibrated so, at default size and conditions, if you break into the upper RMS meter you break into B, then A etc.
+        if (highestScore > 38) highestScore = 38;
         switch (highestScore) {
             case 0:
-                textScore = juce::String("Z"); break;
+                textScore = juce::String("FF"); break;
             case 1:
-                textScore = juce::String("Y"); break;
+                textScore = juce::String("FF"); break;
             case 2:
-                textScore = juce::String("X"); break;
+                textScore = juce::String("FF"); break;
             case 3:
-                textScore = juce::String("W"); break;
+                textScore = juce::String("FF"); break;
             case 4:
-                textScore = juce::String("V"); break;
+                textScore = juce::String("FE"); break;
             case 5:
-                textScore = juce::String("U"); break;
+                textScore = juce::String("FD"); break;
             case 6:
-                textScore = juce::String("T"); break;
+                textScore = juce::String("FC"); break;
             case 7:
-                textScore = juce::String("S"); break;
+                textScore = juce::String("FB"); break;
             case 8:
-                textScore = juce::String("R"); break;
+                textScore = juce::String("FA"); break;
             case 9:
-                textScore = juce::String("Q"); break;
+                textScore = juce::String("EF"); break;
             case 10:
-                textScore = juce::String("P"); break;
+                textScore = juce::String("EE"); break;
             case 11:
-                textScore = juce::String("O"); break;
+                textScore = juce::String("ED"); break;
             case 12:
-                textScore = juce::String("N"); break;
+                textScore = juce::String("EC"); break;
             case 13:
-                textScore = juce::String("M"); break;
+                textScore = juce::String("EB"); break;
             case 14:
-                textScore = juce::String("L"); break;
+                textScore = juce::String("EA"); break;
             case 15:
-                textScore = juce::String("K"); break;
+                textScore = juce::String("DF"); break;
             case 16:
-                textScore = juce::String("J"); break;
+                textScore = juce::String("DE"); break;
             case 17:
-                textScore = juce::String("I"); break;
+                textScore = juce::String("DD"); break;
             case 18:
-                textScore = juce::String("H"); break;
+                textScore = juce::String("DC"); break;
             case 19:
-                textScore = juce::String("G"); break;
+                textScore = juce::String("DB"); break;
             case 20:
-                textScore = juce::String("F"); break;
+                textScore = juce::String("DA"); break;
             case 21:
-                textScore = juce::String("E"); break;
+                textScore = juce::String("CF"); break;
             case 22:
-                textScore = juce::String("D"); break;
+                textScore = juce::String("CE"); break;
             case 23:
-                textScore = juce::String("C"); break;
+                textScore = juce::String("CD"); break;
             case 24:
-                textScore = juce::String("B"); break;
+                textScore = juce::String("CC"); break;
             case 25:
-                textScore = juce::String("A"); break;
+                textScore = juce::String("CB"); break;
             case 26:
-                textScore = juce::String("A"); break;
+                textScore = juce::String("CA"); break;
             case 27:
-                textScore = juce::String("AA"); break;
+                textScore = juce::String("BF"); break;
             case 28:
-                textScore = juce::String("AA"); break;
+                textScore = juce::String("BE"); break;
             case 29:
-                textScore = juce::String("AA"); break;
+                textScore = juce::String("BD"); break;
             case 30:
-                textScore = juce::String("AA"); break;
+                textScore = juce::String("BC"); break;
             case 31:
-                textScore = juce::String("AA"); break;
+                textScore = juce::String("BB"); break;
             case 32:
-                textScore = juce::String("AA"); break;
+                textScore = juce::String("BA"); break;
             case 33:
-                textScore = juce::String("AAA"); break;
+                textScore = juce::String("AF"); break;
             case 34:
-                textScore = juce::String("AAA"); break;
+                textScore = juce::String("AE"); break;
             case 35:
-                textScore = juce::String("AAA"); break;
+                textScore = juce::String("AD"); break;
             case 36:
-                textScore = juce::String("AAA"); break;
+                textScore = juce::String("AC"); break;
             case 37:
-                textScore = juce::String("AAA"); break;
+                textScore = juce::String("AB"); break;
             case 38:
-                textScore = juce::String("AAAA"); break;
-            case 39:
-                textScore = juce::String("AAAA"); break;
+                textScore = juce::String("AA"); break;
         }
         //we are building the ability to assign a letter score
         
