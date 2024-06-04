@@ -179,17 +179,18 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             lastROutline = h;
         } //done with RMS chunk and sound density
 
-        
         if (peakL > 197.0f) {
             peakL = 197.0;
-            g.setColour(juce::Colour(255, 0, 0));
-            g.fillRect((float)count*dx, (200.0f - peakL)*dy, 2.0f*dx, 2.0f*dy);
+            g.setColour(juce::Colour(255.0f, 0, 0));
+            g.fillRect((float)count*dx, (200.0f - peakL)*dy, dx, dataA[count]*dataA[count]*120.0f*dy);
             if (slewL > 197.0f) {
                 slewL -= 197.0f;
                 g.fillRect((float)count*dx, (400.0f - slewL)*dy, dx, slewL*dy);
             } else {
+                g.setColour(juce::Colours::black);
                 g.fillRect((float)count*dx, (400.0f - slewL)*dy, dx, dy);
             }
+            g.setColour(juce::Colours::black);
             g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, dx, dy);
 
         } else if (peakL > 1.0f) {
@@ -202,29 +203,40 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (psDotSizeL > 1.0f) g.setColour(juce::Colour(0, 0, 255.0f));
             else psDotSizeL = sqrt(psDotSizeL);
             g.fillRect((float)count*dx, (200.0f - peakL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
+            
             if (slewL > 197.0f) {
                 slewL -= 197.0f;
                 juce::uint8 greySpike = (juce::uint8)fabs((dataA[count] * 690.0f)-slewL);
                 g.setColour(juce::Colour(greySpike, greySpike, greySpike));
                 g.fillRect((float)count*dx, (400.0f - slewL)*dy, psDotSizeL*dotWidth*dx, slewL*dy);
                 //slew is so high we're drawing the spike that cuts across the RMS grey shadow
-                if (psDotSizeL > 1.0f) g.setColour(juce::Colour(0, 0, 255.0f));
+                 if (psDotSizeL > 1.0f) g.setColour(juce::Colour(0, 0, 255.0f));
             } else {
-                g.fillRect((float)count*dx, (400.0f - slewL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
+                if (psDotSizeL < 1.0) {
+                    if (slewL > peakL) g.setColour(juce::Colour(255.0f, 0, 0));
+                    else g.setColour(juce::Colour(0, 234.0f, 0));
+                    g.fillRect((float)count*dx, (400.0f - slewL)*dy, 2.0f*dotWidth*dx, 2.0f*dotHeight*dy);
+                } else g.fillRect((float)count*dx, (400.0f - slewL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
+                
             }
-            g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, psDotSizeL*dotWidth*dx, psDotSizeL*dotHeight*dy);
+            if (psDotSizeL < 1.0) {
+                g.setColour(juce::Colour(0, 0, 0));
+                g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, 16.0f*dataA[count]*dataA[count]*dotWidth*dx, 16.0f*dataA[count]*dataA[count]*dotHeight*dy);
+            } else g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, 16.0f*dataA[count]*dataA[count]*dotWidth*dx, 16.0f*dataA[count]*dataA[count]*dotHeight*dy);
         }
  
         if (peakR > 197.0f) {
             peakR = 197.0;
-            g.setColour(juce::Colour(255, 0, 0));
-            g.fillRect((float)count*dx, (200.0f - peakR)*dy, 2.0f*dx, 2.0f*dy);
+            g.setColour(juce::Colour(255.0f, 0, 0));
+            g.fillRect((float)count*dx, (200.0f - peakR)*dy, dx, dataB[count]*dataB[count]*120.0f*dy);
             if (slewR > 197.0f) {
                 slewR -= 197.0f;
                 g.fillRect((float)count*dx, (400.0f - slewR)*dy, dx, slewR*dy);
             } else {
+                g.setColour(juce::Colours::black);
                 g.fillRect((float)count*dx, (400.0f - slewR)*dy, dx, dy);
             }
+            g.setColour(juce::Colours::black);
             g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, dx, dy);
 
         } else if (peakR > 1.0f) {
@@ -237,6 +249,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (psDotSizeR > 1.0f) g.setColour(juce::Colour(0, 0, 255.0f));
             else psDotSizeR = sqrt(psDotSizeR);
             g.fillRect((float)count*dx, (200.0f - peakR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
+            
             if (slewR > 197.0f) {
                 slewR -= 197.0f;
                 juce::uint8 greySpike = (juce::uint8)fabs((dataB[count] * 690.0f)-slewR);
@@ -245,9 +258,17 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                 //slew is so high we're drawing the spike that cuts across the RMS grey shadow
                 if (psDotSizeR > 1.0f) g.setColour(juce::Colour(0, 0, 255.0f));
            } else {
-                g.fillRect((float)count*dx, (400.0f - slewR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
+               if (psDotSizeR < 1.0) {
+                   if (slewR > peakR) g.setColour(juce::Colour(255.0f, 0, 0));
+                   else g.setColour(juce::Colour(0, 234.0f, 0));
+                   g.fillRect((float)count*dx, (400.0f - slewR)*dy, 2.0f*dotWidth*dx, 2.0f*dotHeight*dy);
+               } else g.fillRect((float)count*dx, (400.0f - slewR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
+               
             }
-            g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, psDotSizeR*dotWidth*dx, psDotSizeR*dotHeight*dy);
+            if (psDotSizeR < 1.0) {
+                g.setColour(juce::Colour(0, 0, 0));
+                g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, 16.0f*dataB[count]*dataB[count]*dotWidth*dx, 16.0f*dataB[count]*dataB[count]*dotHeight*dy);
+            } else g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, 16.0f*dataB[count]*dataB[count]*dotWidth*dx, 16.0f*dataB[count]*dataB[count]*dotHeight*dy);
             //done with peak, slew, zero cross
         }
         
@@ -255,16 +276,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             hitScore[count] = sqrt(maxScore); lingerScore += (hitScore[count]); lingerScore *= 0.5f;
             maxScore = fmax(maxScore-lingerScore,0.0f);
         }
-        
-        
-        
-        
-        
-        
-        //if ((hitScore[count]/4.48f) > highestScore) highestScore = (int)(hitScore[count]/4.48f);
-        //textScore = juce::String(highestScore).paddedLeft('0', 3);
-        //169 for Tomorrow Never Knows
-        
+                
         if ((hitScore[count]*0.0602) > highestScore) highestScore = (int)(hitScore[count]*0.0602);
         //calibrated so, at default size and conditions, if you break into the upper RMS meter you break into B, then A etc.
         if (highestScore > 38) highestScore = 38;
