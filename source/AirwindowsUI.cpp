@@ -124,7 +124,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0.0,  200.0f*dy, (float)getWidth(),1.0); // border with slew meter
     g.fillRect(0.0,  400.0f*dy, (float)getWidth(),1.0); // border with zero cross meter
     g.setColour(juce::Colours::darkgrey);
-    g.setFont(28.0f); g.drawText(textScore, 7, 2, 200, 30, juce::Justification::bottomLeft);
+    g.setFont(23.0f); g.drawText(textScore, 7, 2, 1200, 24, juce::Justification::bottomLeft);
 
     for (int count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
     {
@@ -298,67 +298,67 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             case 7:
                 textScore = juce::String("FB"); break;
             case 8:
-                textScore = juce::String("FA"); break;
+                textScore = juce::String("FA - ultimate chill"); break;
             case 9:
-                textScore = juce::String("EF"); break;
+                textScore = juce::String("EF - ultimate chill"); break;
             case 10:
-                textScore = juce::String("EE"); break;
+                textScore = juce::String("EE - ultimate chill"); break;
             case 11:
-                textScore = juce::String("ED"); break;
+                textScore = juce::String("ED - even more chill"); break;
             case 12:
-                textScore = juce::String("EC"); break;
+                textScore = juce::String("EC - even more chill"); break;
             case 13:
-                textScore = juce::String("EB"); break;
+                textScore = juce::String("EB - even more chill"); break;
             case 14:
-                textScore = juce::String("EA"); break;
+                textScore = juce::String("EA - even more chill"); break;
             case 15:
-                textScore = juce::String("DF"); break;
+                textScore = juce::String("DF - Deepest Vibe"); break;
             case 16:
-                textScore = juce::String("DE"); break;
+                textScore = juce::String("DE - Deep Vibe"); break;
             case 17:
-                textScore = juce::String("DD"); break;
+                textScore = juce::String("DD - Deep Vibe"); break;
             case 18:
-                textScore = juce::String("DC"); break;
+                textScore = juce::String("DC - Deep Vibe"); break;
             case 19:
-                textScore = juce::String("DB"); break;
+                textScore = juce::String("DB - Deep Vibe"); break;
             case 20:
-                textScore = juce::String("DA"); break;
+                textScore = juce::String("DA - Deep Vibe"); break;
             case 21:
-                textScore = juce::String("CF"); break;
+                textScore = juce::String("CF - Comfortable"); break;
             case 22:
-                textScore = juce::String("CE"); break;
+                textScore = juce::String("CE - Comfortable"); break;
             case 23:
-                textScore = juce::String("CD"); break;
+                textScore = juce::String("CD - Comfortable"); break;
             case 24:
-                textScore = juce::String("CC"); break;
+                textScore = juce::String("CC - Comfortable"); break;
             case 25:
-                textScore = juce::String("CB"); break;
+                textScore = juce::String("CB - Comfortable"); break;
             case 26:
-                textScore = juce::String("CA"); break;
+                textScore = juce::String("CA - Comfortable"); break;
             case 27:
-                textScore = juce::String("BF"); break;
+                textScore = juce::String("BF - Biggest"); break;
             case 28:
-                textScore = juce::String("BE"); break;
+                textScore = juce::String("BE - Biggest"); break;
             case 29:
-                textScore = juce::String("BD"); break;
+                textScore = juce::String("BD - Biggest"); break;
             case 30:
-                textScore = juce::String("BC"); break;
+                textScore = juce::String("BC - Biggest"); break;
             case 31:
-                textScore = juce::String("BB"); break;
+                textScore = juce::String("BB - Biggest"); break;
             case 32:
-                textScore = juce::String("BA"); break;
+                textScore = juce::String("BA - Biggest"); break;
             case 33:
-                textScore = juce::String("AF"); break;
+                textScore = juce::String("AF - Attention"); break;
             case 34:
-                textScore = juce::String("AE"); break;
+                textScore = juce::String("AE - Attention"); break;
             case 35:
-                textScore = juce::String("AD"); break;
+                textScore = juce::String("AD - Attention"); break;
             case 36:
-                textScore = juce::String("AC"); break;
+                textScore = juce::String("AC - Attention"); break;
             case 37:
-                textScore = juce::String("AB"); break;
+                textScore = juce::String("AB - Attention"); break;
             case 38:
-                textScore = juce::String("AA"); break;
+                textScore = juce::String("AA - Attention"); break;
         }
         //we are building the ability to assign a letter score
         
