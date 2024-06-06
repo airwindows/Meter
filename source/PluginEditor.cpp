@@ -22,13 +22,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     meter.resetArrays();
     addAndMakeVisible(meter);
     
-    hypeKnob.setSliderStyle(juce::Slider::LinearHorizontal);
-    hypeKnob.setTextBoxStyle(juce::Slider::NoTextBox, false, 100, 20);
-    hypeKnob.setRange(0.0f, 1.0f);
-    hypeKnob.setValue(processorRef.params[PluginProcessor::KNOBA]->get(), juce::NotificationType::dontSendNotification);
-    hypeKnob.addListener(this);
-    addAndMakeVisible(hypeKnob);
-
     addAndMakeVisible (resetButton);
     resetButton.onClick = [&] {
         meter.resetArrays();
@@ -116,22 +109,10 @@ void PluginEditor::resized()
     //getProportion sets first start X and Y placement, then size X and Y placement
     meter.setBounds(area.getProportion(juce::Rectangle{((float)linewidth*2.0f)/area.getWidth(), 0.05f, 1.0f-(((float)linewidth*4.0f)/area.getWidth()), 0.95f-(((float)linewidth*2.0f)/area.getHeight())}));
     
-    hypeKnob.setColour (juce::Slider::backgroundColourId, juce::Colours::grey);
-    //hypeKnob.setBounds(area.getProportion(juce::Rectangle{0.618f, 0.01f, 0.382f, 0.033f}));
-    hypeKnob.setBounds(area.getWidth()-123, area.getHeight()*0.006f, 130, area.getHeight()*0.05f);
     resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.054f, 0.033f}));
 }
 
-void PluginEditor::sliderValueChanged(juce::Slider *s) {
-    if (s == &hypeKnob)
-    {
-        PluginProcessor::UIToAudioMessage msg;
-        msg.what = PluginProcessor::UIToAudioMessage::NEW_VALUE;
-        msg.which = (PluginProcessor::Parameters)PluginProcessor::KNOBA;
-        msg.newValue = (float)s->getValue();
-        processorRef.uiToAudio.push(msg);
-    }
-}
+void PluginEditor::sliderValueChanged(juce::Slider *s) {}
 void PluginEditor::sliderDragStarted(juce::Slider *s) {sliderDragInternal(s, true);} //on this plugin
 void PluginEditor::sliderDragEnded(juce::Slider *s) {sliderDragInternal(s, false);} //so this section does
 void PluginEditor::sliderDragInternal(juce::Slider *s, bool bv) {if (bv) sliderValueChanged(s);} //nothing
@@ -157,9 +138,6 @@ void PluginEditor::idle()
                 
         case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(msg.newValue); repaintTS = true; break;
-                
-        case PluginProcessor::AudioToUIMessage::HYPE: meter.pushHype(msg.newValue); break;
-
         
         default: std::cout << "Unhandled message type " << msg.what << std::endl; break;
         } //end of switch statement for msg.what
