@@ -9,7 +9,7 @@
     },
     "size": {
       "width": 730,
-      "height": 520
+      "height": 620
     }
   },
   "format": "UDZO",
@@ -20,5 +20,7 @@
     { "x": 480, "y": 300, "type": "file", "path": "dmg/Your Mac's Component Folder" },
     { "x": 250, "y": 400, "type": "file", "path": "dmg/Meter.vst3" },
     { "x": 480, "y": 400, "type": "file", "path": "dmg/Your Mac's VST3 Folder" }
+    { "x": 250, "y": 500, "type": "file", "path": "dmg/Meter.clap" },
+    { "x": 480, "y": 500, "type": "file", "path": "dmg/Your Mac's CLAP Folder" }
   ]
 }
