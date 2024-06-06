@@ -43,9 +43,9 @@ public:
     
     enum Parameters
     {
-        BLANK
+        KNOBA,
     };
-    static constexpr int n_params = 1;
+    static constexpr int n_params = KNOBA + 1;
     std::array<juce::AudioParameterFloat *, n_params> params;
     //This is where we're defining things that go into the plugin's interface.
     
@@ -75,7 +75,8 @@ public:
             SLEW_RIGHT,
             ZERO_LEFT,
             ZERO_RIGHT,
-            INCREMENT
+            INCREMENT,
+            HYPE
         } what{NEW_VALUE};
         Parameters which;
         float newValue = 0.0;
@@ -118,7 +119,6 @@ public:
     
     LockFreeQueue<UIToAudioMessage> uiToAudio;
     LockFreeQueue<AudioToUIMessage> audioToUI;
-    
 
     double rmsLeft = 0.0;
     double rmsRight = 0.0;
@@ -132,6 +132,7 @@ public:
     double zeroRight = 0.0;
     double longestZeroLeft = 0.0;
     double longestZeroRight = 0.0;
+    float hype = 0.5f;
     bool wasPositiveL = false;
     bool wasPositiveR = false;
     int rmsCount = 0;
