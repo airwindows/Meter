@@ -8,7 +8,6 @@
 class AirwindowsLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-    void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const juce::Slider::SliderStyle style, juce::Slider& slider) override;
 
     AirwindowsLookAndFeel()
     {
@@ -86,10 +85,11 @@ struct AirwindowsMeter : public juce::Component
     int dataPosition = 0;
     float maxScore = 0.0f;
     float lastScore = 0.0f;
-    float prevLastScore = 0.0f;
     float lingerScore = 0.0f;
+    float smoothMomentary = 0.0f;
     std::array<float, dataPoints> hitScore;
-    std::array<float, dataPoints> prevScore;
+    std::array<float, dataPoints> momentaryScoreL;
+    std::array<float, dataPoints> momentaryScoreR;
 
     std::array<float, dataPoints> dataA;
     std::array<float, dataPoints> dataB;
@@ -112,13 +112,13 @@ struct AirwindowsMeter : public juce::Component
         dataPosition++;
         if (dataPosition >= (int)displayWidth) dataPosition = 0;
     }
-    void pushHype(float X) {hype = X;}
 
     void resetArrays(){
         for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
             hitScore[count] = 0.0f;
-            prevScore[count] = 0.0f;
+            momentaryScoreL[count] = 0.0f;
+            momentaryScoreR[count] = 0.0f;
             dataA[count] = 0.0f;
             dataB[count] = 0.0f;
             dataC[count] = 0.0f;
@@ -130,8 +130,8 @@ struct AirwindowsMeter : public juce::Component
             dataPosition = 0;
             maxScore = 0.0f;
             lastScore = 0.0f;
-            prevLastScore = 0.0f;
             lingerScore = 0.0f;
+            smoothMomentary = 0.0f;
             lastLOutline = 0.0f;
             lastROutline = 0.0f;
             lastLPeak = 0.0f;
@@ -151,7 +151,7 @@ struct AirwindowsMeter : public juce::Component
     float lastRSlew = 0.0f;
     int highestScore = 0;
     juce::String textScore = juce::String();
-    float hype = 0.5f;
+    float hype = 0.618033988749894f; //this is now set in stone :)
 };
 
 extern AirwindowsLookAndFeel airwindowsLookAndFeel;
