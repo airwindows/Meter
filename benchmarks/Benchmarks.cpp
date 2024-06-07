@@ -12,15 +12,15 @@ TEST_CASE ("Boot performance")
         meter.measure ([&] (int i) { storage[(size_t) i].construct(); });
     };
 
-    BENCHMARK_ADVANCED ("Processor destructor")
-    (Catch::Benchmark::Chronometer meter)
-    {
-        auto gui = juce::ScopedJuceInitialiser_GUI {};
-        std::vector<Catch::Benchmark::destructable_object<PluginProcessor>> storage (size_t (meter.runs()));
-        for (auto& s : storage)
-            s.construct();
-        meter.measure ([&] (int i) { storage[(size_t) i].destruct(); });
-    };
+    // BENCHMARK_ADVANCED ("Processor destructor")
+    // (Catch::Benchmark::Chronometer meter)
+    // {
+    //     auto gui = juce::ScopedJuceInitialiser_GUI {};
+    //     std::vector<Catch::Benchmark::destructable_object<PluginProcessor>> storage (size_t (meter.runs()));
+    //     for (auto& s : storage)
+    //         s.construct();
+    //     meter.measure ([&] (int i) { storage[(size_t) i].destruct(); });
+    // };
 
     BENCHMARK_ADVANCED ("Editor open and close")
     (Catch::Benchmark::Chronometer meter)
