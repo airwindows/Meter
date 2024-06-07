@@ -49,6 +49,9 @@ jobs:
             extra-flags: -DCMAKE_CXX_FLAGS=" /D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR"
 
     steps:
+    # Setup MSVC toolchain and developer command prompt (Windows)
+    - uses: ilammy/msvc-dev-cmd@v1
+
     # This is just easier than debugging different compilers on different platforms
     - name: Set up Clang
       if: ${{ matrix.name == 'Linux' }}
