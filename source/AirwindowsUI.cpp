@@ -2,6 +2,81 @@
 // Initial seed code for the meter created by Paul Walker on 8/23/21.
 #include "AirwindowsUI.h"
 
+void AirwindowsLookAndFeel::drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const juce::Slider::SliderStyle style, juce::Slider& slider) {
+    auto bounds = juce::Rectangle<int> (x, y, width, height).toFloat();
+    auto bevelW = sqrt((float)width);
+    if (slider.isHorizontal()) bevelW = sqrt((float)height);
+    auto lineW = sqrt(bevelW)*0.618f;
+    auto trackWidth = bevelW;
+    //basic variables we'll be using for our controls
+    
+    juce::Path backgroundTrack;
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.75f)); //highlight
+    backgroundTrack.startNewSubPath((slider.isHorizontal()?(float)x:(float)x+(float)width*0.5f)+(lineW*0.5f), (slider.isHorizontal()?(float)y+(float)height*0.5f:(float)((height*0.97f)+y))+(lineW*0.5f));
+    backgroundTrack.lineTo ((slider.isHorizontal()?(float)(width+x):(float)x+(float)width*0.5f)+(lineW*0.5f), (slider.isHorizontal()?(float)y+(float)height*0.5f:(float)y)+(lineW*0.5f));
+    g.strokePath (backgroundTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
+    backgroundTrack.clear();
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.75f)); //shadow
+    backgroundTrack.startNewSubPath((slider.isHorizontal()?(float)x:(float)x+(float)width*0.5f)-lineW, (slider.isHorizontal()?(float)y+(float)height*0.5f:(float)((height*0.97f)+y))-lineW);
+    backgroundTrack.lineTo ((slider.isHorizontal()?(float)(width+x):(float)x+(float)width*0.5f)-lineW, (slider.isHorizontal()?(float)y+(float)height*0.5f:(float)y)-lineW);
+    g.strokePath (backgroundTrack, {trackWidth, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
+    backgroundTrack.clear();
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId)); //inside slot in which the slider goes
+    backgroundTrack.startNewSubPath((slider.isHorizontal()?(float)x:(float)x+(float)width*0.5f), (slider.isHorizontal()?(float)y+(float)height*0.5f:(float)((height*0.97f)+y)));
+    backgroundTrack.lineTo ((slider.isHorizontal()?(float)(width+x):(float)x+(float)width*0.5f), (slider.isHorizontal()?(float)y+(float)height*0.5f:(float)y));
+    g.strokePath (backgroundTrack, {trackWidth*0.618f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded });
+    //draw the slot from which the slider moves. Note that we leave a bit of space on the bottom to show the label:
+    
+    g.setFont(juce::Font(newFont, g.getCurrentFont().getHeight(), 0));
+    g.setFont ((((lineW+bevelW)*30.0f) / (float)g.getCurrentFont().getHeight()));
+    if (slider.isHorizontal()) bounds.removeFromBottom((bounds.getHeight()*0.5f)-(bevelW*3.0f));
+    else bounds.removeFromBottom(-30.0f);
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.75f)); //highlight
+    g.drawFittedText(slider.getName(), juce::Rectangle<int>((int)(bounds.getWidth()+lineW),(int)(bounds.getHeight()+lineW)), juce::Justification::centredBottom, 1);
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.75f)); //shadow
+    g.drawFittedText(slider.getName(), juce::Rectangle<int>((int)(bounds.getWidth()-lineW),(int)(bounds.getHeight()-lineW)), juce::Justification::centredBottom, 1);
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.25f)); //text inside emboss
+    g.drawFittedText(slider.getName(), juce::Rectangle<int>((int)bounds.getWidth(),(int)bounds.getHeight()), juce::Justification::centredBottom, 1);
+    //This is the drawing of the text under the slider, to allow the slider to obscure it. Sliders are designed to be packed pretty tightly,
+    //but the horizontal ones can still have a lot of text. To control their bulk, narrow the slot they're in.
+
+    juce::Point<float> maxPoint = {slider.isHorizontal()?(sliderPos*0.94f)+(width*0.025f):((float)x+(float)width*0.5f), slider.isHorizontal()?((float)y+(float)height*0.5f):(sliderPos*0.94f)+(height*0.025f)};
+    auto thumbWidth = bevelW*2.9f;
+    auto rectSlider = juce::Rectangle(thumbWidth*1.618f, thumbWidth).withCentre(maxPoint);
+    if (slider.isHorizontal()) rectSlider = juce::Rectangle(thumbWidth, thumbWidth*1.618f).withCentre(maxPoint);
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId)); g.setOpacity(1.0f); g.fillRoundedRectangle (rectSlider, bevelW);
+    //solid background for knob so you can't see the track under it
+    juce::ColourGradient cg = juce::ColourGradient(juce::Colours::white, rectSlider.getTopLeft(), juce::Colours::black, rectSlider.getBottomRight(),false);
+    cg.addColour(0.2f, juce::Colours::white); cg.addColour(0.618f, juce::Colours::transparentBlack); cg.addColour(0.9f, juce::Colours::black); cg.isRadial = true;
+    g.setGradientFill(cg);
+    auto inset = rectSlider; inset.reduce(bevelW*0.25f, bevelW*0.25f);
+    g.drawRoundedRectangle (inset, bevelW*0.8f, bevelW*0.5f);
+    cg = juce::ColourGradient(juce::Colours::transparentWhite, rectSlider.getTopLeft(), juce::Colours::black, rectSlider.getBottomRight(),false);
+    cg.addColour(0.0955f, juce::Colours::white); cg.addColour(0.382f, slider.findColour (juce::ResizableWindow::backgroundColourId)); cg.addColour(0.618f, slider.findColour (juce::ResizableWindow::backgroundColourId)); cg.isRadial = true;
+    g.setGradientFill(cg); inset.reduce(bevelW*0.25f, bevelW*0.25f); g.drawRoundedRectangle (inset, bevelW*0.9f, bevelW*0.382f);
+    cg = juce::ColourGradient(juce::Colours::transparentWhite, rectSlider.getTopLeft(), juce::Colours::transparentBlack, rectSlider.getBottomRight(),false);
+    cg.addColour(0.04775f, juce::Colours::transparentWhite); cg.addColour(0.382f, slider.findColour (juce::ResizableWindow::backgroundColourId)); cg.addColour(0.618f, slider.findColour (juce::ResizableWindow::backgroundColourId)); cg.isRadial = true;
+    g.setGradientFill(cg); inset.reduce(bevelW*0.382f, bevelW*0.382f); g.drawRoundedRectangle (inset, bevelW, bevelW*0.618f);
+    g.setColour (juce::Colours::black); g.drawRoundedRectangle (rectSlider, bevelW, lineW);
+    //This is the outside area of the slider knob, with the shading/highlighting that renders the 3D effect.
+    
+    float thumbScale = 0.85f; rectSlider = juce::Rectangle<float> (thumbWidth*thumbScale, thumbWidth*thumbScale).withCentre (maxPoint);
+    rectSlider = juce::Rectangle<float> (thumbWidth*thumbScale, thumbWidth*thumbScale).withCentre (maxPoint);
+    g.setColour (slider.findColour (juce::Slider::thumbColourId)); g.fillEllipse (rectSlider);
+    cg = juce::ColourGradient(juce::Colours::white, rectSlider.getBottomRight(), juce::Colours::black, rectSlider.getTopLeft(),false);
+    cg.addColour(0.191f, juce::Colours::white); cg.addColour(0.382f, slider.findColour (juce::Slider::thumbColourId)); cg.addColour(0.618f, slider.findColour (juce::Slider::thumbColourId)); cg.isRadial = true;
+    g.setGradientFill(cg);
+    inset = rectSlider; inset.reduce(bevelW*0.382f, bevelW*0.382f);
+    g.drawEllipse (inset, bevelW*0.5f);
+    cg = juce::ColourGradient(juce::Colours::white, rectSlider.getBottomRight(), juce::Colours::black, rectSlider.getTopLeft(),false);
+    cg.addColour(0.0955f, juce::Colours::transparentWhite); cg.addColour(0.382f, slider.findColour (juce::Slider::thumbColourId)); cg.addColour(0.618f, slider.findColour (juce::Slider::thumbColourId)); cg.isRadial = true;
+    g.setGradientFill(cg);
+    inset.reduce(bevelW*0.125f, bevelW*0.125f);
+    g.drawEllipse (inset, bevelW*0.5f); g.setColour (juce::Colours::black); g.drawEllipse (rectSlider, lineW);
+    //This is the thumb of the knob, allowing a custom color to the thumb
+}
+
+
 void AirwindowsMeter::paint(juce::Graphics &g)
 {
     g.fillAll(juce::Colours::white); //blank screen before doing anything, unless our draw covers the whole display anyway
@@ -49,7 +124,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0.0,  200.0f*dy, (float)getWidth(),1.0); // border with slew meter
     g.fillRect(0.0,  400.0f*dy, (float)getWidth(),1.0); // border with zero cross meter
     g.setColour(juce::Colours::darkgrey);
-    g.setFont(23.0f); g.drawText(textScore, 7, 2, displayWidth-8, 24, juce::Justification::bottomLeft);
+    g.setFont(28.0f); g.drawText(textScore, 7, 2, 200, 30, juce::Justification::bottomLeft);
 
     for (int count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
     {
@@ -223,67 +298,67 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             case 7:
                 textScore = juce::String("FB"); break;
             case 8:
-                textScore = juce::String("FA - ultimate chill"); break;
+                textScore = juce::String("FA"); break;
             case 9:
-                textScore = juce::String("EF - ultimate chill"); break;
+                textScore = juce::String("EF"); break;
             case 10:
-                textScore = juce::String("EE - ultimate chill"); break;
+                textScore = juce::String("EE"); break;
             case 11:
-                textScore = juce::String("ED - even more chill"); break;
+                textScore = juce::String("ED"); break;
             case 12:
-                textScore = juce::String("EC - even more chill"); break;
+                textScore = juce::String("EC"); break;
             case 13:
-                textScore = juce::String("EB - even more chill"); break;
+                textScore = juce::String("EB"); break;
             case 14:
-                textScore = juce::String("EA - even more chill"); break;
+                textScore = juce::String("EA"); break;
             case 15:
-                textScore = juce::String("DF - Deepest Vibe"); break;
+                textScore = juce::String("DF"); break;
             case 16:
-                textScore = juce::String("DE - Deep Vibe"); break;
+                textScore = juce::String("DE"); break;
             case 17:
-                textScore = juce::String("DD - Deep Vibe"); break;
+                textScore = juce::String("DD"); break;
             case 18:
-                textScore = juce::String("DC - Deep Vibe"); break;
+                textScore = juce::String("DC"); break;
             case 19:
-                textScore = juce::String("DB - Deep Vibe"); break;
+                textScore = juce::String("DB"); break;
             case 20:
-                textScore = juce::String("DA - Deep Vibe"); break;
+                textScore = juce::String("DA"); break;
             case 21:
-                textScore = juce::String("CF - Comfortable"); break;
+                textScore = juce::String("CF"); break;
             case 22:
-                textScore = juce::String("CE - Comfortable"); break;
+                textScore = juce::String("CE"); break;
             case 23:
-                textScore = juce::String("CD - Comfortable"); break;
+                textScore = juce::String("CD"); break;
             case 24:
-                textScore = juce::String("CC - Comfortable"); break;
+                textScore = juce::String("CC"); break;
             case 25:
-                textScore = juce::String("CB - Comfortable"); break;
+                textScore = juce::String("CB"); break;
             case 26:
-                textScore = juce::String("CA - Comfortable"); break;
+                textScore = juce::String("CA"); break;
             case 27:
-                textScore = juce::String("BF - Biggest"); break;
+                textScore = juce::String("BF"); break;
             case 28:
-                textScore = juce::String("BE - Biggest"); break;
+                textScore = juce::String("BE"); break;
             case 29:
-                textScore = juce::String("BD - Biggest"); break;
+                textScore = juce::String("BD"); break;
             case 30:
-                textScore = juce::String("BC - Biggest"); break;
+                textScore = juce::String("BC"); break;
             case 31:
-                textScore = juce::String("BB - Biggest"); break;
+                textScore = juce::String("BB"); break;
             case 32:
-                textScore = juce::String("BA - Biggest"); break;
+                textScore = juce::String("BA"); break;
             case 33:
-                textScore = juce::String("AF - Attention"); break;
+                textScore = juce::String("AF"); break;
             case 34:
-                textScore = juce::String("AE - Attention"); break;
+                textScore = juce::String("AE"); break;
             case 35:
-                textScore = juce::String("AD - Attention"); break;
+                textScore = juce::String("AD"); break;
             case 36:
-                textScore = juce::String("AC - Attention"); break;
+                textScore = juce::String("AC"); break;
             case 37:
-                textScore = juce::String("AB - Attention"); break;
+                textScore = juce::String("AB"); break;
             case 38:
-                textScore = juce::String("AA - Attention"); break;
+                textScore = juce::String("AA"); break;
         }
         //we are building the ability to assign a letter score
         

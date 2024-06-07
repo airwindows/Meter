@@ -8,6 +8,7 @@
 class AirwindowsLookAndFeel : public juce::LookAndFeel_V4
 {
 public:
+    void drawLinearSlider (juce::Graphics& g, int x, int y, int width, int height, float sliderPos, float minSliderPos, float maxSliderPos, const juce::Slider::SliderStyle style, juce::Slider& slider) override;
 
     AirwindowsLookAndFeel()
     {
@@ -111,6 +112,7 @@ struct AirwindowsMeter : public juce::Component
         dataPosition++;
         if (dataPosition >= (int)displayWidth) dataPosition = 0;
     }
+    void pushHype(float X) {hype = X;}
 
     void resetArrays(){
         for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
@@ -149,7 +151,7 @@ struct AirwindowsMeter : public juce::Component
     float lastRSlew = 0.0f;
     int highestScore = 0;
     juce::String textScore = juce::String();
-    float hype = 0.618033988749894f; //this is now set in stone :)
+    float hype = 0.5f;
 };
 
 extern AirwindowsLookAndFeel airwindowsLookAndFeel;

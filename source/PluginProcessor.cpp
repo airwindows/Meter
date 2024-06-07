@@ -11,7 +11,9 @@ PluginProcessor::PluginProcessor():AudioProcessor (
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
 ){
+    hype = 0.5f;
     // (internal ID, how it's shown in DAW generic view, {min, max}, default)
+    addParameter(params[KNOBA] =      new juce::AudioParameterFloat("hype", "Hype", {0.0f, 1.0f}, 0.618033988749894f)); params[KNOBA]->addListener(this);
  }
 
 PluginProcessor::~PluginProcessor() {}
@@ -164,6 +166,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         }
     } //Handle inbound messages from the UI thread
     
+    hype = params[KNOBA]->get(); //for sending to the UI thread
+    
     double rmsSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
     
@@ -224,6 +228,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::HYPE; msg.newValue = hype; audioToUI.push(msg);
             
             //if (getPlayHead()->getPosition().hasValue() && !getPlayHead()->getPosition()->getIsPlaying()){}
             //this was a start on making it not update when Reaper's playhead is not in motion
@@ -276,6 +281,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         }
     } //Handle inbound messages from the UI thread
     
+    hype = params[KNOBA]->get(); //for sending to the UI thread
+
     double rmsSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
 
@@ -336,6 +343,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::HYPE; msg.newValue = hype; audioToUI.push(msg);
             rmsLeft = 0.0;
             rmsRight = 0.0;
             peakLeft = 0.0;
