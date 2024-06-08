@@ -298,6 +298,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.setColour(juce::Colour(0, smoothMomentary*smoothMomentary*265, 0));
         if (smoothMomentary > 0.9) g.setColour(juce::Colour(0, smoothMomentary*110, 255));
         if (hitScore[count] > 1.0) g.fillRect((float)count*dx, (400.0f-drawScore)*dy, 1.1f*dotWidth*dx, fmin(hitScore[count]*0.013f,5.0f)*dotHeight*dy);
+        //the color of the line goes to first green and then blue, from black
+        //this signifies how the highest 'hype' ratings don't actually sell as many records
+        //as stuff that is more palatable to reach a wider audience
     }
     
     g.setColour(juce::Colours::grey);
