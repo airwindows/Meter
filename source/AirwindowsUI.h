@@ -80,14 +80,38 @@ struct AirwindowsMeter : public juce::Component
     void paint(juce::Graphics &g) override;
     
     static constexpr int dataPoints = 2000;
-    int displayWidth = 1200;
-    int displayHeight = 675;
+    static constexpr int peakBins = 16;
+    int displayWidth = 1280;
+    int displayHeight = 720;
     int dataPosition = 0;
     float maxScore = 0.0f;
     float lastScore = 0.0f;
     float lingerScore = 0.0f;
+    float evennessScore = 0.0f;
+    float prevLoud = 0.0f;
+    float prevPeak = 0.0f;
+    float prevHit = 0.0f;
     float smoothMomentary = 0.0f;
+    float lastLOutline = 0.0f;
+    float lastROutline = 0.0f;
+    float lastLPeak = 0.0f;
+    float lastRPeak = 0.0f;
+    float lastLSlew = 0.0f;
+    float lastRSlew = 0.0f;
+    float brightPeaks = 0.0f;
+    float midPeaks = 0.0f;
+    float darkPeaks = 100.0f;
+    int highestScore = 0;
+    int highestPeakScore = 0;
+    int highestGrade = 0;
+    juce::String textScore = juce::String();
+    juce::String rating = juce::String();
+    float hype = 0.618033988749894f; //this is now set in stone :)
+    
+    std::array<float, dataPoints> loudScore;
+    std::array<float, dataPoints> peakScore;
     std::array<float, dataPoints> hitScore;
+    std::array<float, peakBins> peakTrack;
     std::array<float, dataPoints> momentaryScoreL;
     std::array<float, dataPoints> momentaryScoreR;
 
@@ -114,8 +138,38 @@ struct AirwindowsMeter : public juce::Component
     }
 
     void resetArrays(){
+        dataPosition = 0;
+        maxScore = 0.0f;
+        lastScore = 0.0f;
+        lingerScore = 0.0f;
+        evennessScore = 0.0f;
+        prevLoud = 0.0f;
+        prevPeak = 0.0f;
+        prevHit = 0.0f;
+        smoothMomentary = 0.0f;
+        lastLOutline = 0.0f;
+        lastROutline = 0.0f;
+        lastLPeak = 0.0f;
+        lastRPeak = 0.0f;
+        lastLSlew = 0.0f;
+        lastRSlew = 0.0f;
+        brightPeaks = 0.0f;
+        midPeaks = 0.0f;
+        darkPeaks = 100.0f;
+        highestScore = 0;
+        highestPeakScore = 0;
+        highestGrade = 0;
+        textScore = juce::String();
+        rating = juce::String();
+        hype = 0.618033988749894f;
+        for (int count = 0; count < peakBins; ++count) //count through all the points in the array
+        {
+            peakTrack[count] = 10.0;
+        }
         for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
+            loudScore[count] = 0.0f;
+            peakScore[count] = 0.0f;
             hitScore[count] = 0.0f;
             momentaryScoreL[count] = 0.0f;
             momentaryScoreR[count] = 0.0f;
@@ -127,31 +181,8 @@ struct AirwindowsMeter : public juce::Component
             dataF[count] = 0.0f;
             dataG[count] = 0.0f;
             dataH[count] = 0.0f;
-            dataPosition = 0;
-            maxScore = 0.0f;
-            lastScore = 0.0f;
-            lingerScore = 0.0f;
-            smoothMomentary = 0.0f;
-            lastLOutline = 0.0f;
-            lastROutline = 0.0f;
-            lastLPeak = 0.0f;
-            lastRPeak = 0.0f;
-            lastLSlew = 0.0f;
-            lastRSlew = 0.0f;
-            highestScore = 0;
-            textScore = juce::String();
-            hype = 0.5f;
         }
     }
-    float lastLOutline = 0.0f;
-    float lastROutline = 0.0f;
-    float lastLPeak = 0.0f;
-    float lastRPeak = 0.0f;
-    float lastLSlew = 0.0f;
-    float lastRSlew = 0.0f;
-    int highestScore = 0;
-    juce::String textScore = juce::String();
-    float hype = 0.618033988749894f; //this is now set in stone :)
 };
 
 extern AirwindowsLookAndFeel airwindowsLookAndFeel;

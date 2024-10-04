@@ -28,11 +28,11 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         meter.repaint();
     };
 
-    setSize (1200, 675);
+    setSize (1280, 720);
     // Make sure that before the constructor has finished, you've set the editor's size to whatever you need it to be.
     if (airwindowsLookAndFeel.usingNamedImage) {
-        getConstrainer()->setFixedAspectRatio(1200.0/675.0); //the aspect ratio stuff leads to cropping the content area off the top
-        setResizeLimits(32, 32, 4196, 4196); //this will not honor resize limits correctly in all the DAWs
+        getConstrainer()->setFixedAspectRatio(1280.0f/720.0f); //the aspect ratio stuff leads to cropping the content area off the top
+        setResizeLimits(32, 32, 2000, 720); //this will not honor resize limits correctly in all the DAWs
     }
 
     // Make sure that before the constructor has finished, you've set the
