@@ -33,7 +33,8 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0.0, 403.0f*dy, (float)getWidth(),1.0); //20k markings
     g.fillRect(0.0, 415.0f*dy, (float)getWidth(),1.0); //2k markings
     g.fillRect(0.0, 458.0f*dy, (float)getWidth(),1.0); //200hz markings
-    
+    g.fillRect(0.0, 537.0f*dy, (float)getWidth(),1.0); //40hz markings
+
     g.setColour(juce::Colours::grey);
     g.setFont(18.0f);
     g.drawText("blue-loud", 8, 3, displayWidth-15, 18, juce::Justification::bottomLeft);
@@ -49,6 +50,12 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.drawText("overslew", 0, 380, displayWidth-15, 18, juce::Justification::bottomRight);
     g.drawText("green-dark", 8, 400, displayWidth-15, 18, juce::Justification::bottomLeft);
     g.drawText("zero cross bass", 0, 400, displayWidth-15, 18, juce::Justification::bottomRight);
+    g.drawText("200 hz", 0, 448, displayWidth-15, 18, juce::Justification::bottomRight);
+    g.drawText("40 hz", 0, 527, displayWidth-15, 18, juce::Justification::bottomRight);
+    g.drawText("20 hz", 0, 576, displayWidth-15, 18, juce::Justification::bottomRight);
+
+    g.drawText("blue-loud, red-novelty, green-final score", 8, 593, displayWidth-15, 18, juce::Justification::bottomLeft);
+    g.drawText("charts", 0, 593, displayWidth-15, 18, juce::Justification::bottomRight);
 
     g.setColour(juce::Colours::black);
     g.fillRect(0.0, 593.0f*dy, (float)getWidth(),1.0); //20hz markings is also border with zero cross meter
@@ -81,13 +88,13 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                 maxScore += momentaryScoreL[count]; //increase score
             }
             if (psDotSizeL > 1.0f) {
-                g.setColour(juce::Colour((juce::uint8)fmin((slewL-peakL),0.0f), (juce::uint8)fmin((peakL-slewL),0.0f), 255)); midPeaks += 1.0f; //set COLOR for blue dots, when loud peaks are happening
+               g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f)); midPeaks += 1.0f; //set COLOR for blue dots, when loud peaks are happening
                 g.fillRect((float)count*dx, (200.0f - peakL)*dy, fmax(psDotSizeL,1.618f)*dotWidth*dx, fmax(psDotSizeL,1.618f)*dotHeight*dy);
             } else {
                 if (slewL > peakL) {
-                    g.setColour(juce::Colour((juce::uint8)fmin(180.0f+(slewL-peakL),255.0f), 0, 0)); brightPeaks += 1.0f; //set COLOR for red dots, when bright peaks are happening
+                    g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f)); brightPeaks += 1.0f; //set COLOR for red dots, when bright peaks are happening
                 } else {
-                    g.setColour(juce::Colour(0, (juce::uint8)(255.0f-(peakL-slewL)), 0)); darkPeaks += 1.0f;   //set COLOR for green dots, when dark peaks are happening
+                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f)); darkPeaks += 1.0f;   //set COLOR for green dots, when dark peaks are happening
                 }
                 g.fillRect((float)count*dx, (200.0f - peakL)*dy, 1.618f*dotWidth*dx, 1.618f*dotHeight*dy);
            }
@@ -115,13 +122,13 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                 maxScore += momentaryScoreR[count]; //increase score
             }
             if (psDotSizeR > 1.0f) {
-                g.setColour(juce::Colour((juce::uint8)fmin((slewR-peakR),0.0f), (juce::uint8)fmin((peakR-slewR),0.0f), 255)); midPeaks += 1.0f; //set COLOR for blue dots, when loud peaks are happening
+                g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f)); midPeaks += 1.0f; //set COLOR for blue dots, when loud peaks are happening
                 g.fillRect((float)count*dx, (200.0f - peakR)*dy, fmax(psDotSizeR,1.618f)*dotWidth*dx, fmax(psDotSizeR,1.618f)*dotHeight*dy);
             } else {
                 if (slewR > peakR) {
-                    g.setColour(juce::Colour((juce::uint8)fmin(180.0f+(slewR-peakR),255.0f), 0, 0)); brightPeaks += 1.0f; //set COLOR for red dots, when bright peaks are happening
+                    g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f)); brightPeaks += 1.0f; //set COLOR for red dots, when bright peaks are happening
                 } else {
-                    g.setColour(juce::Colour(0, (juce::uint8)(255.0f-(peakR-slewR)), 0)); darkPeaks += 1.0f;   //set COLOR for green dots, when dark peaks are happening
+                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f)); darkPeaks += 1.0f;   //set COLOR for green dots, when dark peaks are happening
                 }
                 g.fillRect((float)count*dx, (200.0f - peakR)*dy, 1.618f*dotWidth*dx, 1.618f*dotHeight*dy);
             }
