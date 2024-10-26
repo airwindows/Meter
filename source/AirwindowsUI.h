@@ -86,8 +86,8 @@ struct AirwindowsMeter : public juce::Component
     int dataPosition = 0;
     float maxScore = 0.0f;
     float lastScore = 0.0f;
-    float lingerScore = 0.0f;
-    float evennessScore = 0.0f;
+    float evennessNovelty = 0.0f;
+    float evennessHype = 0.0f;
     float prevLoud = 0.0f;
     float prevPeak = 0.0f;
     float prevHit = 0.0f;
@@ -100,20 +100,26 @@ struct AirwindowsMeter : public juce::Component
     float lastRSlew = 0.0f;
     float brightPeaks = 0.0f;
     float midPeaks = 0.0f;
-    float darkPeaks = 100.0f;
-    int highestScore = 0;
-    int highestPeakScore = 0;
+    float darkPeaks = 1.0f;
+    float hue = 0.0f;
+    float outGreen = 0.0f;
     int highestGrade = 0;
+    int highestColor = 0;
+    float hitColor = 0.0f;
+    juce::String hypeRating = juce::String();
     juce::String textScore = juce::String();
     juce::String rating = juce::String();
     float hype = 0.618033988749894f; //this is now set in stone :)
     
     std::array<float, dataPoints> loudScore;
-    std::array<float, dataPoints> peakScore;
-    std::array<float, dataPoints> hitScore;
+    std::array<float, dataPoints> varietyScore;
+    std::array<float, dataPoints> hypeScore;
     std::array<float, peakBins> peakTrack;
     std::array<float, dataPoints> momentaryScoreL;
     std::array<float, dataPoints> momentaryScoreR;
+    std::array<float, dataPoints> brightPeaksDisplay;
+    std::array<float, dataPoints> midPeaksDisplay;
+    std::array<float, dataPoints> darkPeaksDisplay;
 
     std::array<float, dataPoints> dataA;
     std::array<float, dataPoints> dataB;
@@ -141,8 +147,8 @@ struct AirwindowsMeter : public juce::Component
         dataPosition = 0;
         maxScore = 0.0f;
         lastScore = 0.0f;
-        lingerScore = 0.0f;
-        evennessScore = 0.0f;
+        evennessNovelty = 0.0f;
+        evennessHype = 0.0f;
         prevLoud = 0.0f;
         prevPeak = 0.0f;
         prevHit = 0.0f;
@@ -155,13 +161,16 @@ struct AirwindowsMeter : public juce::Component
         lastRSlew = 0.0f;
         brightPeaks = 0.0f;
         midPeaks = 0.0f;
-        darkPeaks = 100.0f;
-        highestScore = 0;
-        highestPeakScore = 0;
+        darkPeaks = 1.0f;
+        hue = 0.0f;
+        outGreen = 0.0f;
         highestGrade = 0;
+        highestColor = 0;
+        hitColor = 0.0f;
+        hypeRating = juce::String();
         textScore = juce::String();
         rating = juce::String();
-        hype = 0.618033988749894f;
+        hype = 0.618033988749894f; //0.3819661
         for (int count = 0; count < peakBins; ++count) //count through all the points in the array
         {
             peakTrack[count] = 10.0;
@@ -169,10 +178,13 @@ struct AirwindowsMeter : public juce::Component
         for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
             loudScore[count] = 0.0f;
-            peakScore[count] = 0.0f;
-            hitScore[count] = 0.0f;
+            varietyScore[count] = 0.0f;
+            hypeScore[count] = 0.0f;
             momentaryScoreL[count] = 0.0f;
             momentaryScoreR[count] = 0.0f;
+            brightPeaksDisplay[count] = 0.0f;
+            midPeaksDisplay[count] = 0.0f;
+            darkPeaksDisplay[count] = 1.0f;
             dataA[count] = 0.0f;
             dataB[count] = 0.0f;
             dataC[count] = 0.0f;

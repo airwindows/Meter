@@ -6,67 +6,71 @@ void AirwindowsMeter::paint(juce::Graphics &g)
 {
     g.fillAll(juce::Colours::white); //blank screen before doing anything, unless our draw covers the whole display anyway
     //this is probably quick and optimized
-    
-    auto linewidth = getWidth();
-    if (getHeight() > linewidth) linewidth = getHeight();
-    linewidth = (int)cbrt(linewidth/2)/2;
-    float dx = 1.0f;//(float)getWidth()/displayWidth; //width of individual pixel on this display object
-    float dotWidth = 1.0f;//fmax(displayWidth/(float)getParentWidth(),1.0); //scale single pixel to roughly the right size
-    if (displayWidth > 2000) {
-        dx = (float)getWidth()/2000.0f; //width of individual pixel on this display object
-        dotWidth = fmax(2000.0f/(float)getParentWidth(),1.0f); //scale single pixel to roughly the right size
-    }
-    float dy = 1.0f; //(float)getHeight()/600.0f; //height of individual pixel on this display object
-    float dotHeight = 1.0f; //fmax(600.0f/(float)getParentHeight(),1.0); //scale single pixel to roughly the right size
-    if (displayHeight > 720) {
-        dy = (float)getHeight()/720.0f; //height of individual pixel on this display object
-        dotHeight = fmax(720.0f/(float)getParentHeight(),1.0f); //scale single pixel to roughly the right size
-    }
     g.setColour(juce::Colours::lightgrey);
-    g.fillRect(0.0,  60.0f*dy, (float)getWidth(),1.0); // -6dB markings
-    g.fillRect(0.0, 100.0f*dy, (float)getWidth(),1.0); //-12dB markings
-    g.fillRect(0.0, 130.0f*dy, (float)getWidth(),1.0); //-18dB markings
-    g.fillRect(0.0, 150.0f*dy, (float)getWidth(),1.0); //-24dB markings
-    g.fillRect(0.0, 165.0f*dy, (float)getWidth(),1.0); //-30dB markings
-    g.fillRect(0.0, 175.0f*dy, (float)getWidth(),1.0); //-36dB markings
+    g.fillRect(0,  60, getWidth(),1); // -6dB markings
+    g.fillRect(0, 100, getWidth(),1); //-12dB markings
+    g.fillRect(0, 130, getWidth(),1); //-18dB markings
+    g.fillRect(0, 150, getWidth(),1); //-24dB markings
+    g.fillRect(0, 160, getWidth(),1); //-30dB markings
+    g.fillRect(0, 170, getWidth(),1); //-36dB markings
 
-    g.fillRect(0.0, 403.0f*dy, (float)getWidth(),1.0); //20k markings
-    g.fillRect(0.0, 415.0f*dy, (float)getWidth(),1.0); //2k markings
-    g.fillRect(0.0, 458.0f*dy, (float)getWidth(),1.0); //200hz markings
-    g.fillRect(0.0, 537.0f*dy, (float)getWidth(),1.0); //40hz markings
+    g.fillRect(0, 302, getWidth(),1); //20k markings
+    g.fillRect(0, 307, getWidth(),1); //2k markings
+    g.fillRect(0, 328, getWidth(),1); //200hz markings
+    g.fillRect(0, 367, getWidth(),1); //40hz markings
+    
+    g.setColour(juce::Colour(31, 31, 32));
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.8f));
+    g.fillRect(0, 399, getWidth(), 99); //background that will be the chart
 
     g.setColour(juce::Colours::grey);
-    g.setFont(18.0f);
-    g.drawText("blue-loud", 8, 3, displayWidth-15, 18, juce::Justification::bottomLeft);
-    g.drawText("peak loudness", 0, 3, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("-6 dB", 0, 50, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("-12 dB", 0, 90, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("-18 dB", 0, 120, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("-24 dB", 0, 140, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("-30 dB", 0, 155, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("clip", 0, 180, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("red-bright", 8, 200, displayWidth-15, 18, juce::Justification::bottomLeft);
-    g.drawText("slew brightness", 0, 200, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("overslew", 0, 380, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("green-dark", 8, 400, displayWidth-15, 18, juce::Justification::bottomLeft);
-    g.drawText("zero cross bass", 0, 400, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("200 hz", 0, 448, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("40 hz", 0, 527, displayWidth-15, 18, juce::Justification::bottomRight);
-    g.drawText("20 hz", 0, 576, displayWidth-15, 18, juce::Justification::bottomRight);
+    g.setFont(16);
+    g.drawText("peaks", 8, 3, displayWidth-11, 16, juce::Justification::bottomLeft);
+    g.drawText("blue dot:projection of peak, red dot:brighter, green dot:darker", 0, 3, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("-6 dB", 0, 52, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("-12 dB", 0, 92, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("-18 dB", 0, 122, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("-24 dB", 0, 142, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("-30 dB", 0, 152, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("clip", 0, 182, displayWidth-11, 16, juce::Justification::bottomRight);
+    
+    g.drawText("slew", 8, 205, displayWidth-11, 16, juce::Justification::bottomLeft);
+    g.drawText("same, arranged by frequency instead of loudness", 0, 205, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("overslew", 0, 282, displayWidth-11, 16, juce::Justification::bottomRight);
+    
+    g.drawText("zero cross", 8, 305, displayWidth-11, 16, juce::Justification::bottomLeft);
+    g.drawText("lowest frequency without other sound interfering", 0, 305, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("200 hz", 0, 320, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("40 hz", 0, 359, displayWidth-11, 16, juce::Justification::bottomRight);
+    g.drawText("chart", 8, 381, displayWidth-40, 16, juce::Justification::bottomLeft);
+    g.drawText("blue:Sonority (blue dot density)  red:Novelty (blue dot range)  green:Intention (both plus balanced tone, minus RMS)", 8, 381, displayWidth-40, 16, juce::Justification::centredBottom);
+    g.drawText("20 hz", 0, 381, displayWidth-11, 16, juce::Justification::bottomRight);
 
-    g.drawText("blue-loud, red-novelty, green-final score", 8, 593, displayWidth-15, 18, juce::Justification::bottomLeft);
-    g.drawText("charts", 0, 593, displayWidth-15, 18, juce::Justification::bottomRight);
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.618f));
+    g.fillRect(0, 200, getWidth(), 1); // border with slew meter
+    g.fillRect(0, 300, getWidth(), 1); // border with zero cross meter
+    g.fillRect(0, 396, getWidth(), 1); //20hz markings is also border with color and charts
+    
+    g.setColour(juce::Colours::darkgrey);
+    g.fillRect(0, 201, getWidth(), 1); // border with slew meter
+    g.fillRect(0, 301, getWidth(), 1); // border with zero cross meter
+    g.fillRect(0, 397, getWidth(), 1); //20hz markings is also border with color and charts
 
-    g.setColour(juce::Colours::black);
-    g.fillRect(0.0, 593.0f*dy, (float)getWidth(),1.0); //20hz markings is also border with zero cross meter
-    g.fillRect(0.0,  200.0f*dy, (float)getWidth(),1.0); // border with slew meter
-    g.fillRect(0.0,  400.0f*dy, (float)getWidth(),1.0); // border with zero cross meter
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.382f));
+    g.fillRect(0, 202, getWidth(), 1); // border with slew meter
+    g.fillRect(0, 302, getWidth(), 1); // border with zero cross meter
+    g.fillRect(0, 398, getWidth(), 1); //20hz markings is also border with color and charts
+
 
     for (int count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
     {
         g.setColour(juce::Colours::black);
-        float psDotSizeL = 0.0;
-        float psDotSizeR = 0.0; //define these here so we can use them with the evenness meter
+        float psDotSizeL = 1.0f;
+        float psDotSizeR = 1.0f;
+        float psDotHypeL = 0.0f;
+        float psDotHypeR = 0.0f;
+        float psDotVibeL = 0.0f;
+        float psDotVibeR = 0.0f;
         float peakL = dataC[count] * 200.0f;
         float peakR = dataD[count] * 200.0f;
         float slewL = sqrt(dataE[count])*300.0f;
@@ -76,411 +80,239 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         float meterZeroR = (sqrt(dataH[count])*6.0f)-6.0f;
         if (meterZeroR > 192.0f) meterZeroR = 192.0f;
         
-        if (peakL > 197.0f) { //Peak is clipping!
-            g.setColour(juce::Colour(255, 0, 0));
-            g.fillRect((float)count*dx, 176.0f*dy, dx, 24.0f*dy);
-        } else if (peakL > 1.0f) {
-            float psDotHypeL = (11.0f * sqrt(dataA[count] * dataB[count])) / (fabs(((peakL*((hype+6.0f)/7.0f))-slewL) * (7.0f/meterZeroL) )+1.0f);
-            float psDotVibeL = sin(pow(fmin(dataC[count]*8.5f,6.18f) / (fabs(((peakL*((hype+4.0f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 3.141592f;
+        //begin draw dots on meters L
+        if (peakL > 196.0f) {
+            g.setColour(juce::Colour(255, 0, 0)); g.fillRect(count, 171, 1, 29);
+            brightPeaks += 1.0f;
+        } //peak is clipping!
+        else if (peakL > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
+            psDotHypeL = (11.0f * sqrt(dataA[count] * dataB[count])) / (fabs(((peakL*((hype+6.0f)/7.0f))-slewL) * (7.0f/meterZeroL) )+1.0f);
+            psDotVibeL = sin(pow(fmin(dataC[count]*8.5f,6.18f) / (fabs(((peakL*((hype+4.0f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 3.141592f;
             psDotSizeL = ((psDotVibeL*(1.0f-hype))+(psDotHypeL*hype))*(1.0f+(sin(hype*3.141592f)*0.25f));
-            if (count > dataPosition-2 && count < dataPosition) {
-                momentaryScoreL[count] = ((psDotSizeL*140.0f*(1.0f-hype))+(psDotSizeL*peakL*hype)); //increase score
-                maxScore += momentaryScoreL[count]; //increase score
+            if (count == dataPosition-1) {
+                momentaryScoreL[count] = ((psDotSizeL*140.0f*(1.0f-hype))+(psDotSizeL*peakL*hype));
+                maxScore += momentaryScoreL[count]*16.0f; //increase score
             }
-            if (psDotSizeL > 1.0f) {
-               g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f)); midPeaks += 1.0f; //set COLOR for blue dots, when loud peaks are happening
-                g.fillRect((float)count*dx, (200.0f - peakL)*dy, fmax(psDotSizeL,1.618f)*dotWidth*dx, fmax(psDotSizeL,1.618f)*dotHeight*dy);
+            if (psDotSizeL > 1.0f) { //altering this changes the equation of what's 'loud' vs 'bright' or 'dark'
+                g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f)); midPeaks += 1.0f; //set COLOR for blue dots
+                g.fillRect(count, (int)(200.0f - peakL), (int)fmax(psDotSizeL,2.0), (int)fmax(psDotSizeL,dataC[count]*5.0f));
             } else {
                 if (slewL > peakL) {
-                    g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f)); brightPeaks += 1.0f; //set COLOR for red dots, when bright peaks are happening
+                    g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
+                    g.fillRect(count, (int)(200.0f - peakL), 2, 3);
+                    brightPeaks += 1.0f;
                 } else {
-                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f)); darkPeaks += 1.0f;   //set COLOR for green dots, when dark peaks are happening
-                }
-                g.fillRect((float)count*dx, (200.0f - peakL)*dy, 1.618f*dotWidth*dx, 1.618f*dotHeight*dy);
+                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f));
+                    g.fillRect(count, (int)(200.0f - peakL), (int)(9.0f*dataA[count]), (int)(9.0f*dataA[count]));
+                    darkPeaks += 1.0f;
+                } //set COLOR and DRAW red or green dots
            }
-            if (slewL > 197.0f) {
-                g.fillRect((float)count*dx, (399.0f - (sqrt(slewL-197.0f)*1.618f))*dy, 1.618f*dotWidth*dx, sqrt(slewL-197.0f)*1.618f*dy);
-            } else {
+            if (slewL > 194.0f) g.fillRect(count, (int)(300.0f-fmin((slewL-194.0f)*0.5f,96.0f)), 1, (int)fmin((slewL-194.0f)*0.5f,96.0f));
+            else {
                 if (psDotSizeL < 1.0) {
-                    g.fillRect((float)count*dx, (400.0f - slewL)*dy, 1.618f*dotWidth*dx, 1.618f*dotHeight*dy);
-                } else {
-                    g.fillRect((float)count*dx, (400.0f - slewL)*dy, fmax(psDotSizeL,1.618f)*dotWidth*dx, fmax(psDotSizeL,1.618f)*dotHeight*dy);
+                    if (slewL > peakL) g.fillRect(count, (int)(300.0f - (slewL*0.5f)), 3, 3);
+                    else g.fillRect(count, (int)(300.0f - (slewL*0.5f)), 1, 1);
                 }
+                else g.fillRect(count, (int)(300.0f - (slewL*0.5f)), (int)fmax(psDotSizeL,2.0f), (int)fmax(psDotSizeL,2.0f)); //Drawing slew dots, L
             }
-            g.fillRect((float)count*dx, (400.0f + meterZeroL)*dy, fmax(8.0f*dataA[count],1.618f)*dotWidth*dx, fmax(8.0f*dataA[count],1.618f)*dotHeight*dy);
-        }
+            g.fillRect(count, (int)(298.0f + (meterZeroL*0.5f)), (int)fmax(7.0f*dataA[count],1.0f), (int)fmax(7.0f*dataA[count],1.0f));
+        } //end draw dots on meters L
         
-        if (peakR > 197.0f) { //Peak is clipping!
-            g.setColour(juce::Colour(255, 0, 0));
-            g.fillRect((float)count*dx, 176.0f*dy, dx, 24.0f*dy);
-        } else if (peakR > 1.0f) {
-            float psDotHypeR = (11.0f * sqrt(dataB[count] * dataA[count])) / (fabs(((peakR*((hype+6.0f)/7.0f))-slewR) * (7.0f/meterZeroR) )+1.0f);
-            float psDotVibeR = sin(pow(fmin(dataD[count]*8.5f,6.18f) / (fabs(((peakR*((hype+4.0f)/5.0f))-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 3.141592f;
+        //begin draw dots on meters R
+        if (peakR > 197.0f) {
+            g.setColour(juce::Colour(255, 0, 0));g.fillRect(count, 171, 1, 29);
+            brightPeaks += 1.0f;
+        } //peak is clipping!
+        else if (peakR > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
+            psDotHypeR = (11.0f * sqrt(dataB[count] * dataA[count])) / (fabs(((peakR*((hype+6.0f)/7.0f))-slewR) * (7.0f/meterZeroR) )+1.0f);
+            psDotVibeR = sin(pow(fmin(dataD[count]*8.5f,6.18f) / (fabs(((peakR*((hype+4.0f)/5.0f))-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 3.141592f;
             psDotSizeR = ((psDotVibeR*(1.0f-hype))+(psDotHypeR*hype))*(1.0f+(sin(hype*3.141592f)*0.25f));
-            if (count > dataPosition-2 && count < dataPosition) {
-                momentaryScoreR[count] = ((psDotSizeR*140.0f*(1.0f-hype))+(psDotSizeR*peakR*hype)); //increase score
-                maxScore += momentaryScoreR[count]; //increase score
+            if (count == dataPosition-1) {
+                momentaryScoreR[count] = ((psDotSizeR*140.0f*(1.0f-hype))+(psDotSizeR*peakR*hype));
+                maxScore += momentaryScoreR[count]*16.0f; //increase score
             }
-            if (psDotSizeR > 1.0f) {
-                g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f)); midPeaks += 1.0f; //set COLOR for blue dots, when loud peaks are happening
-                g.fillRect((float)count*dx, (200.0f - peakR)*dy, fmax(psDotSizeR,1.618f)*dotWidth*dx, fmax(psDotSizeR,1.618f)*dotHeight*dy);
+            if (psDotSizeR > 1.0f) { //altering this changes the equation of what's 'loud' vs 'bright' or 'dark'
+                g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f)); midPeaks += 1.0f; //set COLOR for blue dots
+                g.fillRect(count, (int)(200.0f - peakR), (int)fmax(psDotSizeR,2.0), (int)fmax(psDotSizeR,dataD[count]*5.0f));
             } else {
                 if (slewR > peakR) {
-                    g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f)); brightPeaks += 1.0f; //set COLOR for red dots, when bright peaks are happening
+                    g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
+                    g.fillRect(count, (int)(200.0f - peakR), 2, 3);
+                    brightPeaks += 1.0f;
                 } else {
-                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f)); darkPeaks += 1.0f;   //set COLOR for green dots, when dark peaks are happening
-                }
-                g.fillRect((float)count*dx, (200.0f - peakR)*dy, 1.618f*dotWidth*dx, 1.618f*dotHeight*dy);
+                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f));
+                    g.fillRect(count, (int)(200.0f - peakR), (int)(9.0f*dataB[count]), (int)(9.0f*dataB[count]));
+                    darkPeaks += 1.0f;
+                } //set COLOR and DRAW red or green dots
             }
-            if (slewR > 197.0f) {
-                g.fillRect((float)count*dx, (399.0f - (sqrt(slewR-197.0f)*1.618f))*dy, 1.618f*dotWidth*dx, sqrt(slewR-197.0f)*1.618f*dy);
-           } else {
+            if (slewR > 194.0f) g.fillRect(count, (int)(300.0f-fmin((slewR-194.0f)*0.5f,96.0f)), 1, (int)fmin((slewR-194.0f)*0.5f,96.0f));
+           else {
                if (psDotSizeR < 1.0) {
-                   g.fillRect((float)count*dx, (400.0f - slewR)*dy, 1.618f*dotWidth*dx, 1.618f*dotHeight*dy);
-               } else {
-                   g.fillRect((float)count*dx, (400.0f - slewR)*dy, fmax(psDotSizeR,1.618f)*dotWidth*dx, fmax(psDotSizeR,1.618f)*dotHeight*dy);
-               } //Drawing slew dots, R
-               
+                   if (slewR > peakR) g.fillRect(count, (int)(300.0f - (slewR*0.5f)), 3, 3);
+                   else g.fillRect(count, (int)(300.0f - (slewR*0.5f)), 1, 1);
+               }
+               else g.fillRect(count, (int)(300.0f - (slewR*0.5f)), (int)fmax(psDotSizeR,2.0f), (int)fmax(psDotSizeR,2.0f)); //Drawing slew dots, R
             }
-            g.fillRect((float)count*dx, (400.0f + meterZeroR)*dy, fmax(8.0f*dataB[count],1.618f)*dotWidth*dx, fmax(8.0f*dataB[count],1.618f)*dotHeight*dy);
-            //done with peak, slew, zero cross
-        }
+            g.fillRect(count, (int)(298.0f + (meterZeroR*0.5f)), (int)fmax(7.0f*dataB[count],1.0f), (int)fmax(7.0f*dataB[count],1.0f));
+        } //end draw dots on meters R
                
-        int peakLTracker = (int)(peakL * (0.005f*(float)peakBins));
-        int peakRTracker = (int)(peakR * (0.005f*(float)peakBins));//converts 0-200 to 0-bin number for bins
-        if (peakLTracker > 0 && peakLTracker <= peakBins) peakTrack[peakLTracker] += (psDotSizeL * sqrt(maxScore) * 0.0002);
-        if (peakRTracker > 0 && peakRTracker <= peakBins) peakTrack[peakRTracker] += (psDotSizeR * sqrt(maxScore) * 0.0002);
-        //and we've incremented each bin we hit by Dot Size, to incorporate our peak intensity stuff
-        evennessScore *= 0.98f;
-        //this is slowing the response, in theory, and scaling the whole thing by making it fall back
-        for (int binscale = 0; binscale < peakBins; ++binscale) {
-            evennessScore += fmin(peakTrack[binscale],fmax(peakLTracker,peakRTracker)*0.06f);
-            //larger min for more intense curve boosting
-            //this causes high bins to clamp and stay active until the energy subsides.
-            peakTrack[binscale] *= 0.98f;
+         
+        if (count == dataPosition-1) {
+            float falloff = 0.9438f; //tweak this in one place!
+            
+            loudScore[count] = sqrt(maxScore)*2.0f; //trim to work with meter
+            maxScore *= falloff; //how fast loudness falls off
+            
+            int peakLTracker = (int)(peakL * (0.005f*(float)peakBins));
+            int peakRTracker = (int)(peakR * (0.005f*(float)peakBins));//converts 0-200 to 0-bin number for bins for novelty chart
+            if (peakLTracker > 0 && peakLTracker <= peakBins) peakTrack[peakLTracker] += (psDotSizeL * loudScore[count]);
+            if (peakRTracker > 0 && peakRTracker <= peakBins) peakTrack[peakRTracker] += (psDotSizeR * loudScore[count]);
+            //and we've incremented each bin we hit by Dot Size, to incorporate our peak intensity stuff
+            for (int binscale = 0; binscale < peakBins; ++binscale) {
+                evennessNovelty += fmin(peakTrack[binscale],fmax(peakLTracker,peakRTracker)*50.0);
+                //fmax causes high bins to clamp and stay active until the energy subsides.
+                //it is allowing the bin number to act as the clamp limit
+                peakTrack[binscale] *= falloff; //how fast each bin falls off
+            }
+            varietyScore[count] = sqrt(evennessNovelty);
+            evennessNovelty *= falloff; //how fast novelty falls off
+                      
+            hitColor += pow(hue*0.5f,2.0f);
+            hitColor *= falloff; //how fast hue correctness falls off
+            
+            evennessHype += (outGreen*hitColor);
+            hypeScore[count] = fmin(sqrt(evennessHype),99.0f);
+            evennessHype *= falloff; //how fast hype (final score) falls off
         }
         
-        if (count > dataPosition-2 && count < dataPosition) {
-            peakScore[count] = evennessScore;
-            loudScore[count] = sqrt(maxScore); lingerScore += (loudScore[count]);
-            lingerScore *= 0.5f;
-            maxScore = fmax(maxScore-lingerScore,0.0f);
-            hitScore[count] = (((highestPeakScore - (highestScore*0.618033988749894f))+26.0f)*0.9f) - (fabs((brightPeaks-darkPeaks)/((brightPeaks+midPeaks+darkPeaks)*0.01f))*0.6f);
-        }
-                
-        if ((loudScore[count]*0.0602) > highestScore) highestScore = (int)(loudScore[count]*0.0602);
-        if (pow(peakScore[count],2)*0.000387 > highestPeakScore) highestPeakScore = (int)(pow(peakScore[count],2)*0.000387);
-        float hypeScore = (highestPeakScore - (highestScore*0.618033988749894f))+24.0f;
-        if (highestScore > 38) highestScore = 38;
-        if (highestPeakScore > 49) highestPeakScore = 49;
-        textScore = juce::String("Novelty: ");
-        switch (highestPeakScore) {
-            case 0:
-                textScore = textScore + juce::String("FF-Stable"); break;
-            case 1:
-                textScore = textScore + juce::String("FF-Stable"); break;
-            case 2:
-                textScore = textScore + juce::String("FF-Stable"); break;
-            case 3:
-                textScore = textScore + juce::String("FF-Stable"); break;
-            case 4:
-                textScore = textScore + juce::String("FE-Stable"); break;
-            case 5:
-                textScore = textScore + juce::String("FD-Stable"); break;
-            case 6:
-                textScore = textScore + juce::String("FC-Stable"); break;
-            case 7:
-                textScore = textScore + juce::String("FB-Stable"); break;
-            case 8:
-                textScore = textScore + juce::String("FA-Stable"); break;
-            case 9:
-                textScore = textScore + juce::String("EF-Steady"); break;
-            case 10:
-                textScore = textScore + juce::String("EE-Steady"); break;
-            case 11:
-                textScore = textScore + juce::String("ED-Steady"); break;
-            case 12:
-                textScore = textScore + juce::String("EC-Steady"); break;
-            case 13:
-                textScore = textScore + juce::String("EB-Steady"); break;
-            case 14:
-                textScore = textScore + juce::String("EA-Steady"); break;
-            case 15:
-                textScore = textScore + juce::String("DF-Evolving"); break;
-            case 16:
-                textScore = textScore + juce::String("DE-Evolving"); break;
-            case 17:
-                textScore = textScore + juce::String("DD-Evolving"); break;
-            case 18:
-                textScore = textScore + juce::String("DC-Evolving"); break;
-            case 19:
-                textScore = textScore + juce::String("DB-Evolving"); break;
-            case 20:
-                textScore = textScore + juce::String("DA-Evolving"); break;
-            case 21:
-                textScore = textScore + juce::String("CF-Variations"); break;
-            case 22:
-                textScore = textScore + juce::String("CE-Variations"); break;
-            case 23:
-                textScore = textScore + juce::String("CD-Variations"); break;
-            case 24:
-                textScore = textScore + juce::String("CC-Variations"); break;
-            case 25:
-                textScore = textScore + juce::String("CB-Variations"); break;
-            case 26:
-                textScore = textScore + juce::String("CA-Variations"); break;
-            case 27:
-                textScore = textScore + juce::String("BF-Contrasts"); break;
-            case 28:
-                textScore = textScore + juce::String("BE-Contrasts"); break;
-            case 29:
-                textScore = textScore + juce::String("BD-Contrasts"); break;
-            case 30:
-                textScore = textScore + juce::String("BC-Contrasts"); break;
-            case 31:
-                textScore = textScore + juce::String("BB-Contrasts"); break;
-            case 32:
-                textScore = textScore + juce::String("BA-Contrasts"); break;
-            case 33:
-                textScore = textScore + juce::String("AF-Startling"); break;
-            case 34:
-                textScore = textScore + juce::String("AE-Startling"); break;
-            case 35:
-                textScore = textScore + juce::String("AD-Startling"); break;
-            case 36:
-                textScore = textScore + juce::String("AC-Startling"); break;
-            case 37:
-                textScore = textScore + juce::String("AB-Startling"); break;
-            case 38:
-                textScore = textScore + juce::String("AA-Startling"); break;
-            case 39:
-                textScore = textScore + juce::String("AA-Startling"); break;
-            case 40:
-                textScore = textScore + juce::String("AA-Startling"); break;
-            case 41:
-                textScore = textScore + juce::String("AA-Startling"); break;
-            case 42:
-                textScore = textScore + juce::String("AA-Startling"); break;
-            case 43:
-                textScore = textScore + juce::String("AA-Startling"); break;
-            case 44:
-                textScore = textScore + juce::String("AA-Startling"); break;
-            case 45:
-                textScore = textScore + juce::String("AA-Absurd"); break;
-            case 46:
-                textScore = textScore + juce::String("AA-Absurd"); break;
-            case 47:
-                textScore = textScore + juce::String("AA-Absurd"); break;
-            case 48:
-                textScore = textScore + juce::String("AA-Absurd"); break;
-            case 49:
-                textScore = textScore + juce::String("AA-Absurd"); break;
-        }
-        textScore = textScore + juce::String("  Loudness: ");
-        switch (highestScore) {
-            case 0:
-                textScore = textScore + juce::String("FF-Quiet"); break;
-            case 1:
-                textScore = textScore + juce::String("FF-Quiet"); break;
-            case 2:
-                textScore = textScore + juce::String("FF-Quiet"); break;
-            case 3:
-                textScore = textScore + juce::String("FF-Quiet"); break;
-            case 4:
-                textScore = textScore + juce::String("FE-Quiet"); break;
-            case 5:
-                textScore = textScore + juce::String("FD-Quiet"); break;
-            case 6:
-                textScore = textScore + juce::String("FC-Quiet"); break;
-            case 7:
-                textScore = textScore + juce::String("FB-Quiet"); break;
-            case 8:
-                textScore = textScore + juce::String("FA-Quiet"); break;
-            case 9:
-                textScore = textScore + juce::String("EF-Quiet"); break;
-            case 10:
-                textScore = textScore + juce::String("EE-Quiet"); break;
-            case 11:
-                textScore = textScore + juce::String("ED-Soft"); break;
-            case 12:
-                textScore = textScore + juce::String("EC-Soft"); break;
-            case 13:
-                textScore = textScore + juce::String("EB-Soft"); break;
-            case 14:
-                textScore = textScore + juce::String("EA-Soft"); break;
-            case 15:
-                textScore = textScore + juce::String("DF-Spacious"); break;
-            case 16:
-                textScore = textScore + juce::String("DE-Spacious"); break;
-            case 17:
-                textScore = textScore + juce::String("DD-Spacious"); break;
-            case 18:
-                textScore = textScore + juce::String("DC-Spacious"); break;
-            case 19:
-                textScore = textScore + juce::String("DB-Relaxed"); break;
-            case 20:
-                textScore = textScore + juce::String("DA-Relaxed"); break;
-            case 21:
-                textScore = textScore + juce::String("CF-Relaxed"); break;
-            case 22:
-                textScore = textScore + juce::String("CE-Relaxed"); break;
-            case 23:
-                textScore = textScore + juce::String("CD-Popular"); break;
-            case 24:
-                textScore = textScore + juce::String("CC-Popular"); break;
-            case 25:
-                textScore = textScore + juce::String("CB-Popular"); break;
-            case 26:
-                textScore = textScore + juce::String("CA-Popular"); break;
-            case 27:
-                textScore = textScore + juce::String("BF-Strong"); break;
-            case 28:
-                textScore = textScore + juce::String("BE-Strong"); break;
-            case 29:
-                textScore = textScore + juce::String("BD-Strong"); break;
-            case 30:
-                textScore = textScore + juce::String("BC-Strong"); break;
-            case 31:
-                textScore = textScore + juce::String("BB-Loud"); break;
-            case 32:
-                textScore = textScore + juce::String("BA-Loud"); break;
-            case 33:
-                textScore = textScore + juce::String("AF-Loud"); break;
-            case 34:
-                textScore = textScore + juce::String("AE-Loud"); break;
-            case 35:
-                textScore = textScore + juce::String("AD-Aggro"); break;
-            case 36:
-                textScore = textScore + juce::String("AC-Aggro"); break;
-            case 37:
-                textScore = textScore + juce::String("AB-Aggro"); break;
-            case 38:
-                textScore = textScore + juce::String("AA-Aggro"); break;
-        }
-        //we are building the ability to assign a letter score
-        float totalPeaks = (brightPeaks + midPeaks + darkPeaks)*0.01f;
-        textScore = textScore + "  Tone: Bright " + juce::String((int)(brightPeaks/totalPeaks)) + "% ";
-        textScore = textScore + "Loud " + juce::String((int)(midPeaks/totalPeaks)) + "% ";
-        textScore = textScore + "Dark " + juce::String((int)(darkPeaks/totalPeaks)) + "%";
+        brightPeaks *= 0.996f; brightPeaksDisplay[count] = brightPeaks;
+        midPeaks *= 0.996f; midPeaksDisplay[count] = midPeaks;
+        darkPeaks *= 0.996f; darkPeaksDisplay[count] = darkPeaks; //make this able to track on the fly
         
-        //next, generate hypescore minus fabs(brightPeaks-darkPeaks)* some scaling factor, and do another case statement with just a two letter score to sort by
-        int finalGrade = (int)((hypeScore*0.9f)-(fabs((brightPeaks-darkPeaks)/totalPeaks)*0.6f));
-        if (highestGrade < finalGrade) highestGrade = finalGrade;
+        float totalPeaks = (brightPeaksDisplay[count] + midPeaksDisplay[count] + darkPeaksDisplay[count] )*0.01f;
+        textScore = "bright:" + juce::String((int)(brightPeaksDisplay[count]/totalPeaks)) + "%    ";
+        textScore = textScore + "sonority:" + juce::String((int)(midPeaksDisplay[count]/totalPeaks)) + "%    ";
+        textScore = textScore + "dark:" + juce::String((int)(darkPeaksDisplay[count]/totalPeaks)) + "%";
+        //generating metrics for bright, sonorous and dark peaks to calculate with
+        
+        float blueScore = 0.0f; if (loudScore[count] > 1.0f) blueScore = fmin(pow(loudScore[count],2.0f)*0.00009f,99.0f); //HERE is where to trim the blue line for loudness
+        float redScore = 0.0f; if (varietyScore[count] > 1.0) redScore = fmin(pow(varietyScore[count],2.0f)*0.00083f,99.0f); //HERE is where to trim the red line for variety
+        
+        outGreen = pow(fmax((fmax(dataA[count],dataB[count])*-80.0f)+(redScore+blueScore),0.0f),1.618f)*0.075f;
+        float scaleGreen = 90.0f + outGreen + ((redScore-blueScore)*3.0f); scaleGreen = pow(scaleGreen,1.618f)*0.0273f;
+        int greenColor = (int)scaleGreen; if (greenColor < 0) greenColor = 0; if (greenColor > 255) greenColor = 255;
+        
+        g.setColour(juce::Colour((int)(darkPeaksDisplay[count]/(totalPeaks*0.5f)), greenColor, (int)(brightPeaksDisplay[count]/(totalPeaks*0.5f))));
+        if (loudScore[count] > 0.01f) g.fillRect(count, 399, 2, 99);
+        
+        hue = juce::Colour((int)(darkPeaksDisplay[count]/(totalPeaks*0.5f)), greenColor, (int)(brightPeaksDisplay[count]/(totalPeaks*0.5f))).getHue();
+        hue = hue-0.53333333f; if (hue < 0.0f) hue = fmax(1.0f+hue, 0.0f); else hue = 1.0f - hue; //our hue target
+        
+        g.setColour(juce::Colour((int)fmin(fmax((scaleGreen*2.2f)-230.0f,0.0f),255.0f), 255, (int)fmin(fmax((scaleGreen*2.2f)-230.0f,0.0f),255.0f)));
+        //line for hype is green but goes white when it's over equally bright green
+        if (hypeScore[count] > 1.0) g.fillRect(count,(int)(495.0f-hypeScore[count]), 2, 2);
+        g.setColour(juce::Colour(0, 0, 255)); //line for loudness is blue
+        if (loudScore[count] > 1.0) g.fillRect(count,(int)(495.0f-blueScore), 2, 2);
+        g.setColour(juce::Colour(255, 0, 0)); //line for variety is red
+        if (varietyScore[count] > 1.0) g.fillRect(count,(int)(495.0f-redScore), 2, 2);
+        
+        if (hypeScore[count]*0.38f > highestGrade) highestGrade += 1;
         if (highestGrade < 0) highestGrade = 0;
-        if (highestGrade > 38) highestGrade = 38;
-         switch (highestGrade) {
+        if (highestGrade > 37) highestGrade = 37;
+        switch (highestGrade) {
             case 0:
-                rating = juce::String("  "); break;
+                rating = juce::String("FF (Calm)"); break;
             case 1:
-                rating = juce::String("FF"); break;
+                rating = juce::String("FF (Calm)"); break;
             case 2:
-                rating = juce::String("FF"); break;
+                rating = juce::String("FF (Calm)"); break;
             case 3:
-                rating = juce::String("FF"); break;
+                rating = juce::String("FE (Calm)"); break;
             case 4:
-                rating = juce::String("FE"); break;
+                rating = juce::String("FD (Calm)"); break;
             case 5:
-                rating = juce::String("FD"); break;
+                rating = juce::String("FC (Calm)"); break;
             case 6:
-                rating = juce::String("FC"); break;
+                rating = juce::String("FB (Calm)"); break;
             case 7:
-                rating = juce::String("FB"); break;
+                rating = juce::String("FA (Calm)"); break;
             case 8:
-                rating = juce::String("FA"); break;
+                rating = juce::String("EF (Calm)"); break;
             case 9:
-                rating = juce::String("EF"); break;
+                rating = juce::String("EE (Calm)"); break;
             case 10:
-                rating = juce::String("EE"); break;
+                rating = juce::String("ED (Calm)"); break;
             case 11:
-                rating = juce::String("ED"); break;
+                rating = juce::String("EC (Calm)"); break;
             case 12:
-                rating = juce::String("EC"); break;
+                rating = juce::String("EB (Calm)"); break;
             case 13:
-                rating = juce::String("EB"); break;
+                rating = juce::String("EA (Calm)"); break;
             case 14:
-                rating = juce::String("EA"); break;
+                rating = juce::String("DF (Calm)"); break;
             case 15:
-                rating = juce::String("DF"); break;
+                rating = juce::String("DE (Calm)"); break;
             case 16:
-                rating = juce::String("DE"); break;
+                rating = juce::String("DD (Calm)"); break;
             case 17:
-                rating = juce::String("DD"); break;
+                rating = juce::String("DC (Calm)"); break;
             case 18:
-                rating = juce::String("DC"); break;
+                rating = juce::String("DB (Calm)"); break;
             case 19:
-                rating = juce::String("DB"); break;
+                rating = juce::String("DA (Calm)"); break;
             case 20:
-                rating = juce::String("DA"); break;
+                rating = juce::String("CF (Serene)"); break;
             case 21:
-                rating = juce::String("CF"); break;
+                rating = juce::String("CE (Serene)"); break;
             case 22:
-                rating = juce::String("CE"); break;
+                rating = juce::String("CD (Serene)"); break;
             case 23:
-                rating = juce::String("CD"); break;
+                rating = juce::String("CC (Serene)"); break;
             case 24:
-                rating = juce::String("CC"); break;
+                rating = juce::String("CB (Serene)"); break;
             case 25:
-                rating = juce::String("CB"); break;
+                rating = juce::String("CA (Serene)"); break;
             case 26:
-                rating = juce::String("CA"); break;
+                rating = juce::String("BF (Groove)"); break;
             case 27:
-                rating = juce::String("BF"); break;
+                rating = juce::String("BE (Groove)"); break;
             case 28:
-                rating = juce::String("BE"); break;
+                rating = juce::String("BD (Powerful)"); break;
             case 29:
-                rating = juce::String("BD"); break;
+                rating = juce::String("BC (Powerful)"); break;
             case 30:
-                rating = juce::String("BC"); break;
+                rating = juce::String("BB (Forceful)"); break;
             case 31:
-                rating = juce::String("BB"); break;
+                rating = juce::String("BA (Forceful)"); break;
             case 32:
-                rating = juce::String("BA"); break;
+                rating = juce::String("AF (Legendary)"); break;
             case 33:
-                rating = juce::String("AF"); break;
+                rating = juce::String("AE (Legendary)"); break;
             case 34:
-                rating = juce::String("AE"); break;
+                rating = juce::String("AD (Transcendent)"); break;
             case 35:
-                rating = juce::String("AD"); break;
+                rating = juce::String("AC (Transcendent)"); break;
             case 36:
-                rating = juce::String("AC"); break;
+                rating = juce::String("AB (Transcendent)"); break;
             case 37:
-                rating = juce::String("AB"); break;
-            case 38:
-                rating = juce::String("AA"); break;
-        }
-
-        float drawScore = pow(loudScore[count],3.0f)*0.00000028f;
-        if (drawScore > 70) drawScore = 70;
-        g.setColour(juce::Colour(0, 0, 220)); //line for loudness is blue
-        if (loudScore[count] > 1.0) g.fillRect((float)count*dx, (664.0f-drawScore)*dy, dx, sqrt(drawScore/7.0f)*dy);
-        drawScore = 0.0;
-        
-        if (peakScore[count] > 1.0) drawScore = pow(peakScore[count],2.0f)*0.00069f;
-        if (drawScore > 70) drawScore = 70;
-        g.setColour(juce::Colour(240, 64, 0)); //line for variety is redorange
-        if (peakScore[count] > 1.0) g.fillRect((float)count*dx,(664.0f-drawScore)*dy, dx, sqrt(drawScore/7.0f)*dy);
-        drawScore = 0.0;
-        
-        if (hitScore[count] > 1.0) drawScore = pow(hitScore[count],2.0f)*0.05f;
-        if (drawScore > 70) drawScore = 70;
-        g.setColour(juce::Colour(0, 130, 0)); //line for letter score is a dark green
-        if (hitScore[count] > 1.0) g.fillRect((float)count*dx,(664.0f-drawScore)*dy, dx, sqrt(drawScore/7.0f)*dy);
+                rating = juce::String("AA (Transcendent)"); break;
+        } //this is our two letter score, incorporating all the measurements
     }
-    g.setFont(18.0f);
+    
     g.setColour(juce::Colours::darkgrey);
-    g.drawText(textScore, 7, 178, displayWidth-8, 18, juce::Justification::centredBottom);
-    g.setFont(48.0f);
-    g.setColour(juce::Colours::black);
-    g.drawText(rating, 7, 198, displayWidth-8, 48, juce::Justification::centredBottom);
-
+    g.setFont(24);
+    g.drawText(rating, 50, 174, displayWidth-70, 24, juce::Justification::centredBottom);
+    g.setFont(18);
+    g.drawText(textScore, 8, 280, displayWidth-40, 18, juce::Justification::centredBottom);
+ 
     g.setColour(juce::Colours::grey);
-    g.fillRect((float)dataPosition*dx, 0.0f, 1.0f, (float)getHeight()); //the moving line
+    g.fillRect(dataPosition, 0, 1, 399); //the moving line
 
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.382f));
-    g.fillRect(0, 0, getWidth(), linewidth);
-    g.fillRect(0, 0, linewidth, getHeight());
+    g.fillRect(0, 0, getWidth(), 2);
+    g.fillRect(0, 0, 2, getHeight());
      
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.618f));
-    g.fillRect(linewidth, getHeight()-linewidth, getWidth(), linewidth);
-    g.fillRect(getWidth()-linewidth, linewidth, linewidth, getHeight()-linewidth);
+    g.fillRect(2, getHeight()-2, getWidth(), 2);
+    g.fillRect(getWidth()-2, 2, 2, getHeight()-2);
 }
