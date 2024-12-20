@@ -28,7 +28,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         meter.repaint();
     };
 
-    setSize (1000, 537);
+   	setSize (airwindowsLookAndFeel.userWidth, airwindowsLookAndFeel.userHeight);
     // Make sure that before the constructor has finished, you've set the editor's size to whatever you need it to be.
     if (airwindowsLookAndFeel.usingNamedImage) {
         getConstrainer()->setFixedAspectRatio(1000.0f/537.0f); //the aspect ratio stuff leads to cropping the content area off the top
