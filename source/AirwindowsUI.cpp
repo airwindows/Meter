@@ -62,7 +62,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0, 398, getWidth(), 1); //20hz markings is also border with color and charts
 
 
-    for (int count = 0; count < fmin(displayWidth,2000); ++count) //count through all the points in the array
+    for (unsigned long count = 0; count < fmin(displayWidth,5150); ++count) //count through all the points in the array
     {
         g.setColour(juce::Colours::black);
         float psDotSizeL = 1.0f;
@@ -82,94 +82,94 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         
         //begin draw dots on meters L
         if (peakL > 196.0f) {
-            g.setColour(juce::Colour(255, 0, 0)); g.fillRect(count, 171, 1, 29);
+            g.setColour(juce::Colour(255, 0, 0)); g.fillRect((int)count, 171, 1, 29);
             brightPeaks += 1.0f;
         } //peak is clipping!
         else if (peakL > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
             psDotHypeL = (11.0f * sqrt(dataA[count] * dataB[count])) / (fabs(((peakL*((hype+6.0f)/7.0f))-slewL) * (7.0f/meterZeroL) )+1.0f);
             psDotVibeL = sin(pow(fmin(dataC[count]*8.5f,6.18f) / (fabs(((peakL*((hype+4.0f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 3.141592f;
             psDotSizeL = ((psDotVibeL*(1.0f-hype))+(psDotHypeL*hype))*(1.0f+(sin(hype*3.141592f)*0.25f));
-            if (count == dataPosition-1) {
+            if (count == (unsigned long)dataPosition-1) {
                 momentaryScoreL[count] = ((psDotSizeL*140.0f*(1.0f-hype))+(psDotSizeL*peakL*hype));
                 maxScore += momentaryScoreL[count]*16.0f; //increase score
             }
             if (psDotSizeL > 1.0f) { //altering this changes the equation of what's 'loud' vs 'bright' or 'dark'
                 g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f)); midPeaks += 1.0f; //set COLOR for blue dots
-                g.fillRect(count, (int)(200.0f - peakL), (int)fmax(psDotSizeL,2.0), (int)fmax(psDotSizeL,dataC[count]*5.0f));
+                g.fillRect((int)count, (int)(200.0f - peakL), (int)fmax(psDotSizeL,2.0), (int)fmax(psDotSizeL,dataC[count]*5.0f));
             } else {
                 if (slewL > peakL) {
                     g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
-                    g.fillRect(count, (int)(200.0f - peakL), 2, 3);
+                    g.fillRect((int)count, (int)(200.0f - peakL), 2, 3);
                     brightPeaks += 1.0f;
                 } else {
                     g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f));
-                    g.fillRect(count, (int)(200.0f - peakL), (int)(9.0f*dataA[count]), (int)(9.0f*dataA[count]));
+                    g.fillRect((int)count, (int)(200.0f - peakL), (int)(9.0f*dataA[count]), (int)(9.0f*dataA[count]));
                     darkPeaks += 1.0f;
                 } //set COLOR and DRAW red or green dots
            }
-            if (slewL > 194.0f) g.fillRect(count, (int)(300.0f-fmin((slewL-194.0f)*0.5f,96.0f)), 1, (int)fmin((slewL-194.0f)*0.5f,96.0f));
+            if (slewL > 194.0f) g.fillRect((int)count, (int)(300.0f-fmin((slewL-194.0f)*0.5f,96.0f)), 1, (int)fmin((slewL-194.0f)*0.5f,96.0f));
             else {
                 if (psDotSizeL < 1.0) {
-                    if (slewL > peakL) g.fillRect(count, (int)(300.0f - (slewL*0.5f)), 3, 3);
-                    else g.fillRect(count, (int)(300.0f - (slewL*0.5f)), 1, 1);
+                    if (slewL > peakL) g.fillRect((int)count, (int)(300.0f - (slewL*0.5f)), 3, 3);
+                    else g.fillRect((int)count, (int)(300.0f - (slewL*0.5f)), 1, 1);
                 }
-                else g.fillRect(count, (int)(300.0f - (slewL*0.5f)), (int)fmax(psDotSizeL,2.0f), (int)fmax(psDotSizeL,2.0f)); //Drawing slew dots, L
+                else g.fillRect((int)count, (int)(300.0f - (slewL*0.5f)), (int)fmax(psDotSizeL,2.0f), (int)fmax(psDotSizeL,2.0f)); //Drawing slew dots, L
             }
-            g.fillRect(count, (int)(298.0f + (meterZeroL*0.5f)), (int)fmax(7.0f*dataA[count],1.0f), (int)fmax(7.0f*dataA[count],1.0f));
+            g.fillRect((int)count, (int)(298.0f + (meterZeroL*0.5f)), (int)fmax(7.0f*dataA[count],1.0f), (int)fmax(7.0f*dataA[count],1.0f));
         } //end draw dots on meters L
         
         //begin draw dots on meters R
         if (peakR > 197.0f) {
-            g.setColour(juce::Colour(255, 0, 0));g.fillRect(count, 171, 1, 29);
+            g.setColour(juce::Colour(255, 0, 0));g.fillRect((int)count, 171, 1, 29);
             brightPeaks += 1.0f;
         } //peak is clipping!
         else if (peakR > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
             psDotHypeR = (11.0f * sqrt(dataB[count] * dataA[count])) / (fabs(((peakR*((hype+6.0f)/7.0f))-slewR) * (7.0f/meterZeroR) )+1.0f);
             psDotVibeR = sin(pow(fmin(dataD[count]*8.5f,6.18f) / (fabs(((peakR*((hype+4.0f)/5.0f))-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 3.141592f;
             psDotSizeR = ((psDotVibeR*(1.0f-hype))+(psDotHypeR*hype))*(1.0f+(sin(hype*3.141592f)*0.25f));
-            if (count == dataPosition-1) {
+            if (count == (unsigned long)dataPosition-1) {
                 momentaryScoreR[count] = ((psDotSizeR*140.0f*(1.0f-hype))+(psDotSizeR*peakR*hype));
                 maxScore += momentaryScoreR[count]*16.0f; //increase score
             }
             if (psDotSizeR > 1.0f) { //altering this changes the equation of what's 'loud' vs 'bright' or 'dark'
                 g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f)); midPeaks += 1.0f; //set COLOR for blue dots
-                g.fillRect(count, (int)(200.0f - peakR), (int)fmax(psDotSizeR,2.0), (int)fmax(psDotSizeR,dataD[count]*5.0f));
+                g.fillRect((int)count, (int)(200.0f - peakR), (int)fmax(psDotSizeR,2.0), (int)fmax(psDotSizeR,dataD[count]*5.0f));
             } else {
                 if (slewR > peakR) {
                     g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
-                    g.fillRect(count, (int)(200.0f - peakR), 2, 3);
+                    g.fillRect((int)count, (int)(200.0f - peakR), 2, 3);
                     brightPeaks += 1.0f;
                 } else {
                     g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f));
-                    g.fillRect(count, (int)(200.0f - peakR), (int)(9.0f*dataB[count]), (int)(9.0f*dataB[count]));
+                    g.fillRect((int)count, (int)(200.0f - peakR), (int)(9.0f*dataB[count]), (int)(9.0f*dataB[count]));
                     darkPeaks += 1.0f;
                 } //set COLOR and DRAW red or green dots
             }
-            if (slewR > 194.0f) g.fillRect(count, (int)(300.0f-fmin((slewR-194.0f)*0.5f,96.0f)), 1, (int)fmin((slewR-194.0f)*0.5f,96.0f));
+            if (slewR > 194.0f) g.fillRect((int)count, (int)(300.0f-fmin((slewR-194.0f)*0.5f,96.0f)), 1, (int)fmin((slewR-194.0f)*0.5f,96.0f));
            else {
                if (psDotSizeR < 1.0) {
-                   if (slewR > peakR) g.fillRect(count, (int)(300.0f - (slewR*0.5f)), 3, 3);
-                   else g.fillRect(count, (int)(300.0f - (slewR*0.5f)), 1, 1);
+                   if (slewR > peakR) g.fillRect((int)count, (int)(300.0f - (slewR*0.5f)), 3, 3);
+                   else g.fillRect((int)count, (int)(300.0f - (slewR*0.5f)), 1, 1);
                }
-               else g.fillRect(count, (int)(300.0f - (slewR*0.5f)), (int)fmax(psDotSizeR,2.0f), (int)fmax(psDotSizeR,2.0f)); //Drawing slew dots, R
+               else g.fillRect((int)count, (int)(300.0f - (slewR*0.5f)), (int)fmax(psDotSizeR,2.0f), (int)fmax(psDotSizeR,2.0f)); //Drawing slew dots, R
             }
-            g.fillRect(count, (int)(298.0f + (meterZeroR*0.5f)), (int)fmax(7.0f*dataB[count],1.0f), (int)fmax(7.0f*dataB[count],1.0f));
+            g.fillRect((int)count, (int)(298.0f + (meterZeroR*0.5f)), (int)fmax(7.0f*dataB[count],1.0f), (int)fmax(7.0f*dataB[count],1.0f));
         } //end draw dots on meters R
                
          
-        if (count == dataPosition-1) {
+        if (count == (unsigned long)dataPosition-1) {
             float falloff = 0.9438f; //tweak this in one place!
             
             loudScore[count] = sqrt(maxScore)*2.0f; //trim to work with meter
             maxScore *= falloff; //how fast loudness falls off
             
-            int peakLTracker = (int)(peakL * (0.005f*(float)peakBins));
-            int peakRTracker = (int)(peakR * (0.005f*(float)peakBins));//converts 0-200 to 0-bin number for bins for novelty chart
+            unsigned long peakLTracker = (unsigned long)(peakL * (0.005f*(float)peakBins));
+            unsigned long peakRTracker = (unsigned long)(peakR * (0.005f*(float)peakBins));//converts 0-200 to 0-bin number for bins for novelty chart
             if (peakLTracker > 0 && peakLTracker <= peakBins) peakTrack[peakLTracker] += (psDotSizeL * loudScore[count]);
             if (peakRTracker > 0 && peakRTracker <= peakBins) peakTrack[peakRTracker] += (psDotSizeR * loudScore[count]);
             //and we've incremented each bin we hit by Dot Size, to incorporate our peak intensity stuff
-            for (int binscale = 0; binscale < peakBins; ++binscale) {
-                evennessNovelty += fmin(peakTrack[binscale],fmax(peakLTracker,peakRTracker)*50.0);
+            for (unsigned long binscale = 0; binscale < peakBins; ++binscale) {
+                evennessNovelty += fmin(peakTrack[binscale],fmax((float)peakLTracker,(float)peakRTracker)*50.0f);
                 //fmax causes high bins to clamp and stay active until the energy subsides.
                 //it is allowing the bin number to act as the clamp limit
                 peakTrack[binscale] *= falloff; //how fast each bin falls off
@@ -203,18 +203,18 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         int greenColor = (int)scaleGreen; if (greenColor < 0) greenColor = 0; if (greenColor > 255) greenColor = 255;
         
         g.setColour(juce::Colour((int)(darkPeaksDisplay[count]/(totalPeaks*0.5f)), greenColor, (int)(brightPeaksDisplay[count]/(totalPeaks*0.5f))));
-        if (loudScore[count] > 0.01f) g.fillRect(count, 399, 2, 99);
+        if (loudScore[count] > 0.01f) g.fillRect((int)count, 399, 2, 99);
         
         hue = juce::Colour((int)(darkPeaksDisplay[count]/(totalPeaks*0.5f)), greenColor, (int)(brightPeaksDisplay[count]/(totalPeaks*0.5f))).getHue();
         hue = hue-0.53333333f; if (hue < 0.0f) hue = fmax(1.0f+hue, 0.0f); else hue = 1.0f - hue; //our hue target
         
         g.setColour(juce::Colour((int)fmin(fmax((scaleGreen*2.2f)-230.0f,0.0f),255.0f), 255, (int)fmin(fmax((scaleGreen*2.2f)-230.0f,0.0f),255.0f)));
         //line for hype is green but goes white when it's over equally bright green
-        if (hypeScore[count] > 1.0) g.fillRect(count,(int)(495.0f-hypeScore[count]), 2, 2);
+        if (hypeScore[count] > 1.0) g.fillRect((int)count,(int)(495.0f-hypeScore[count]), 2, 2);
         g.setColour(juce::Colour(0, 0, 255)); //line for loudness is blue
-        if (loudScore[count] > 1.0) g.fillRect(count,(int)(495.0f-blueScore), 2, 2);
+        if (loudScore[count] > 1.0) g.fillRect((int)count,(int)(495.0f-blueScore), 2, 2);
         g.setColour(juce::Colour(255, 0, 0)); //line for variety is red
-        if (varietyScore[count] > 1.0) g.fillRect(count,(int)(495.0f-redScore), 2, 2);
+        if (varietyScore[count] > 1.0) g.fillRect((int)count,(int)(495.0f-redScore), 2, 2);
         
         if (hypeScore[count]*0.38f > highestGrade) highestGrade += 1;
         if (highestGrade < 0) highestGrade = 0;

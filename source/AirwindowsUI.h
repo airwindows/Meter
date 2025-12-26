@@ -119,7 +119,7 @@ struct AirwindowsMeter : public juce::Component
 {
     void paint(juce::Graphics &g) override;
     
-    static constexpr int dataPoints = 2000;
+    static constexpr int dataPoints = 5151;
     static constexpr int peakBins = 16;
     int displayWidth = 1280;
     int displayHeight = 720;
@@ -211,11 +211,11 @@ struct AirwindowsMeter : public juce::Component
         textScore = juce::String();
         rating = juce::String();
         hype = 0.618033988749894f; //0.3819661
-        for (int count = 0; count < peakBins; ++count) //count through all the points in the array
+        for (unsigned long count = 0; count < peakBins; ++count) //count through all the points in the array
         {
             peakTrack[count] = 10.0;
         }
-        for (int count = 0; count < dataPoints; ++count) //count through all the points in the array
+        for (unsigned long count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
             loudScore[count] = 0.0f;
             varietyScore[count] = 0.0f;

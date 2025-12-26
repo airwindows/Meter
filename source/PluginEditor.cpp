@@ -14,6 +14,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour);
     }
     updateTrackProperties();
+    updatePluginSize();
 
     idleTimer = std::make_unique<IdleTimer>(this);
     idleTimer->startTimer(1000/30); //space between UI screen updates. Larger is slower updates to screen
@@ -30,10 +31,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
    	setSize (airwindowsLookAndFeel.userWidth, airwindowsLookAndFeel.userHeight);
     // Make sure that before the constructor has finished, you've set the editor's size to whatever you need it to be.
-    if (airwindowsLookAndFeel.usingNamedImage) {
-        getConstrainer()->setFixedAspectRatio(1000.0f/537.0f); //the aspect ratio stuff leads to cropping the content area off the top
-        setResizeLimits(32, 32, 2000, 537); //this will not honor resize limits correctly in all the DAWs
-    }
+    //if (airwindowsLookAndFeel.usingNamedImage) {
+    //    getConstrainer()->setFixedAspectRatio(1000.0f/537.0f); //the aspect ratio stuff leads to cropping the content area off the top
+    //    setResizeLimits(32, 32, 2000, 537); //this will not honor resize limits correctly in all the DAWs
+    //}
 
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -100,6 +101,8 @@ void PluginEditor::paint (juce::Graphics& g)
 void PluginEditor::resized()
 {
     auto area = getLocalBounds();
+    processorRef.pluginWidth = airwindowsLookAndFeel.userWidth = area.getWidth();
+    processorRef.pluginHeight = airwindowsLookAndFeel.userHeight = area.getHeight();
     auto linewidth = area.getWidth();
     if (area.getHeight() > linewidth) linewidth = area.getHeight();
     linewidth = (int)cbrt(linewidth/2)/2;
@@ -112,12 +115,21 @@ void PluginEditor::resized()
     resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.054f, 0.033f}));
 }
 
-void PluginEditor::sliderValueChanged(juce::Slider *s) {}
-void PluginEditor::sliderDragStarted(juce::Slider *s) {sliderDragInternal(s, true);} //on this plugin
+void PluginEditor::sliderValueChanged(juce::Slider *s) {}                           //there are no sliders
+void PluginEditor::sliderDragStarted(juce::Slider *s) {sliderDragInternal(s, true);}      //on this plugin
 void PluginEditor::sliderDragEnded(juce::Slider *s) {sliderDragInternal(s, false);} //so this section does
 void PluginEditor::sliderDragInternal(juce::Slider *s, bool bv) {if (bv) sliderValueChanged(s);} //nothing
 
 void PluginEditor::updateTrackProperties() {hostTrackColour=processorRef.trackProperties.colour; hostTrackName=processorRef.trackProperties.name; repaint();}
+
+
+void PluginEditor::updatePluginSize() {
+    airwindowsLookAndFeel.userWidth = processorRef.pluginWidth;
+    airwindowsLookAndFeel.userHeight = processorRef.pluginHeight;
+    if (airwindowsLookAndFeel.userWidth < 8 || airwindowsLookAndFeel.userWidth > 16386) airwindowsLookAndFeel.userWidth = 618;
+    if (airwindowsLookAndFeel.userHeight < 8 || airwindowsLookAndFeel.userHeight > 16386) airwindowsLookAndFeel.userHeight = 375;
+    repaint();
+}
 
 void PluginEditor::idle()
 {

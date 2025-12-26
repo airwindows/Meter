@@ -36,8 +36,11 @@ public:
     // updateTrackProperties may be called by the host if it feels like it
     // this method calls a similar one in the editor class that updates the editor
     void updateTrackProperties(const TrackProperties& properties) override;
+    void updatePluginSize(int w, int h);
     
     TrackProperties trackProperties;
+    int pluginWidth;
+    int pluginHeight;
 
    //now we can declare variables used in the audio thread
     
