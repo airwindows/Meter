@@ -79,7 +79,8 @@ public:
             ZERO_LEFT,
             ZERO_RIGHT,
             INCREMENT,
-            HYPE
+            HYPE,
+            TRANSPORT_STOPPED
         } what{NEW_VALUE};
         Parameters which;
         float newValue = 0.0;
@@ -138,6 +139,7 @@ public:
     bool wasPositiveL = false;
     bool wasPositiveR = false;
     int rmsCount = 0;
+    bool wasPlaying = false;
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)

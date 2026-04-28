@@ -151,6 +151,9 @@ void PluginEditor::idle()
         case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(msg.newValue); repaintTS = true; break;
         
+        case PluginProcessor::AudioToUIMessage::TRANSPORT_STOPPED:
+                meter.resetArrays(); repaintTS = true; break;
+        
         default: std::cout << "Unhandled message type " << msg.what << std::endl; break;
         } //end of switch statement for msg.what
     }

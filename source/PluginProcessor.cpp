@@ -195,6 +195,20 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         //}
     } //Handle inbound messages from the UI thread
     
+    // Detect transport stop and send reset message to UI
+    bool isPlaying = false;
+    if (auto* playHead = getPlayHead()) {
+        if (auto posInfo = playHead->getPosition()) {
+            isPlaying = posInfo->getIsPlaying();
+        }
+    }
+    if (wasPlaying && !isPlaying) {
+        AudioToUIMessage msg;
+        msg.what = AudioToUIMessage::TRANSPORT_STOPPED;
+        audioToUI.push(msg);
+    }
+    wasPlaying = isPlaying;
+    
     double rmsSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
     
@@ -255,11 +269,6 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
-            
-            //if (getPlayHead()->getPosition().hasValue() && !getPlayHead()->getPosition()->getIsPlaying()){}
-            //this was a start on making it not update when Reaper's playhead is not in motion
-            //in this state, it works in TwistedWave and does nothing in Reaper
-            //Note however it's not in the double processing? and so not in Reaper?
 
             rmsLeft = 0.0;
             rmsRight = 0.0;
@@ -306,6 +315,20 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         //case UIToAudioMessage::END_EDIT: params[uim.which]->endChangeGesture(); break;
         //}
     } //Handle inbound messages from the UI thread
+    
+    // Detect transport stop and send reset message to UI
+    bool isPlaying = false;
+    if (auto* playHead = getPlayHead()) {
+        if (auto posInfo = playHead->getPosition()) {
+            isPlaying = posInfo->getIsPlaying();
+        }
+    }
+    if (wasPlaying && !isPlaying) {
+        AudioToUIMessage msg;
+        msg.what = AudioToUIMessage::TRANSPORT_STOPPED;
+        audioToUI.push(msg);
+    }
+    wasPlaying = isPlaying;
     
     double rmsSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
