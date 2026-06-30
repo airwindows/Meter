@@ -75,29 +75,55 @@ public:
             backgroundImage = juce::ImageFileFormat::loadFrom(juce::File(customBackground));
             blurImage = backgroundImage.rescaled(3, 3);
          }
-        userWidth = newWidth.getIntValue(); if (userWidth < 8 || userWidth > 16386) userWidth = 1000;
-        userHeight = newHeight.getIntValue(); if (userHeight < 8 || userHeight > 16386) userHeight = 537;
+        userWidth = newWidth.getIntValue(); if (userWidth < 8 || userWidth > 16386) userWidth = 1080;
+        userHeight = newHeight.getIntValue(); if (userHeight < 8 || userHeight > 16386) userHeight = 720;
         //if you've not specified anything or your settings are crazy enough we go with defaults
-        defaultColour = juce::Colours::findColourForName(newColour, juce::Colours::lightgrey);
+        
+        if (newColour.length() > 0) { //something has been specified, could be anything
+            if (newColour.equalsIgnoreCase("darkmode")) {//specify it and you get it (even if system is different)
+                if (TARGET_OS_WIN32) defaultColour = juce::Colour(0xFF1A1A1A);//XP Zune 0xFF1A1A1A
+                else defaultColour = juce::Colour(0xFF1C1C1E);//macOS dark mode 0xFF1C1C1E
+            } else {
+                if (newColour.equalsIgnoreCase("lightmode")) {//specify it and you get it (even if system is different)
+                    if (TARGET_OS_MAC || TARGET_OS_OSX) defaultColour = juce::Colour(0xFFF2F2F7);//macOS lightmode 0xFFF2F2F7
+                    else defaultColour = juce::Colours::white;
+                } else { //give what's being specified if at all possible, or just grey if the color is unknown
+                    defaultColour = juce::Colours::findColourForName(newColour, juce::Colours::lightgrey);
+                }
+            }
+        } else { //fall back through to default, nothing has been specified or there's no AirwindowsGlobals.txt
+            if (juce::Desktop::getInstance().isDarkModeActive()) {//whatever the system, user's running dark mode
+                if (TARGET_OS_WIN32) defaultColour = juce::Colour(0xFF1A1A1A);//XP Zune 0xFF1A1A1A
+                else defaultColour = juce::Colour(0xFF1C1C1E);//macOS dark mode 0xFF1C1C1E
+            } else defaultColour = juce::Colours::lightgrey; //nothing specified AND not dark mode: light grey will set off the meter better :)
+        } //and we have now sorted out all the color variations
         applyTrackColour = fmax(fmin(newApplyTrackColourAmount.getFloatValue(),1.0f),0.0f);
         LEDColour = juce::Colours::findColourForName(newLEDColour, juce::Colours::red);
         applyTilt = fmax(fmin(newTilt.getFloatValue(),1.0f),0.0f) * 0.5f; //value is 0-1 but in use it's 0-0.5
 
-        knobMode = 0; //defaults to rotary because it allows for really fine adjustments
+        knobMode = 1; //defaults to vertical 'cos I was told to
         if (newKnobMode.equalsIgnoreCase("rotary")) knobMode = 0;
         if (newKnobMode.equalsIgnoreCase("airwindows")) knobMode = 0;
         if (newKnobMode.equalsIgnoreCase("realistic")) knobMode = 0;
         if (newKnobMode.equalsIgnoreCase("vertical")) knobMode = 1;
         if (newKnobMode.equalsIgnoreCase("up and down")) knobMode = 1;
+        if (newKnobMode.equalsIgnoreCase("up-and-down")) knobMode = 1;
         if (newKnobMode.equalsIgnoreCase("normal")) knobMode = 1; //I'm told vertical is customary ;)
         if (newKnobMode.equalsIgnoreCase("default")) knobMode = 1; // so here ya go ;)
         if (newKnobMode.equalsIgnoreCase("horizontal")) knobMode = 2;
         if (newKnobMode.equalsIgnoreCase("sideways")) knobMode = 2;
-        
+        if (newKnobMode.equalsIgnoreCase("horizontalvertical")) knobMode = 3;
+        if (newKnobMode.equalsIgnoreCase("verticalhorizontal")) knobMode = 3;
+        if (newKnobMode.equalsIgnoreCase("horizontal-vertical")) knobMode = 3;
+        if (newKnobMode.equalsIgnoreCase("vertical-horizontal")) knobMode = 3;
+        if (newKnobMode.equalsIgnoreCase("diagonal")) knobMode = 3;
+        if (newKnobMode.equalsIgnoreCase("both")) knobMode = 3;
+
         alfInterpolation = 2; //defaults to bicubic 'cloud' interpolation
         if (newInterpolation.equalsIgnoreCase("none")) alfInterpolation = 0;
         if (newInterpolation.equalsIgnoreCase("off")) alfInterpolation = 0;
         if (newInterpolation.equalsIgnoreCase("nearestneighbor")) alfInterpolation = 0;
+        if (newInterpolation.equalsIgnoreCase("nearest-neighbor")) alfInterpolation = 0;
         if (newInterpolation.equalsIgnoreCase("nearest neighbor")) alfInterpolation = 0; //variations on mondrian-meter
         if (newInterpolation.equalsIgnoreCase("bilinear")) alfInterpolation = 1; //option for softer definition
      }

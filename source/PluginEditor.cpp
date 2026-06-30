@@ -126,8 +126,8 @@ void PluginEditor::updateTrackProperties() {hostTrackColour=processorRef.trackPr
 void PluginEditor::updatePluginSize() {
     airwindowsLookAndFeel.userWidth = processorRef.pluginWidth;
     airwindowsLookAndFeel.userHeight = processorRef.pluginHeight;
-    if (airwindowsLookAndFeel.userWidth < 8 || airwindowsLookAndFeel.userWidth > 16386) airwindowsLookAndFeel.userWidth = 618;
-    if (airwindowsLookAndFeel.userHeight < 8 || airwindowsLookAndFeel.userHeight > 16386) airwindowsLookAndFeel.userHeight = 375;
+    if (airwindowsLookAndFeel.userWidth < 8 || airwindowsLookAndFeel.userWidth > 16386) airwindowsLookAndFeel.userWidth = 1080;
+    if (airwindowsLookAndFeel.userHeight < 8 || airwindowsLookAndFeel.userHeight > 16386) airwindowsLookAndFeel.userHeight = 720;
     repaint();
 }
 

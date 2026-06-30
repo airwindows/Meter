@@ -111,9 +111,9 @@ void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
     // as intermediaries to make it easy to save and load complex data.
     std::unique_ptr<juce::XmlElement> xml(new juce::XmlElement("meter"));
     xml->setAttribute("streamingVersion", (int)8524);
-    if (pluginWidth < 8 || pluginWidth > 16386) pluginWidth = 1000;
+    if (pluginWidth < 8 || pluginWidth > 16386) pluginWidth = 1080;
     xml->setAttribute(juce::String("awm_width"), pluginWidth);
-    if (pluginHeight < 8 || pluginHeight > 16386) pluginHeight = 537;
+    if (pluginHeight < 8 || pluginHeight > 16386) pluginHeight = 720;
     xml->setAttribute(juce::String("awm_height"), pluginHeight);
     copyXmlToBinary(*xml, destData);
 }
@@ -129,9 +129,9 @@ void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
         if (xmlState->hasTagName("meter"))
         {
             auto w = xmlState->getIntAttribute(juce::String("awm_width"));
-            if (w < 8 || w > 16386) w = 1000;
+            if (w < 8 || w > 16386) w = 1080;
             auto h = xmlState->getIntAttribute(juce::String("awm_height"));
-            if (h < 8 || h > 16386) h = 537;
+            if (h < 8 || h > 16386) h = 720;
             updatePluginSize(w, h);
         }
         updateHostDisplay();
