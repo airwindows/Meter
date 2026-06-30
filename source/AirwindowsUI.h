@@ -79,13 +79,21 @@ public:
         userHeight = newHeight.getIntValue(); if (userHeight < 8 || userHeight > 16386) userHeight = 720;
         //if you've not specified anything or your settings are crazy enough we go with defaults
         
+        bool TARGET_WIN32 = false;
+        bool TARGET_MAC = false;
+#ifdef JUCE_WINDOWS
+        TARGET_WIN32 = true;
+#endif
+#ifdef JUCE_MAC
+        TARGET_MAC = true;
+#endif
         if (newColour.length() > 0) { //something has been specified, could be anything
             if (newColour.equalsIgnoreCase("darkmode")) {//specify it and you get it (even if system is different)
-                if (TARGET_OS_WIN32) defaultColour = juce::Colour(0xFF1A1A1A);//XP Zune 0xFF1A1A1A
+                if (TARGET_WIN32) defaultColour = juce::Colour(0xFF1A1A1A);//XP Zune 0xFF1A1A1A
                 else defaultColour = juce::Colour(0xFF1C1C1E);//macOS dark mode 0xFF1C1C1E
             } else {
                 if (newColour.equalsIgnoreCase("lightmode")) {//specify it and you get it (even if system is different)
-                    if (TARGET_OS_MAC || TARGET_OS_OSX) defaultColour = juce::Colour(0xFFF2F2F7);//macOS lightmode 0xFFF2F2F7
+                    if (TARGET_MAC) defaultColour = juce::Colour(0xFFF2F2F7);//macOS lightmode 0xFFF2F2F7
                     else defaultColour = juce::Colours::white;
                 } else { //give what's being specified if at all possible, or just grey if the color is unknown
                     defaultColour = juce::Colours::findColourForName(newColour, juce::Colours::lightgrey);
@@ -93,7 +101,7 @@ public:
             }
         } else { //fall back through to default, nothing has been specified or there's no AirwindowsGlobals.txt
             if (juce::Desktop::getInstance().isDarkModeActive()) {//whatever the system, user's running dark mode
-                if (TARGET_OS_WIN32) defaultColour = juce::Colour(0xFF1A1A1A);//XP Zune 0xFF1A1A1A
+                if (TARGET_WIN32) defaultColour = juce::Colour(0xFF1A1A1A);//XP Zune 0xFF1A1A1A
                 else defaultColour = juce::Colour(0xFF1C1C1E);//macOS dark mode 0xFF1C1C1E
             } else defaultColour = juce::Colours::lightgrey; //nothing specified AND not dark mode: light grey will set off the meter better :)
         } //and we have now sorted out all the color variations
