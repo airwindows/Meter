@@ -15,7 +15,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0, (int)(164.9f*vS), getWidth(),1); //-30dB markings
     g.fillRect(0, (int)(175.2f*vS), getWidth(),1); //-36dB markings
     g.fillRect(0, (int)(182.5f*vS), getWidth(),1); //-42dB markings
-
+    
     g.fillRect(0,  (int)(260.0f*vS), getWidth(),1); // -6dB markings
     g.fillRect(0, (int)(301.02*vS), getWidth(),1); //-12dB markings
     g.fillRect(0, (int)(330.02f*vS), getWidth(),1); //-18dB markings
@@ -23,7 +23,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0, (int)(364.9f*vS), getWidth(),1); //-30dB markings
     g.fillRect(0, (int)(375.2f*vS), getWidth(),1); //-36dB markings
     g.fillRect(0, (int)(382.5f*vS), getWidth(),1); //-42dB markings
-
+    
     g.fillRect(0,  (int)(460.0f*vS), getWidth(),1); // -6dB markings
     g.fillRect(0, (int)(501.02*vS), getWidth(),1); //-12dB markings
     g.fillRect(0, (int)(530.02f*vS), getWidth(),1); //-18dB markings
@@ -31,21 +31,26 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0, (int)(564.9f*vS), getWidth(),1); //-30dB markings
     g.fillRect(0, (int)(575.2f*vS), getWidth(),1); //-36dB markings
     g.fillRect(0, (int)(582.5f*vS), getWidth(),1); //-42dB markings
-
+    
     for (unsigned long count = 0; count < fmin(displayWidth,5150); ++count) //count through all the points in the array
     {
         g.setColour(juce::Colours::black);
-        float psDotSizeL = 1.0f;
-        float psDotSizeR = 1.0f;
+        float psDotSizeL = 0.0f;
+        float psDotSizeR = 0.0f;
+        float slewDotSizeL = 0.0f;
+        float slewDotSizeR = 0.0f;
+        float bassDotSizeL = 0.0f;
+        float bassDotSizeR = 0.0f;
         float peakL = dataC[count] * 200.0f;
         float peakR = dataD[count] * 200.0f;
         float slewL = sqrt(dataE[count])*300.0f;
         float slewR = sqrt(dataF[count])*300.0f;
         float meterZeroL = (sqrt(dataG[count])*6.0f)-6.0f;
         if (meterZeroL > 192.0f) meterZeroL = 192.0f;
+        float bassL = fmin((sqrt(meterZeroL)*16.2f)-20.0f,199.0f);
         float meterZeroR = (sqrt(dataH[count])*6.0f)-6.0f;
         if (meterZeroR > 192.0f) meterZeroR = 192.0f;
-        
+        float bassR = fmin((sqrt(meterZeroR)*16.2f)-20.0f,199.0f);
         //begin draw dots on meters L
         if (peakL > 196.0f) {
             g.setColour(juce::Colour(255, 0, 0));
@@ -54,35 +59,18 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         else if (peakL > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
             psDotSizeL = (8.3144112499811f * sqrt(dataA[count] * dataB[count])) / (fabs(((peakL*((6.6180339887f)/7.0f))-slewL) * (7.0f/meterZeroL) )+1.0f);
             psDotSizeL += sin(pow(fmin(dataC[count]*8.5f,6.18f) / (fabs(((peakL*((4.6180339887f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
-            if (count == (unsigned long)dataPosition-1) {
-                momentaryScoreL[count] = ((psDotSizeL*140.0f*(1.0f-hype))+(psDotSizeL*peakL*hype));
-                maxScore += momentaryScoreL[count]*16.0f; //increase score
-            }
-            if (psDotSizeL > 1.0f) {
-                g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f));
-                midPeaks += 1.0f;
-            } else if (slewL > peakL) {
-                g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
-                brightPeaks += 1.0f;
-            } else {
-                g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f));
-                darkPeaks += 1.0f;
-            } //set COLOR
-            
+            slewDotSizeL = (sin(0.1618f/psDotSizeL)*6.18f)+(sqrt(slewL)*0.1618f);
+            bassDotSizeL = meterZeroL*0.1f*dataA[count];
+            if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f));
+            else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
+            else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f)); //set COLOR
             if (psDotSizeL > 1.0f) g.fillRect((float)count, (float)((200.0f - peakL)*vS), (float)fmax(psDotSizeL,2.0), (float)(fmax(psDotSizeL,dataC[count]*5.0f)*vS)); //draw blue dots
             else if (slewL > peakL) g.fillRect((float)count, (float)((200.0f - peakL)*vS), 2.0f, (float)(3.0*vS));
             else g.fillRect((float)count, (float)((200.0f - peakL)*vS), (float)(9.0f*dataA[count]), (float)((9.0f*dataA[count])*vS)); //draw red or green dots
-            
-            {
-                if (slewL > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
-                else g.fillRect((float)count, (float)((400.0f-slewL)*vS), (1.0f/psDotSizeL)+0.5f, (float)(((1.0f/psDotSizeL)+(sqrt(slewL)*0.1618f))*vS));
-            }
-            {
-                g.fillRect((float)count, ((400.0f+fmin((sqrt(meterZeroL)*16.2f)-20.0f,199.0f))*vS), fmax(meterZeroL*0.1f*dataA[count],1.618f), fmax(meterZeroL*0.075f*dataA[count],1.618f)*vS);
-                //zero cross subs
-            }
+            if (slewL > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
+            else g.fillRect((float)count, (float)((400.0f-slewL)*vS), slewDotSizeL, (float)(slewDotSizeL*vS)); //draw slew
+            g.fillRect((float)count, ((400.0f+bassL)*vS), bassDotSizeL, bassDotSizeL*vS); //zero cross subs
         } //end draw dots on meters L
-        
         //begin draw dots on meters R
         if (peakR > 197.0f) {
             g.setColour(juce::Colour(255, 0, 0));
@@ -91,162 +79,316 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         else if (peakR > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
             psDotSizeR = (8.3144112499811f * sqrt(dataB[count] * dataA[count])) / (fabs(((peakR*((6.6180339887f)/7.0f))-slewR) * (7.0f/meterZeroR) )+1.0f);
             psDotSizeR += sin(pow(fmin(dataD[count]*8.5f,6.18f) / (fabs(((peakR*((4.6180339887f)/5.0f))-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
-            if (count == (unsigned long)dataPosition-1) {
-                momentaryScoreR[count] = ((psDotSizeR*140.0f*(1.0f-hype))+(psDotSizeR*peakR*hype));
-                maxScore += momentaryScoreR[count]*16.0f; //increase score
-            }
-            if (psDotSizeR > 1.0f) {
-                g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f));
-                midPeaks += 1.0f;
-            } else if (slewR > peakR) {
-                g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
-                brightPeaks += 1.0f;
-            } else {
-                g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f));
-                darkPeaks += 1.0f;
-            } //set COLOR
-            
+            slewDotSizeR = (sin(0.1618f/psDotSizeR)*6.18f)+(sqrt(slewR)*0.1618f);
+            bassDotSizeR = meterZeroR*0.1f*dataB[count];
+            if (psDotSizeR > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f));
+            else if (slewR > peakR) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
+            else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f)); //set COLOR
             if (psDotSizeR > 1.0f) g.fillRect((float)count, (float)((200.0f - peakR)*vS), (float)fmax(psDotSizeR,2.0), (float)(fmax(psDotSizeR,dataD[count]*5.0f)*vS)); //draw blue dots
             else if (slewR > peakR) g.fillRect((float)count, (float)((200.0f - peakR)*vS), 2.0f, (float)(3.0*vS));
             else g.fillRect((float)count, (float)((200.0f - peakR)*vS), (float)(9.0f*dataB[count]), (float)((9.0f*dataB[count])*vS)); //draw red or green dots
-        
-            {
-                if (slewR > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
-                else g.fillRect((float)count, (float)((400.0f-slewR)*vS), (1.0f/psDotSizeR)+0.5f, (float)(((1.0f/psDotSizeR)+(sqrt(slewR)*0.1618f))*vS));
-            }
-            {
-                g.fillRect((float)count, ((400.0f+fmin((sqrt(meterZeroR)*16.2f)-20.0f,199.0f))*vS), fmax(meterZeroR*0.1f*dataB[count],1.618f), fmax(meterZeroR*0.075f*dataB[count],1.618f)*vS);
-                //zero cross subs
-            }
+            if (slewR > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
+            else g.fillRect((float)count, (float)((400.0f-slewR)*vS), slewDotSizeR, (float)(slewDotSizeR*vS)); //draw slew
+            g.fillRect((float)count, ((400.0f+bassR)*vS), bassDotSizeR, bassDotSizeR*vS); //zero cross subs
         } //end draw dots on meters R
-         
-        if (count == (unsigned long)dataPosition-1) {
-            float falloff = 0.9438f; //tweak this in one place!
-            loudScore[count] = sqrt(maxScore)*2.0f; //trim to work with meter
-            maxScore *= falloff; //how fast loudness falls off
-            unsigned long peakLTracker = (unsigned long)(peakL * (0.005f*(float)peakBins));
-            unsigned long peakRTracker = (unsigned long)(peakR * (0.005f*(float)peakBins));//converts 0-200 to 0-bin number for bins for novelty chart
-            if (peakLTracker > 0 && peakLTracker <= peakBins) peakTrack[peakLTracker] += loudScore[count];
-            if (peakRTracker > 0 && peakRTracker <= peakBins) peakTrack[peakRTracker] += loudScore[count];
-            //and we've incremented each bin we hit by Dot Size, to incorporate our peak intensity stuff
-            for (unsigned long binscale = 0; binscale < peakBins; ++binscale) {
-                evennessNovelty += fmin(peakTrack[binscale],fmax((float)peakLTracker,(float)peakRTracker)*50.0f);
-                //fmax causes high bins to clamp and stay active until the energy subsides.
-                //it is allowing the bin number to act as the clamp limit
-                peakTrack[binscale] *= falloff; //how fast each bin falls off
+        
+        unsigned long bintracker = (unsigned long)(peakL * (0.005f*(float)totalBins));//converts 0-200 to 0-bin number for textscore bins
+        if (bintracker > 0 && bintracker <= totalBins) peakTrack[bintracker] += psDotSizeL * sqrt(fmax(psDotSizeL,1.0f)) * 0.2f;
+        bintracker = (unsigned long)(peakR * (0.005f*(float)totalBins));
+        if (bintracker > 0 && bintracker <= totalBins) peakTrack[bintracker] += psDotSizeR * sqrt(fmax(psDotSizeR,1.0f)) * 0.2f; //peak textscore bins
+        
+        bintracker = (unsigned long)(slewL * (0.005f*(float)totalBins));
+        if (bintracker > 0 && bintracker <= totalBins) slewTrack[bintracker] += slewL * slewDotSizeL * sqrt(fmax(slewDotSizeL,1.0f)) * 0.0009f;
+        bintracker = (unsigned long)(slewR * (0.005f*(float)totalBins));
+        if (bintracker > 0 && bintracker <= totalBins) slewTrack[bintracker] += slewR * slewDotSizeR * sqrt(fmax(slewDotSizeR,1.0f)) * 0.0009f; //slew textscore bins
+        
+        bintracker = (unsigned long)(bassL * (0.005f*(float)totalBins));
+        if (bintracker > 0 && bintracker <= totalBins) bassTrack[bintracker] += bassDotSizeL * sqrt(fmax(bassDotSizeL,1.0f)) * 13.0f / (bassL+0.666f);
+        bintracker = (unsigned long)(bassR * (0.005f*(float)totalBins));
+        if (bintracker > 0 && bintracker <= totalBins) bassTrack[bintracker] += bassDotSizeR * sqrt(fmax(bassDotSizeR,1.0f)) * 13.0f / (bassR+0.666f); //bass textscore bins
+        //bins are for reinforcing score of a dispersed cloud of dot positions rather than maxing out a position
+        
+        float maxPeakBin = 0.0f;
+        float maxSlewBin = 0.0f;
+        float maxBassBin = 0.0f;
+        for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
+            maxPeakBin = fmax(peakTrack[binscale], maxPeakBin);
+            maxSlewBin = fmax(slewTrack[binscale], maxSlewBin);
+            maxBassBin = fmax(bassTrack[binscale], maxBassBin);
+        } //now each holds the highest value of the lot
+        for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
+            peakTrack[binscale] = fmax(peakTrack[binscale] - (maxPeakBin*0.01f), 0.0f);
+            slewTrack[binscale] = fmax(slewTrack[binscale] - (maxSlewBin*0.01f), 0.0f);
+            bassTrack[binscale] = fmax(bassTrack[binscale] - (maxBassBin*0.01f), 0.0f);
+        } //bins fall off at fixed speed, not converging on 0
+
+        if (count == (unsigned long)dataPosition-1) { //only update text scores more infrequently
+            float peakScore = 0.0;
+            float slewScore = 0.0;
+            float bassScore = 0.0;
+            for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
+                peakScore += peakTrack[binscale];
+                slewScore += slewTrack[binscale];
+                bassScore += bassTrack[binscale];
             }
-            varietyScore[count] = sqrt(evennessNovelty);
-            evennessNovelty *= falloff; //how fast novelty falls off
-            hitColor += pow(hue*0.5f,2.0f);
-            hitColor *= falloff; //how fast hue correctness falls off
-            evennessHype += (outGreen*hitColor);
-            hypeScore[count] = fmin(sqrt(evennessHype),99.0f);
-            evennessHype *= falloff; //how fast hype (final score) falls off
+            if (sqrt(peakScore * 100.0f)*0.26f > peaksGrade) peaksGrade += 1;
+            if (sqrt(slewScore * 100.0f)*0.26f > slewGrade) slewGrade += 1;
+            if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade += 1;
+            
+            int allMatch = abs(peaksGrade-slewGrade);
+            if (abs(peaksGrade-bassGrade) > abs(peaksGrade-slewGrade)) allMatch = abs(peaksGrade-bassGrade);
+            allMatch /= 2;
+            if (peaksGrade == slewGrade) allMatch -= 1;
+            if (peaksGrade == bassGrade) allMatch -= 1;
+            if (bassGrade == slewGrade) allMatch -= 1; //if categories perfectly balance that's a grade boost right there
+            allMatch = 26-allMatch; //we have a fourth letter that tracks which songs have ALL the parts harmoniously in balance: like Strobe or Hotel California.
+            if (allMatch < 1) allMatch = 1;
+            if (allMatch > 26) allMatch = 26;
+            switch (allMatch) {
+                case 1:
+                    totalPackage = juce::String("Z"); break;
+                case 2:
+                    totalPackage = juce::String("Y"); break;
+                case 3:
+                    totalPackage = juce::String("X"); break;
+                case 4:
+                    totalPackage = juce::String("W"); break;
+                case 5:
+                    totalPackage = juce::String("V"); break;
+                case 6:
+                    totalPackage = juce::String("U"); break;
+                case 7:
+                    totalPackage = juce::String("T"); break;
+                case 8:
+                    totalPackage = juce::String("S"); break;
+                case 9:
+                    totalPackage = juce::String("R"); break;
+                case 10:
+                    totalPackage = juce::String("Q"); break;
+                case 11:
+                    totalPackage = juce::String("P"); break;
+                case 12:
+                    totalPackage = juce::String("O"); break;
+                case 13:
+                    totalPackage = juce::String("N"); break;
+                case 14:
+                    totalPackage = juce::String("M"); break;
+                case 15:
+                    totalPackage = juce::String("L"); break;
+                case 16:
+                    totalPackage = juce::String("K"); break;
+                case 17:
+                    totalPackage = juce::String("J"); break;
+                case 18:
+                    totalPackage = juce::String("I"); break;
+                case 19:
+                    totalPackage = juce::String("H"); break;
+                case 20:
+                    totalPackage = juce::String("G"); break;
+                case 21:
+                    totalPackage = juce::String("F"); break;
+                case 22:
+                    totalPackage = juce::String("E"); break;
+                case 23:
+                    totalPackage = juce::String("D"); break;
+                case 24:
+                    totalPackage = juce::String("C"); break;
+                case 25:
+                    totalPackage = juce::String("B"); break;
+                case 26:
+                    totalPackage = juce::String("A"); break;
+            } //this is our letter score, incorporating all the measurements
+
+            
+            if (peaksGrade < 1) peaksGrade = 1;
+            if (peaksGrade > 26) peaksGrade = 26;
+            switch (peaksGrade) {
+                case 1:
+                    rating = juce::String("Z"); break;
+                case 2:
+                    rating = juce::String("Y"); break;
+                case 3:
+                    rating = juce::String("X"); break;
+                case 4:
+                    rating = juce::String("W"); break;
+                case 5:
+                    rating = juce::String("V"); break;
+                case 6:
+                    rating = juce::String("U"); break;
+                case 7:
+                    rating = juce::String("T"); break;
+                case 8:
+                    rating = juce::String("S"); break;
+                case 9:
+                    rating = juce::String("R"); break;
+                case 10:
+                    rating = juce::String("Q"); break;
+                case 11:
+                    rating = juce::String("P"); break;
+                case 12:
+                    rating = juce::String("O"); break;
+                case 13:
+                    rating = juce::String("N"); break;
+                case 14:
+                    rating = juce::String("M"); break;
+                case 15:
+                    rating = juce::String("L"); break;
+                case 16:
+                    rating = juce::String("K"); break;
+                case 17:
+                    rating = juce::String("J"); break;
+                case 18:
+                    rating = juce::String("I"); break;
+                case 19:
+                    rating = juce::String("H"); break;
+                case 20:
+                    rating = juce::String("G"); break;
+                case 21:
+                    rating = juce::String("F"); break;
+                case 22:
+                    rating = juce::String("E"); break;
+                case 23:
+                    rating = juce::String("D"); break;
+                case 24:
+                    rating = juce::String("C"); break;
+                case 25:
+                    rating = juce::String("B"); break;
+                case 26:
+                    rating = juce::String("A"); break;
+            } //this is our letter score, incorporating all the measurements
+            
+            if (slewGrade < 1) slewGrade = 1;
+            if (slewGrade > 26) slewGrade = 26;
+            switch (slewGrade) {
+                case 1:
+                    sparkle = juce::String("Z"); break;
+                case 2:
+                    sparkle = juce::String("Y"); break;
+                case 3:
+                    sparkle = juce::String("X"); break;
+                case 4:
+                    sparkle = juce::String("W"); break;
+                case 5:
+                    sparkle = juce::String("V"); break;
+                case 6:
+                    sparkle = juce::String("U"); break;
+                case 7:
+                    sparkle = juce::String("T"); break;
+                case 8:
+                    sparkle = juce::String("S"); break;
+                case 9:
+                    sparkle = juce::String("R"); break;
+                case 10:
+                    sparkle = juce::String("Q"); break;
+                case 11:
+                    sparkle = juce::String("P"); break;
+                case 12:
+                    sparkle = juce::String("O"); break;
+                case 13:
+                    sparkle = juce::String("N"); break;
+                case 14:
+                    sparkle = juce::String("M"); break;
+                case 15:
+                    sparkle = juce::String("L"); break;
+                case 16:
+                    sparkle = juce::String("K"); break;
+                case 17:
+                    sparkle = juce::String("J"); break;
+                case 18:
+                    sparkle = juce::String("I"); break;
+                case 19:
+                    sparkle = juce::String("H"); break;
+                case 20:
+                    sparkle = juce::String("G"); break;
+                case 21:
+                    sparkle = juce::String("F"); break;
+                case 22:
+                    sparkle = juce::String("E"); break;
+                case 23:
+                    sparkle = juce::String("D"); break;
+                case 24:
+                    sparkle = juce::String("C"); break;
+                case 25:
+                    sparkle = juce::String("B"); break;
+                case 26:
+                    sparkle = juce::String("A"); break;
+            } //this is our two letter score, incorporating all the measurements
+            
+            if (bassGrade < 1) bassGrade = 1;
+            if (bassGrade > 26) bassGrade = 26;
+            switch (bassGrade) {
+                case 1:
+                    rumble = juce::String("Z"); break;
+                case 2:
+                    rumble = juce::String("Y"); break;
+                case 3:
+                    rumble = juce::String("X"); break;
+                case 4:
+                    rumble = juce::String("W"); break;
+                case 5:
+                    rumble = juce::String("V"); break;
+                case 6:
+                    rumble = juce::String("U"); break;
+                case 7:
+                    rumble = juce::String("T"); break;
+                case 8:
+                    rumble = juce::String("S"); break;
+                case 9:
+                    rumble = juce::String("R"); break;
+                case 10:
+                    rumble = juce::String("Q"); break;
+                case 11:
+                    rumble = juce::String("P"); break;
+                case 12:
+                    rumble = juce::String("O"); break;
+                case 13:
+                    rumble = juce::String("N"); break;
+                case 14:
+                    rumble = juce::String("M"); break;
+                case 15:
+                    rumble = juce::String("L"); break;
+                case 16:
+                    rumble = juce::String("K"); break;
+                case 17:
+                    rumble = juce::String("J"); break;
+                case 18:
+                    rumble = juce::String("I"); break;
+                case 19:
+                    rumble = juce::String("H"); break;
+                case 20:
+                    rumble = juce::String("G"); break;
+                case 21:
+                    rumble = juce::String("F"); break;
+                case 22:
+                    rumble = juce::String("E"); break;
+                case 23:
+                    rumble = juce::String("D"); break;
+                case 24:
+                    rumble = juce::String("C"); break;
+                case 25:
+                    rumble = juce::String("B"); break;
+                case 26:
+                    rumble = juce::String("A"); break;
+            } //this is our letter score, incorporating all the measurements
         }
-        brightPeaks *= 0.996f; brightPeaksDisplay[count] = brightPeaks;
-        midPeaks *= 0.996f; midPeaksDisplay[count] = midPeaks;
-        darkPeaks *= 0.996f; darkPeaksDisplay[count] = darkPeaks; //make this able to track on the fly
-        float totalPeaks = (brightPeaksDisplay[count] + midPeaksDisplay[count] + darkPeaksDisplay[count] )*0.01f;
-        //generating metrics for bright, sonorous and dark peaks to calculate with
-        float blueScore = 0.0f; if (loudScore[count] > 1.0f) blueScore = fmin(pow(loudScore[count],2.0f)*0.00009f,99.0f); //HERE is where to trim the blue line for loudness
-        float redScore = 0.0f; if (varietyScore[count] > 1.0) redScore = fmin(pow(varietyScore[count],2.0f)*0.00083f,99.0f); //HERE is where to trim the red line for variety
-        outGreen = pow(fmax((fmax(dataA[count],dataB[count])*-80.0f)+(redScore+blueScore),0.0f),1.618f)*0.075f;
-        float scaleGreen = 90.0f + outGreen + ((redScore-blueScore)*3.0f); scaleGreen = pow(scaleGreen,1.618f)*0.0273f;
-        int greenColor = (int)scaleGreen; if (greenColor < 0) greenColor = 0; if (greenColor > 255) greenColor = 255;
-                
-        hue = juce::Colour((juce::uint8)(darkPeaksDisplay[count]/(totalPeaks*0.5f)), (juce::uint8)greenColor, (juce::uint8)(brightPeaksDisplay[count]/(totalPeaks*0.5f))).getHue();
-        hue = hue-0.53333333f; if (hue < 0.0f) hue = fmax(1.0f+hue, 0.0f); else hue = 1.0f - hue; //involved in rating setting
-                
-        if (hypeScore[count]*0.38f > highestGrade) highestGrade += 1;
-        if (highestGrade < 0) highestGrade = 0;
-        if (highestGrade > 37) highestGrade = 37;
-        switch (highestGrade) {
-            case 0:
-                rating = juce::String("FF (Calm)"); break;
-            case 1:
-                rating = juce::String("FF (Calm)"); break;
-            case 2:
-                rating = juce::String("FF (Calm)"); break;
-            case 3:
-                rating = juce::String("FE (Calm)"); break;
-            case 4:
-                rating = juce::String("FD (Calm)"); break;
-            case 5:
-                rating = juce::String("FC (Calm)"); break;
-            case 6:
-                rating = juce::String("FB (Calm)"); break;
-            case 7:
-                rating = juce::String("FA (Calm)"); break;
-            case 8:
-                rating = juce::String("EF (Calm)"); break;
-            case 9:
-                rating = juce::String("EE (Calm)"); break;
-            case 10:
-                rating = juce::String("ED (Calm)"); break;
-            case 11:
-                rating = juce::String("EC (Calm)"); break;
-            case 12:
-                rating = juce::String("EB (Calm)"); break;
-            case 13:
-                rating = juce::String("EA (Calm)"); break;
-            case 14:
-                rating = juce::String("DF (Calm)"); break;
-            case 15:
-                rating = juce::String("DE (Calm)"); break;
-            case 16:
-                rating = juce::String("DD (Calm)"); break;
-            case 17:
-                rating = juce::String("DC (Calm)"); break;
-            case 18:
-                rating = juce::String("DB (Calm)"); break;
-            case 19:
-                rating = juce::String("DA (Calm)"); break;
-            case 20:
-                rating = juce::String("CF (Serene)"); break;
-            case 21:
-                rating = juce::String("CE (Serene)"); break;
-            case 22:
-                rating = juce::String("CD (Serene)"); break;
-            case 23:
-                rating = juce::String("CC (Serene)"); break;
-            case 24:
-                rating = juce::String("CB (Serene)"); break;
-            case 25:
-                rating = juce::String("CA (Serene)"); break;
-            case 26:
-                rating = juce::String("BF (Groove)"); break;
-            case 27:
-                rating = juce::String("BE (Groove)"); break;
-            case 28:
-                rating = juce::String("BD (Powerful)"); break;
-            case 29:
-                rating = juce::String("BC (Powerful)"); break;
-            case 30:
-                rating = juce::String("BB (Forceful)"); break;
-            case 31:
-                rating = juce::String("BA (Forceful)"); break;
-            case 32:
-                rating = juce::String("AF (Legendary)"); break;
-            case 33:
-                rating = juce::String("AE (Legendary)"); break;
-            case 34:
-                rating = juce::String("AD (Transcendent)"); break;
-            case 35:
-                rating = juce::String("AC (Transcendent)"); break;
-            case 36:
-                rating = juce::String("AB (Transcendent)"); break;
-            case 37:
-                rating = juce::String("AA (Transcendent)"); break;
-        } //this is our two letter score, incorporating all the measurements
     }
     
     float scaleFont = sqrt(vS*61.8f)*1.618f;
     g.setFont(scaleFont*1.618f);
+    
+    g.setColour(juce::Colours::white);
+    g.drawText(sparkle, 6, (int)(390*vS)-11, displayWidth-20, 32, juce::Justification::topRight);
+    g.drawText(sparkle, 8, (int)(390*vS)-9, displayWidth-20, 32, juce::Justification::topRight);
+
     g.setColour(juce::Colours::darkgrey);
-    g.drawText("peaks", 7, (int)(4*vS), displayWidth-20, 32, juce::Justification::topLeft);
-    g.drawText("slew rate relative to peak energy", 7, (int)(204*vS), displayWidth-20, 32, juce::Justification::centredTop);
-    g.drawText("zero cross", 7, (int)(404*vS), displayWidth-20, 32, juce::Justification::topRight);
-    g.drawText(rating, 7, (int)(404*vS), displayWidth-20, 32, juce::Justification::centredTop);
+    g.drawText("intensity (peaks)", 7, (int)(4*vS), displayWidth-20, 32, juce::Justification::topLeft);
+    if (peaksGrade+slewGrade+bassGrade > 3) g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::centredTop);
+    g.drawText(rating, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::topRight);
+    g.drawText("detail (slew)", 7, (int)(204*vS), displayWidth-20, 32, juce::Justification::topLeft);
+    g.drawText(sparkle, 7, (int)(390*vS)-10, displayWidth-20, 32, juce::Justification::topRight);
+    g.drawText("fullness (zero cross)", 7, (int)(404*vS), displayWidth-20, 32, juce::Justification::topLeft);
+    g.drawText(rumble, 7, (int)(404*vS), displayWidth-20, 32, juce::Justification::topRight);
+    
     g.setFont(scaleFont);
     if (scaleFont > 8.0f) {
         g.drawText("-6 dB", 7, (int)(60.0f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
@@ -258,13 +400,13 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.drawText("-42 dB", 7, (int)(182.5f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
     }//dB markings
     if (scaleFont > 8.0f) {
-        g.drawText("900 Hz", 7, (int)(460.0f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomRight);
-        g.drawText("210 Hz", 7, (int)(501.02f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomRight);
-        g.drawText("100 Hz", 7, (int)(530.02f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomRight);
-        g.drawText("60 Hz", 7, (int)(550.2f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomRight);
-        g.drawText("45 Hz", 7, (int)(564.9f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomRight);
-        g.drawText("35 Hz", 7, (int)(575.2f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomRight);
-        g.drawText("30 Hz", 7, (int)(582.5f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomRight);
+        g.drawText("900 Hz", 7, (int)(460.0f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("210 Hz", 7, (int)(501.02f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("100 Hz", 7, (int)(530.02f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("60 Hz", 7, (int)(550.2f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("45 Hz", 7, (int)(564.9f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("35 Hz", 7, (int)(575.2f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("30 Hz", 7, (int)(582.5f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
     }//zero cross markings
     
     g.setColour(juce::Colours::grey);
@@ -276,7 +418,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.382f));
     g.fillRect(0, 0, getWidth(), 2);
     g.fillRect(0, 0, 2, getHeight());
-     
+    
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.618f));
     g.fillRect(2, getHeight()-2, getWidth(), 2);
     g.fillRect(getWidth()-2, 2, 2, getHeight()-2);

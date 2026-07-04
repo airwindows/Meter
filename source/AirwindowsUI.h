@@ -154,47 +154,25 @@ struct AirwindowsMeter : public juce::Component
     void paint(juce::Graphics &g) override;
     
     static constexpr int dataPoints = 5151;
-    static constexpr int peakBins = 16;
+    static constexpr int totalBins = 16;
     int displayWidth = 1280;
     int displayHeight = 720;
     int dataPosition = 0;
-    float maxScore = 0.0f;
-    float lastScore = 0.0f;
-    float evennessNovelty = 0.0f;
-    float evennessHype = 0.0f;
-    float prevLoud = 0.0f;
-    float prevPeak = 0.0f;
-    float prevHit = 0.0f;
-    float smoothMomentary = 0.0f;
-    float lastLOutline = 0.0f;
-    float lastROutline = 0.0f;
-    float lastLPeak = 0.0f;
-    float lastRPeak = 0.0f;
-    float lastLSlew = 0.0f;
-    float lastRSlew = 0.0f;
-    float brightPeaks = 0.0f;
-    float midPeaks = 0.0f;
-    float darkPeaks = 1.0f;
-    float hue = 0.0f;
-    float outGreen = 0.0f;
-    int highestGrade = 0;
-    int highestColor = 0;
-    float hitColor = 0.0f;
-    juce::String hypeRating = juce::String();
-    juce::String textScore = juce::String();
+    int peaksGrade = 0;
+    int slewGrade = 0;
+    int bassGrade = 0;
+    juce::String totalPackage = juce::String();
     juce::String rating = juce::String();
+    juce::String sparkle = juce::String();
+    juce::String rumble = juce::String();
     float hype = 0.618033988749894f; //this is now set in stone :)
     
-    std::array<float, dataPoints> loudScore;
-    std::array<float, dataPoints> varietyScore;
-    std::array<float, dataPoints> hypeScore;
-    std::array<float, peakBins> peakTrack;
-    std::array<float, dataPoints> momentaryScoreL;
-    std::array<float, dataPoints> momentaryScoreR;
-    std::array<float, dataPoints> brightPeaksDisplay;
-    std::array<float, dataPoints> midPeaksDisplay;
-    std::array<float, dataPoints> darkPeaksDisplay;
-
+ 
+    
+    std::array<float, totalBins> peakTrack;
+    std::array<float, totalBins> slewTrack;
+    std::array<float, totalBins> bassTrack;
+    
     std::array<float, dataPoints> dataA;
     std::array<float, dataPoints> dataB;
     std::array<float, dataPoints> dataC;
@@ -219,46 +197,22 @@ struct AirwindowsMeter : public juce::Component
 
     void resetArrays(){
         dataPosition = 0;
-        maxScore = 0.0f;
-        lastScore = 0.0f;
-        evennessNovelty = 0.0f;
-        evennessHype = 0.0f;
-        prevLoud = 0.0f;
-        prevPeak = 0.0f;
-        prevHit = 0.0f;
-        smoothMomentary = 0.0f;
-        lastLOutline = 0.0f;
-        lastROutline = 0.0f;
-        lastLPeak = 0.0f;
-        lastRPeak = 0.0f;
-        lastLSlew = 0.0f;
-        lastRSlew = 0.0f;
-        brightPeaks = 0.0f;
-        midPeaks = 0.0f;
-        darkPeaks = 1.0f;
-        hue = 0.0f;
-        outGreen = 0.0f;
-        highestGrade = 0;
-        highestColor = 0;
-        hitColor = 0.0f;
-        hypeRating = juce::String();
-        textScore = juce::String();
+        peaksGrade = 0;
+        slewGrade = 0;
+        bassGrade = 0;
+        totalPackage = juce::String();
         rating = juce::String();
+        sparkle = juce::String();
+        rumble = juce::String();
         hype = 0.618033988749894f; //0.3819661
-        for (unsigned long count = 0; count < peakBins; ++count) //count through all the points in the array
+        for (unsigned long count = 0; count < totalBins; ++count) //count through all the points in the array
         {
-            peakTrack[count] = 10.0;
+            peakTrack[count] = 0.0;
+            slewTrack[count] = 0.0;
+            bassTrack[count] = 0.0;
         }
         for (unsigned long count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
-            loudScore[count] = 0.0f;
-            varietyScore[count] = 0.0f;
-            hypeScore[count] = 0.0f;
-            momentaryScoreL[count] = 0.0f;
-            momentaryScoreR[count] = 0.0f;
-            brightPeaksDisplay[count] = 0.0f;
-            midPeaksDisplay[count] = 0.0f;
-            darkPeaksDisplay[count] = 1.0f;
             dataA[count] = 0.0f;
             dataB[count] = 0.0f;
             dataC[count] = 0.0f;
