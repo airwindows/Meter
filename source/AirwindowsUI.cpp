@@ -379,6 +379,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.setColour(juce::Colours::white);
     g.drawText(sparkle, 6, (int)(390*vS)-11, displayWidth-20, 32, juce::Justification::topRight);
     g.drawText(sparkle, 8, (int)(390*vS)-9, displayWidth-20, 32, juce::Justification::topRight);
+    if (peaksGrade+slewGrade+bassGrade > 3) {
+        g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 6, (int)(190*vS)-11, displayWidth-20, 32, juce::Justification::centredTop);
+        g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 8, (int)(190*vS)-9, displayWidth-20, 32, juce::Justification::centredTop);
+    }//underdrawing in white for areas prone to get covered up with dots
+
 
     g.setColour(juce::Colours::darkgrey);
     g.drawText("intensity (peaks)", 7, (int)(4*vS), displayWidth-20, 32, juce::Justification::topLeft);
