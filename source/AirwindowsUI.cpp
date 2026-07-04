@@ -372,6 +372,8 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             } //this is our letter score, incorporating all the measurements
         }
     }
+    if (peaksGrade == slewGrade) totalPackage = "+"+totalPackage;
+    //we have an extra bonus plus to add for when peaks exactly matches slew, at whatever fullness
     
     float scaleFont = sqrt(vS*61.8f)*1.618f;
     g.setFont(scaleFont*1.618f);
