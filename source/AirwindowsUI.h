@@ -23,8 +23,8 @@ public:
         setColour(juce::Slider::textBoxOutlineColourId, juce::Colours::grey);
         setColour(juce::TextButton::buttonColourId, juce::Colours::lightgrey);
         setColour(juce::TextButton::buttonOnColourId, juce::Colours::lightgrey);
-        setColour(juce::TextButton::textColourOffId, juce::Colours::lightgrey);
-        setColour(juce::TextButton::textColourOnId, juce::Colours::lightgrey);
+        setColour(juce::TextButton::textColourOffId, juce::Colours::grey);
+        setColour(juce::TextButton::textColourOnId, juce::Colours::grey);
         setColour(juce::ResizableWindow::backgroundColourId, juce::Colours::lightgrey);
         
         juce::String newWidth = juce::String(); juce::String namedWidth = JucePlugin_Name; namedWidth.append("Width",1024);
@@ -181,7 +181,9 @@ struct AirwindowsMeter : public juce::Component
     std::array<float, dataPoints> dataF;
     std::array<float, dataPoints> dataG;
     std::array<float, dataPoints> dataH;
-     
+    std::array<float, dataPoints> dataI;//display hue showing score
+    std::array<float, dataPoints> dataJ;//display saturation showing balance
+
     void pushA(float X) {dataA[dataPosition] = X;}
     void pushB(float X) {dataB[dataPosition] = X;}
     void pushC(float X) {dataC[dataPosition] = X;}
@@ -221,6 +223,8 @@ struct AirwindowsMeter : public juce::Component
             dataF[count] = 0.0f;
             dataG[count] = 0.0f;
             dataH[count] = 0.0f;
+            dataI[count] = 0.0f;
+            dataJ[count] = 0.0f;
         }
     }
 };

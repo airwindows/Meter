@@ -112,7 +112,7 @@ void PluginEditor::resized()
     //getProportion sets first start X and Y placement, then size X and Y placement
     meter.setBounds(area.getProportion(juce::Rectangle{((float)linewidth*2.0f)/area.getWidth(), 0.05f, 1.0f-(((float)linewidth*4.0f)/area.getWidth()), 0.95f-(((float)linewidth*2.0f)/area.getHeight())}));
     
-    resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.054f, 0.033f}));
+    resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.084f, 0.033f}));
 }
 
 void PluginEditor::sliderValueChanged(juce::Slider *s) {}                           //there are no sliders

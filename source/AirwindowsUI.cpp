@@ -121,85 +121,79 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             slewTrack[binscale] = fmax(slewTrack[binscale] - (maxSlewBin*0.01f), 0.0f);
             bassTrack[binscale] = fmax(bassTrack[binscale] - (maxBassBin*0.01f), 0.0f);
         } //bins fall off at fixed speed, not converging on 0
-
-        if (count == (unsigned long)dataPosition-1) { //only update text scores more infrequently
-            float peakScore = 0.0;
-            float slewScore = 0.0;
-            float bassScore = 0.0;
-            for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
-                peakScore += peakTrack[binscale];
-                slewScore += slewTrack[binscale];
-                bassScore += bassTrack[binscale];
-            }
-            if (sqrt(peakScore * 100.0f)*0.26f > peaksGrade) peaksGrade += 1;
-            if (sqrt(slewScore * 100.0f)*0.26f > slewGrade) slewGrade += 1;
-            if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade += 1;
-            
+        
+        float peakScore = 0.0;
+        float slewScore = 0.0;
+        float bassScore = 0.0;
+        for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
+            peakScore += peakTrack[binscale];
+            slewScore += slewTrack[binscale];
+            bassScore += bassTrack[binscale];
+        }
+        if (sqrt(peakScore * 100.0f)*0.26f > peaksGrade) peaksGrade += 1;
+        if (sqrt(slewScore * 100.0f)*0.26f > slewGrade) slewGrade += 1;
+        if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade += 1;
+        
+        if (dataPosition == (int)count) {
             int allMatch = abs(peaksGrade-slewGrade);
             if (abs(peaksGrade-bassGrade) > abs(peaksGrade-slewGrade)) allMatch = abs(peaksGrade-bassGrade);
             allMatch /= 2;
-            if (peaksGrade == slewGrade) allMatch -= 1;
-            if (peaksGrade == bassGrade) allMatch -= 1;
-            if (bassGrade == slewGrade) allMatch -= 1; //if categories perfectly balance that's a grade boost right there
+            //note that for the color measurement we have NOT clamped the grades! The color saturation can go off even on a high score
             allMatch = 26-allMatch; //we have a fourth letter that tracks which songs have ALL the parts harmoniously in balance: like Strobe or Hotel California.
             if (allMatch < 1) allMatch = 1;
             if (allMatch > 26) allMatch = 26;
             switch (allMatch) {
                 case 1:
-                    totalPackage = juce::String("Z"); break;
                 case 2:
-                    totalPackage = juce::String("Y"); break;
                 case 3:
-                    totalPackage = juce::String("X"); break;
                 case 4:
-                    totalPackage = juce::String("W"); break;
                 case 5:
-                    totalPackage = juce::String("V"); break;
                 case 6:
-                    totalPackage = juce::String("U"); break;
                 case 7:
-                    totalPackage = juce::String("T"); break;
                 case 8:
-                    totalPackage = juce::String("S"); break;
                 case 9:
-                    totalPackage = juce::String("R"); break;
                 case 10:
-                    totalPackage = juce::String("Q"); break;
                 case 11:
-                    totalPackage = juce::String("P"); break;
                 case 12:
-                    totalPackage = juce::String("O"); break;
                 case 13:
-                    totalPackage = juce::String("N"); break;
-                case 14:
-                    totalPackage = juce::String("M"); break;
+                case 14://below this score the meter can just show black
+                    dataI[count] = 0.94f; break;
                 case 15:
-                    totalPackage = juce::String("L"); break;
+                    dataI[count] = 0.87f; break;
                 case 16:
-                    totalPackage = juce::String("K"); break;
+                    dataI[count] = 0.71f; break;
                 case 17:
-                    totalPackage = juce::String("J"); break;
+                    dataI[count] = 0.62f; break;
                 case 18:
-                    totalPackage = juce::String("I"); break;
+                    dataI[count] = 0.55f; break;
                 case 19:
-                    totalPackage = juce::String("H"); break;
+                    dataI[count] = 0.48f; break;
                 case 20:
-                    totalPackage = juce::String("G"); break;
+                    dataI[count] = 0.42f; break;
                 case 21:
-                    totalPackage = juce::String("F"); break;
+                    dataI[count] = 0.36f; break;
                 case 22:
-                    totalPackage = juce::String("E"); break;
+                    dataI[count] = 0.28f; break;
                 case 23:
-                    totalPackage = juce::String("D"); break;
+                    dataI[count] = 0.23f; break;
                 case 24:
-                    totalPackage = juce::String("C"); break;
+                    dataI[count] = 0.17f; break;
                 case 25:
-                    totalPackage = juce::String("B"); break;
+                    dataI[count] = 0.11f; break;
                 case 26:
-                    totalPackage = juce::String("A"); break;
+                    dataI[count] = 0.001f; break;
             } //this is our letter score, incorporating all the measurements
-
-            
+            dataJ[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
+            if (peaksGrade < 2) dataJ[count] = 0.0;
+        }
+        //saturation is an even better guide to balance than the + and will hint at how close you're getting
+        g.setColour(juce::Colour::fromHSV(dataI[count], dataJ[count], dataJ[count], 1.0f));
+        g.fillRect((float)count, 401.0f*vS, 1.0f, 29.0f*vS);
+        //draw that bar that shows color of the text score at any given point
+        //note: the bar will freak out if you're pushing levels to loudenation levels as you're forcing the
+        //measurements inside the meter to saturate and overdrive. Keeping max color means keeping balance there too.
+        
+        if (count == (unsigned long)dataPosition-1) { //only update text score display more infrequently
             if (peaksGrade < 1) peaksGrade = 1;
             if (peaksGrade > 26) peaksGrade = 26;
             switch (peaksGrade) {
@@ -370,10 +364,80 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                 case 26:
                     rumble = juce::String("A"); break;
             } //this is our letter score, incorporating all the measurements
+            
+            int allMatch = abs(peaksGrade-slewGrade);
+            if (abs(peaksGrade-bassGrade) > abs(peaksGrade-slewGrade)) allMatch = abs(peaksGrade-bassGrade);
+            allMatch /= 2;
+            if (peaksGrade == slewGrade) allMatch -= 1;
+            if (peaksGrade == bassGrade) allMatch -= 1;
+            if (bassGrade == slewGrade) allMatch -= 1; //if categories perfectly balance that's a grade boost right there
+            allMatch = 26-allMatch; //we have a fourth letter that tracks which songs have ALL the parts harmoniously in balance: like Strobe or Hotel California.
+            if (allMatch < 1) allMatch = 1;
+            if (allMatch > 26) allMatch = 26;
+            
+            switch (allMatch) {
+                case 1:
+                    totalPackage = juce::String("Z"); break;
+                case 2:
+                    totalPackage = juce::String("Y"); break;
+                case 3:
+                    totalPackage = juce::String("X"); break;
+                case 4:
+                    totalPackage = juce::String("W"); break;
+                case 5:
+                    totalPackage = juce::String("V"); break;
+                case 6:
+                    totalPackage = juce::String("U"); break;
+                case 7:
+                    totalPackage = juce::String("T"); break;
+                case 8:
+                    totalPackage = juce::String("S"); break;
+                case 9:
+                    totalPackage = juce::String("R"); break;
+                case 10:
+                    totalPackage = juce::String("Q"); break;
+                case 11:
+                    totalPackage = juce::String("P"); break;
+                case 12:
+                    totalPackage = juce::String("O"); break;
+                case 13:
+                    totalPackage = juce::String("N"); break;
+                case 14:
+                    totalPackage = juce::String("M"); break;
+                case 15:
+                    totalPackage = juce::String("L"); break;
+                case 16:
+                    totalPackage = juce::String("K"); break;
+                case 17:
+                    totalPackage = juce::String("J"); break;
+                case 18:
+                    totalPackage = juce::String("I"); break;
+                case 19:
+                    totalPackage = juce::String("H"); break;
+                case 20:
+                    totalPackage = juce::String("G"); break;
+                case 21:
+                    totalPackage = juce::String("F"); break;
+                case 22:
+                    totalPackage = juce::String("E"); break;
+                case 23:
+                    totalPackage = juce::String("D"); break;
+                case 24:
+                    totalPackage = juce::String("C"); break;
+                case 25:
+                    totalPackage = juce::String("B"); break;
+                case 26:
+                    totalPackage = juce::String("A"); break;
+            } //this is our letter score, incorporating all the measurements
+            
+            if (dataPosition == (int)count) dataJ[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
+            //saturation is an even better guide to balance than the + and will hint at how close you're getting
+            if (peaksGrade == slewGrade) {
+                totalPackage = "+"+totalPackage;
+            }
+            //we have an extra bonus plus to add for when peaks exactly matches slew, at whatever fullness
         }
     }
-    if (peaksGrade == slewGrade) totalPackage = "+"+totalPackage;
-    //we have an extra bonus plus to add for when peaks exactly matches slew, at whatever fullness
     
     float scaleFont = sqrt(vS*61.8f)*1.618f;
     g.setFont(scaleFont*1.618f);
@@ -385,16 +449,15 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 6, (int)(190*vS)-11, displayWidth-20, 32, juce::Justification::centredTop);
         g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 8, (int)(190*vS)-9, displayWidth-20, 32, juce::Justification::centredTop);
     }//underdrawing in white for areas prone to get covered up with dots
-
-
+    
     g.setColour(juce::Colours::darkgrey);
     g.drawText("intensity (peaks)", 7, (int)(4*vS), displayWidth-20, 32, juce::Justification::topLeft);
     if (peaksGrade+slewGrade+bassGrade > 3) g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::centredTop);
     g.drawText(rating, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::topRight);
     g.drawText("detail (slew)", 7, (int)(204*vS), displayWidth-20, 32, juce::Justification::topLeft);
     g.drawText(sparkle, 7, (int)(390*vS)-10, displayWidth-20, 32, juce::Justification::topRight);
-    g.drawText("fullness (zero cross)", 7, (int)(404*vS), displayWidth-20, 32, juce::Justification::topLeft);
-    g.drawText(rumble, 7, (int)(404*vS), displayWidth-20, 32, juce::Justification::topRight);
+    g.drawText("fullness (zero cross)", 7, (int)(434*vS), displayWidth-20, 32, juce::Justification::topLeft);
+    g.drawText(rumble, 7, (int)(434*vS), displayWidth-20, 32, juce::Justification::topRight);
     
     g.setFont(scaleFont);
     if (scaleFont > 8.0f) {
@@ -420,12 +483,14 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(dataPosition, 0, 1, (int)(599.0f*vS)); //the moving line
     g.setColour(juce::Colours::lightgrey);
     g.fillRect(0, (int)(201.0f*vS), getWidth(), 2); // border with slew meter
-    g.fillRect(0, (int)(401.0f*vS), getWidth(), 2); // border with zero cross meter
-    
+    g.setColour(juce::Colours::black);
+    g.fillRect(0, (int)(400.0f*vS), getWidth(), 2);
+    g.fillRect(0, (int)(430.0f*vS), getWidth(), 3); // outline score color line
+ 
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.382f));
     g.fillRect(0, 0, getWidth(), 2);
     g.fillRect(0, 0, 2, getHeight());
-    
+
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.618f));
     g.fillRect(2, getHeight()-2, getWidth(), 2);
     g.fillRect(getWidth()-2, 2, 2, getHeight()-2);
