@@ -117,9 +117,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             maxBassBin = fmax(bassTrack[binscale], maxBassBin);
         } //now each holds the highest value of the lot
         for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
-            peakTrack[binscale] = fmax(peakTrack[binscale] - (maxPeakBin*0.01f), 0.0f);
-            slewTrack[binscale] = fmax(slewTrack[binscale] - (maxSlewBin*0.01f), 0.0f);
-            bassTrack[binscale] = fmax(bassTrack[binscale] - (maxBassBin*0.01f), 0.0f);
+            peakTrack[binscale] = fmax(peakTrack[binscale] - (maxPeakBin*0.012f), 0.0f); //adding decimal place and the '2' is the only change
+            slewTrack[binscale] = fmax(slewTrack[binscale] - (maxSlewBin*0.01f), 0.0f);  //between 0.2.3 and 0.2.4 in terms of the algorithm:
+            bassTrack[binscale] = fmax(bassTrack[binscale] - (maxBassBin*0.01f), 0.0f);  //finetunes the '+' balance meter's performance
         } //bins fall off at fixed speed, not converging on 0
         
         float peakScore = 0.0;
@@ -432,10 +432,35 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             
             if (dataPosition == (int)count) dataJ[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
             //saturation is an even better guide to balance than the + and will hint at how close you're getting
-            if (peaksGrade == slewGrade) {
-                totalPackage = "+"+totalPackage;
-            }
-            //we have an extra bonus plus to add for when peaks exactly matches slew, at whatever fullness
+            
+            switch (peaksGrade - slewGrade) {
+                case -9://So this is pretty cosmetic. The functionality hasn't changed, but this is a change to presentation.
+                case -8://Also, if you're sorting records as I am, you might have a special use for the '+' Meter can show:
+                case -7://the purpose being to try and sort all music into hits vs. non-hits on sound texture alone.
+                case -6://And so, the '+' has broadened to be the crossover zone between sparkly and loud/gutsy,
+                case -5://and the meter itself now tells you which side of that you're on, regarding that 'color intensity' goal.
+                case -4://You still want 'balanced' but it's more direct about what to do, to get it.
+                case -3://
+                case -2://this part is able to genre light sparkly stuff to the disco side
+                    totalPackage = juce::String("disco ")+totalPackage; break;
+                case -1:
+                    totalPackage = juce::String("disco +")+totalPackage; break;//either perfect balance as in 'hit' like Stairway to Heaven
+                case 0:
+                    totalPackage = juce::String("hit +")+totalPackage; break; //or just a bit to either the disco or rock sides of that line
+                case 1:
+                    totalPackage = juce::String("rock +")+totalPackage; break;//get you a '+' regardless of what fullness is doing: i.e. a hit.
+                case 2://broadening that zone for a + should help illustrate what about it seems to be worth so much in popularity.
+                case 3://it also means, if you know you're pop or know you're rock, you could intentionally aim for a reading
+                case 4://that still is near balanced enough to functionally work as a hit (mass appeal, sonic balance)
+                case 5://but which 'reads' as the genre you insist on being seen as. In other words, if this method works for you,
+                case 6://you can buy into the idea that the balance is everything for mass appeal and hit factor,
+                case 7://but finetune it to convey poppiness, or rockism, through sonic cues that don't trade off too much.
+                case 8://
+                case 9://this part is able to genre loud blaring stuff to the rock side
+                    totalPackage = juce::String("rock ")+totalPackage; break;
+                default:
+                    totalPackage = juce::String("rated ")+totalPackage; break;
+            } //this is our extra 'balance' flavor text, comes out of the algorithm
         }
     }
     
@@ -446,13 +471,13 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.drawText(sparkle, 6, (int)(390*vS)-11, displayWidth-20, 32, juce::Justification::topRight);
     g.drawText(sparkle, 8, (int)(390*vS)-9, displayWidth-20, 32, juce::Justification::topRight);
     if (peaksGrade+slewGrade+bassGrade > 3) {
-        g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 6, (int)(190*vS)-11, displayWidth-20, 32, juce::Justification::centredTop);
-        g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 8, (int)(190*vS)-9, displayWidth-20, 32, juce::Justification::centredTop);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 6, (int)(190*vS)-11, displayWidth-20, 32, juce::Justification::centredTop);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 8, (int)(190*vS)-9, displayWidth-20, 32, juce::Justification::centredTop);
     }//underdrawing in white for areas prone to get covered up with dots
     
     g.setColour(juce::Colours::darkgrey);
     g.drawText("intensity (peaks)", 7, (int)(4*vS), displayWidth-20, 32, juce::Justification::topLeft);
-    if (peaksGrade+slewGrade+bassGrade > 3) g.drawText("rated "+totalPackage+"-"+rating+sparkle+rumble, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::centredTop);
+    if (peaksGrade+slewGrade+bassGrade > 3) g.drawText(totalPackage+"-"+rating+sparkle+rumble, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::centredTop);
     g.drawText(rating, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::topRight);
     g.drawText("detail (slew)", 7, (int)(204*vS), displayWidth-20, 32, juce::Justification::topLeft);
     g.drawText(sparkle, 7, (int)(390*vS)-10, displayWidth-20, 32, juce::Justification::topRight);
