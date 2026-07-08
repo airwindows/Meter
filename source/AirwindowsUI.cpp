@@ -14,7 +14,6 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.fillRect(0, (int)(150.2f*vS), getWidth(),1); //-24dB markings
     g.fillRect(0, (int)(164.9f*vS), getWidth(),1); //-30dB markings
     g.fillRect(0, (int)(175.2f*vS), getWidth(),1); //-36dB markings
-    g.fillRect(0, (int)(182.5f*vS), getWidth(),1); //-42dB markings
     
     g.fillRect(0,  (int)(260.0f*vS), getWidth(),1); // -6dB markings
     g.fillRect(0, (int)(301.02*vS), getWidth(),1); //-12dB markings
@@ -61,6 +60,13 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             psDotSizeL += sin(pow(fmin(dataC[count]*8.5f,6.18f) / (fabs(((peakL*((4.6180339887f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
             slewDotSizeL = (sin(0.1618f/psDotSizeL)*6.18f)+(sqrt(slewL)*0.1618f);
             bassDotSizeL = meterZeroL*0.1f*dataA[count];
+            
+            if (count < dataPosition && count > dataPosition-2) {
+                outputR += psDotSizeL * sqrt(fmax(psDotSizeL,1.0f)) * 0.2f;
+                outputG += slewL * slewDotSizeL * sqrt(fmax(slewDotSizeL,1.0f)) * 0.0009f;
+                outputB += bassDotSizeL * sqrt(fmax(bassDotSizeL,1.0f)) * 13.0f / (bassL+0.666f); //RGB backdrop, L version
+            }
+            
             if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f));
             else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f)); //set COLOR
@@ -81,6 +87,16 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             psDotSizeR += sin(pow(fmin(dataD[count]*8.5f,6.18f) / (fabs(((peakR*((4.6180339887f)/5.0f))-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
             slewDotSizeR = (sin(0.1618f/psDotSizeR)*6.18f)+(sqrt(slewR)*0.1618f);
             bassDotSizeR = meterZeroR*0.1f*dataB[count];
+            
+            if (count < dataPosition && count > dataPosition-2) {
+                outputR += psDotSizeR * sqrt(fmax(psDotSizeR,1.0f)) * 0.2f;
+                outputG += slewR * slewDotSizeR * sqrt(fmax(slewDotSizeR,1.0f)) * 0.0009f;
+                outputB += bassDotSizeR * sqrt(fmax(bassDotSizeR,1.0f)) * 13.0f / (bassR+0.666f);
+                backR[count] = storeR;
+                backG[count] = storeG;
+                backB[count] = storeB; //RGB backdrop for text
+            }
+            
             if (psDotSizeR > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f));
             else if (slewR > peakR) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f)); //set COLOR
@@ -91,6 +107,8 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             else g.fillRect((float)count, (float)((400.0f-slewR)*vS), slewDotSizeR, (float)(slewDotSizeR*vS)); //draw slew
             g.fillRect((float)count, ((400.0f+bassR)*vS), bassDotSizeR, bassDotSizeR*vS); //zero cross subs
         } //end draw dots on meters R
+        g.setColour(juce::Colour::fromFloatRGBA(backR[count], backG[count], backB[count], 1.0f)); //set backdrop colour
+        g.fillRect((float)(count)-0.25f, 182.5f*vS, 1.5f, 19.5f*vS);
         
         unsigned long bintracker = (unsigned long)(peakL * (0.005f*(float)totalBins));//converts 0-200 to 0-bin number for textscore bins
         if (bintracker > 0 && bintracker <= totalBins) peakTrack[bintracker] += psDotSizeL * sqrt(fmax(psDotSizeL,1.0f)) * 0.2f;
@@ -130,65 +148,23 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             slewScore += slewTrack[binscale];
             bassScore += bassTrack[binscale];
         }
-        if (sqrt(peakScore * 100.0f)*0.26f > peaksGrade) peaksGrade += 1;
-        if (sqrt(slewScore * 100.0f)*0.26f > slewGrade) slewGrade += 1;
-        if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade += 1;
+        if (sqrt(peakScore * 100.0f)*0.26f > peaksGrade) peaksGrade = sqrt(peakScore * 100.0f)*0.26f;
+        if (sqrt(slewScore * 100.0f)*0.26f > slewGrade) slewGrade = sqrt(slewScore * 100.0f)*0.26f;
+        if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade = sqrt(bassScore * 100.0f)*0.26f;
         
-        if (dataPosition == (int)count) {
-            int allMatch = abs(peaksGrade-slewGrade);
+        if (dataPosition == count) {
+            float allMatch = abs(peaksGrade-slewGrade);
             if (abs(peaksGrade-bassGrade) > abs(peaksGrade-slewGrade)) allMatch = abs(peaksGrade-bassGrade);
-            allMatch /= 2;
-            //note that for the color measurement we have NOT clamped the grades! The color saturation can go off even on a high score
-            allMatch = 26-allMatch; //we have a fourth letter that tracks which songs have ALL the parts harmoniously in balance: like Strobe or Hotel California.
-            if (allMatch < 1) allMatch = 1;
-            if (allMatch > 26) allMatch = 26;
-            switch (allMatch) {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                case 14://below this score the meter can just show black
-                    dataI[count] = 0.94f; break;
-                case 15:
-                    dataI[count] = 0.87f; break;
-                case 16:
-                    dataI[count] = 0.71f; break;
-                case 17:
-                    dataI[count] = 0.62f; break;
-                case 18:
-                    dataI[count] = 0.55f; break;
-                case 19:
-                    dataI[count] = 0.48f; break;
-                case 20:
-                    dataI[count] = 0.42f; break;
-                case 21:
-                    dataI[count] = 0.36f; break;
-                case 22:
-                    dataI[count] = 0.28f; break;
-                case 23:
-                    dataI[count] = 0.23f; break;
-                case 24:
-                    dataI[count] = 0.17f; break;
-                case 25:
-                    dataI[count] = 0.11f; break;
-                case 26:
-                    dataI[count] = 0.001f; break;
-            } //this is our letter score, incorporating all the measurements
-            dataJ[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
-            if (peaksGrade < 2) dataJ[count] = 0.0;
+            dispHue[count] = fmax(fmin(allMatch*0.065f,0.99f)-0.05f,0.001f);
+            dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
+            if (peaksGrade < 2) dispSat[count] = 0.0;
+            cumulative += dispSat[count]; //each time, add what the saturation of the hit intensity bar was
+            duration += 1.0f; //and the total duration we'll be dividing by. End result higher is better.
         }
         //saturation is an even better guide to balance than the + and will hint at how close you're getting
-        g.setColour(juce::Colour::fromHSV(dataI[count], dataJ[count], dataJ[count], 1.0f));
-        g.fillRect((float)count, 401.0f*vS, 1.0f, 29.0f*vS);
+        g.setColour(juce::Colour::fromHSV(dispHue[count], dispSat[count], dispSat[count], 1.0f));
+        if (dispSat[count] == 0.0) g.setColour(juce::Colours::white);
+        g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.0f*vS);
         //draw that bar that shows color of the text score at any given point
         //note: the bar will freak out if you're pushing levels to loudenation levels as you're forcing the
         //measurements inside the meter to saturate and overdrive. Keeping max color means keeping balance there too.
@@ -196,7 +172,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         if (count == (unsigned long)dataPosition-1) { //only update text score display more infrequently
             if (peaksGrade < 1) peaksGrade = 1;
             if (peaksGrade > 26) peaksGrade = 26;
-            switch (peaksGrade) {
+            switch ((int)peaksGrade) {
                 case 1:
                     rating = juce::String("Z"); break;
                 case 2:
@@ -253,7 +229,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             
             if (slewGrade < 1) slewGrade = 1;
             if (slewGrade > 26) slewGrade = 26;
-            switch (slewGrade) {
+            switch ((int)slewGrade) {
                 case 1:
                     sparkle = juce::String("Z"); break;
                 case 2:
@@ -310,7 +286,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             
             if (bassGrade < 1) bassGrade = 1;
             if (bassGrade > 26) bassGrade = 26;
-            switch (bassGrade) {
+            switch ((int)bassGrade) {
                 case 1:
                     rumble = juce::String("Z"); break;
                 case 2:
@@ -365,17 +341,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                     rumble = juce::String("A"); break;
             } //this is our letter score, incorporating all the measurements
             
-            int allMatch = abs(peaksGrade-slewGrade);
-            if (abs(peaksGrade-bassGrade) > abs(peaksGrade-slewGrade)) allMatch = abs(peaksGrade-bassGrade);
-            allMatch /= 2;
-            if (peaksGrade == slewGrade) allMatch -= 1;
-            if (peaksGrade == bassGrade) allMatch -= 1;
-            if (bassGrade == slewGrade) allMatch -= 1; //if categories perfectly balance that's a grade boost right there
-            allMatch = 26-allMatch; //we have a fourth letter that tracks which songs have ALL the parts harmoniously in balance: like Strobe or Hotel California.
-            if (allMatch < 1) allMatch = 1;
-            if (allMatch > 26) allMatch = 26;
-            
-            switch (allMatch) {
+            totalPackage = juce::String("Z");
+            double allMatch = ((sqrt(cumulative)/sqrt(duration))*28.28);
+            if (allMatch < 1.001) allMatch = 1.001;
+            if (allMatch > 28) allMatch = 28;
+            switch ((int)allMatch) {
                 case 1:
                     totalPackage = juce::String("Z"); break;
                 case 2:
@@ -428,94 +398,73 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                     totalPackage = juce::String("B"); break;
                 case 26:
                     totalPackage = juce::String("A"); break;
+                case 27:
+                    totalPackage = juce::String("+A"); break;
+                case 28:
+                    totalPackage = juce::String("++A"); break;
             } //this is our letter score, incorporating all the measurements
-            
-            if (dataPosition == (int)count) dataJ[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
-            //saturation is an even better guide to balance than the + and will hint at how close you're getting
-            
-            switch (peaksGrade - slewGrade) {
-                case -9://So this is pretty cosmetic. The functionality hasn't changed, but this is a change to presentation.
-                case -8://Also, if you're sorting records as I am, you might have a special use for the '+' Meter can show:
-                case -7://the purpose being to try and sort all music into hits vs. non-hits on sound texture alone.
-                case -6://And so, the '+' has broadened to be the crossover zone between sparkly and loud/gutsy,
-                case -5://and the meter itself now tells you which side of that you're on, regarding that 'color intensity' goal.
-                case -4://You still want 'balanced' but it's more direct about what to do, to get it.
-                case -3://
-                case -2://this part is able to genre light sparkly stuff to the disco side
-                    totalPackage = juce::String("disco ")+totalPackage; break;
-                case -1:
-                    totalPackage = juce::String("disco +")+totalPackage; break;//either perfect balance as in 'hit' like Stairway to Heaven
-                case 0:
-                    totalPackage = juce::String("hit +")+totalPackage; break; //or just a bit to either the disco or rock sides of that line
-                case 1:
-                    totalPackage = juce::String("rock +")+totalPackage; break;//get you a '+' regardless of what fullness is doing: i.e. a hit.
-                case 2://broadening that zone for a + should help illustrate what about it seems to be worth so much in popularity.
-                case 3://it also means, if you know you're pop or know you're rock, you could intentionally aim for a reading
-                case 4://that still is near balanced enough to functionally work as a hit (mass appeal, sonic balance)
-                case 5://but which 'reads' as the genre you insist on being seen as. In other words, if this method works for you,
-                case 6://you can buy into the idea that the balance is everything for mass appeal and hit factor,
-                case 7://but finetune it to convey poppiness, or rockism, through sonic cues that don't trade off too much.
-                case 8://
-                case 9://this part is able to genre loud blaring stuff to the rock side
-                    totalPackage = juce::String("rock ")+totalPackage; break;
-                default:
-                    totalPackage = juce::String("rated ")+totalPackage; break;
-            } //this is our extra 'balance' flavor text, comes out of the algorithm
+            if (dataPosition == count) dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
         }
     }
     
-    float scaleFont = sqrt(vS*61.8f)*1.618f;
-    g.setFont(scaleFont*1.618f);
-    
-    g.setColour(juce::Colours::white);
-    g.drawText(sparkle, 6, (int)(390*vS)-11, displayWidth-20, 32, juce::Justification::topRight);
-    g.drawText(sparkle, 8, (int)(390*vS)-9, displayWidth-20, 32, juce::Justification::topRight);
-    if (peaksGrade+slewGrade+bassGrade > 3) {
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 6, (int)(190*vS)-11, displayWidth-20, 32, juce::Justification::centredTop);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 8, (int)(190*vS)-9, displayWidth-20, 32, juce::Justification::centredTop);
-    }//underdrawing in white for areas prone to get covered up with dots
-    
-    g.setColour(juce::Colours::darkgrey);
-    g.drawText("intensity (peaks)", 7, (int)(4*vS), displayWidth-20, 32, juce::Justification::topLeft);
-    if (peaksGrade+slewGrade+bassGrade > 3) g.drawText(totalPackage+"-"+rating+sparkle+rumble, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::centredTop);
-    g.drawText(rating, 7, (int)(190*vS)-10, displayWidth-20, 32, juce::Justification::topRight);
-    g.drawText("detail (slew)", 7, (int)(204*vS), displayWidth-20, 32, juce::Justification::topLeft);
-    g.drawText(sparkle, 7, (int)(390*vS)-10, displayWidth-20, 32, juce::Justification::topRight);
-    g.drawText("fullness (zero cross)", 7, (int)(434*vS), displayWidth-20, 32, juce::Justification::topLeft);
-    g.drawText(rumble, 7, (int)(434*vS), displayWidth-20, 32, juce::Justification::topRight);
-    
-    g.setFont(scaleFont);
-    if (scaleFont > 8.0f) {
-        g.drawText("-6 dB", 7, (int)(60.0f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-12 dB", 7, (int)(101.02f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-18 dB", 7, (int)(130.02f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-24 dB", 7, (int)(150.2f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-30 dB", 7, (int)(164.9f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-36 dB", 7, (int)(175.2f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-42 dB", 7, (int)(182.5f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-    }//dB markings
-    if (scaleFont > 8.0f) {
-        g.drawText("900 Hz", 7, (int)(460.0f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("210 Hz", 7, (int)(501.02f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("100 Hz", 7, (int)(530.02f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("60 Hz", 7, (int)(550.2f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("45 Hz", 7, (int)(564.9f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("35 Hz", 7, (int)(575.2f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("30 Hz", 7, (int)(582.5f*vS)-7, displayWidth-20, (int)scaleFont, juce::Justification::bottomLeft);
-    }//zero cross markings
+    float scaleFont = (sqrt(vS*61.8f)*1.618f);
+    if (scaleFont > 12.0f) {
+        g.setFont(scaleFont*1.618f);
+        g.setColour(juce::Colours::white);
+        g.drawText("tone color", 8, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth/3, 32, juce::Justification::topLeft);
+        g.drawText("seek white balance", ((displayWidth*2)/3)-11, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth/3, 32, juce::Justification::topRight);
+        g.drawText("hit intensity", 8, (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("boost color", (displayWidth/2)-11, (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 8, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth-20, 32, juce::Justification::centredTop);
+        //underdrawing in white for areas prone to get covered up with dots
+        g.setColour(juce::Colours::black);
+        g.drawText("tone color", 7, (int)(194.0f*vS)-(int)(scaleFont), displayWidth/3, 32, juce::Justification::topLeft);
+        g.drawText("seek white balance", ((displayWidth*2)/3)-12, (int)(194.0f*vS)-(int)(scaleFont), displayWidth/3, 32, juce::Justification::topRight);
+        g.drawText("hit intensity", 7, (int)(412.0f*vS)-(int)(scaleFont), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("boost color", (displayWidth/2)-12, (int)(412.0f*vS)-(int)(scaleFont), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 7, (int)(194.0f*vS)-(int)(scaleFont), displayWidth-20, 32, juce::Justification::centredTop);
+        g.setFont(scaleFont*1.1f);
+        g.drawText("loudness: "+rating, 7, (int)(3*vS), displayWidth/3, 32, juce::Justification::topLeft);
+        g.drawText("peaks", (displayWidth/2)-12, (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("detail: "+sparkle, 7, (int)(203*vS), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("slews", (displayWidth/2)-12, (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("fullness: "+rumble, 7, (int)(423*vS), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("zero cross", (displayWidth/2)-12, (int)(423*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.setFont(scaleFont);
+        g.drawText("-6 dB", 7, (int)(60.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-12 dB", 7, (int)(101.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-18 dB", 7, (int)(130.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-24 dB", 7, (int)(150.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-30 dB", 7, (int)(164.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-36 dB", 7, (int)(175.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("900 Hz", 7, (int)(460.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("210 Hz", 7, (int)(501.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("100 Hz", 7, (int)(530.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("60 Hz", 7, (int)(550.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("45 Hz", 7, (int)(564.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("35 Hz", 7, (int)(575.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("30 Hz", 7, (int)(582.5f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+    } else {
+        g.setFont(scaleFont*6.18f);
+        g.setColour(juce::Colours::white); //underdrawing in white for areas prone to get covered up with dots
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 0, displayWidth, displayHeight, juce::Justification::centred);
+        g.setColour(juce::Colours::black);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 0, displayWidth, displayHeight, juce::Justification::centred);
+    }
     
     g.setColour(juce::Colours::grey);
-    g.fillRect(dataPosition, 0, 1, (int)(599.0f*vS)); //the moving line
-    g.setColour(juce::Colours::lightgrey);
-    g.fillRect(0, (int)(201.0f*vS), getWidth(), 2); // border with slew meter
-    g.setColour(juce::Colours::black);
+    g.fillRect((int)dataPosition, 0, 1, (int)(599.0f*vS)); //the moving line
+    g.fillRect(0, (int)(182.5*vS), getWidth(), 2);
+    g.setColour(juce::Colours::darkgrey);
+    g.fillRect(0, (int)(201.0f*vS), getWidth(), 2); // outline backdrop color line
     g.fillRect(0, (int)(400.0f*vS), getWidth(), 2);
-    g.fillRect(0, (int)(430.0f*vS), getWidth(), 3); // outline score color line
- 
+    g.setColour(juce::Colours::black);
+    g.fillRect(0, (int)(420.0f*vS), getWidth(), 2); // outline score color line
+    
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.382f));
     g.fillRect(0, 0, getWidth(), 2);
     g.fillRect(0, 0, 2, getHeight());
-
+    
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.618f));
     g.fillRect(2, getHeight()-2, getWidth(), 2);
     g.fillRect(getWidth()-2, 2, 2, getHeight()-2);

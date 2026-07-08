@@ -157,18 +157,25 @@ struct AirwindowsMeter : public juce::Component
     static constexpr int totalBins = 16;
     int displayWidth = 1280;
     int displayHeight = 720;
-    int dataPosition = 0;
-    int peaksGrade = 0;
-    int slewGrade = 0;
-    int bassGrade = 0;
+    unsigned long dataPosition = 0;
+    float peaksGrade = 0;
+    float slewGrade = 0;
+    float bassGrade = 0;
+    double cumulative = -16.0;
+    double duration = 16.0;
     juce::String totalPackage = juce::String();
     juce::String rating = juce::String();
     juce::String sparkle = juce::String();
     juce::String rumble = juce::String();
     float hype = 0.618033988749894f; //this is now set in stone :)
-    
- 
-    
+    float storeR;
+    float storeG;
+    float storeB;
+    float outputR;
+    float outputG;
+    float outputB;
+    float outputMax;
+
     std::array<float, totalBins> peakTrack;
     std::array<float, totalBins> slewTrack;
     std::array<float, totalBins> bassTrack;
@@ -181,8 +188,11 @@ struct AirwindowsMeter : public juce::Component
     std::array<float, dataPoints> dataF;
     std::array<float, dataPoints> dataG;
     std::array<float, dataPoints> dataH;
-    std::array<float, dataPoints> dataI;//display hue showing score
-    std::array<float, dataPoints> dataJ;//display saturation showing balance
+    std::array<float, dataPoints> dispHue;//display hue showing score
+    std::array<float, dataPoints> dispSat;//display saturation showing balance
+    std::array<float, dataPoints> backR;//backdrop red channel: loud
+    std::array<float, dataPoints> backG;//backdrop green channel: bright
+    std::array<float, dataPoints> backB;//backdrop blue channel: bass
 
     void pushA(float X) {dataA[dataPosition] = X;}
     void pushB(float X) {dataB[dataPosition] = X;}
@@ -194,19 +204,28 @@ struct AirwindowsMeter : public juce::Component
     void pushH(float X) {dataH[dataPosition] = X;}
     void pushIncrement(float limit) {
         dataPosition++;
-        if (dataPosition >= (int)displayWidth) dataPosition = 0;
+        if (dataPosition >= displayWidth) dataPosition = 0;
     }
 
     void resetArrays(){
         dataPosition = 0;
-        peaksGrade = 0;
-        slewGrade = 0;
-        bassGrade = 0;
+        peaksGrade = 0.0f;
+        slewGrade = 0.0f;
+        bassGrade = 0.0f;
         totalPackage = juce::String();
+        cumulative = -16.0;
+        duration = 16.0;
         rating = juce::String();
         sparkle = juce::String();
         rumble = juce::String();
         hype = 0.618033988749894f; //0.3819661
+        storeR = 1.0;
+        storeG = 1.0;
+        storeB = 1.0;
+        outputR = 100.0;
+        outputG = 100.0;
+        outputB = 100.0;
+
         for (unsigned long count = 0; count < totalBins; ++count) //count through all the points in the array
         {
             peakTrack[count] = 0.0;
@@ -223,8 +242,11 @@ struct AirwindowsMeter : public juce::Component
             dataF[count] = 0.0f;
             dataG[count] = 0.0f;
             dataH[count] = 0.0f;
-            dataI[count] = 0.0f;
-            dataJ[count] = 0.0f;
+            dispHue[count] = 0.0f;
+            dispSat[count] = 0.0f;
+            backR[count] = 1.0f;
+            backG[count] = 1.0f;
+            backB[count] = 1.0f;
         }
     }
 };

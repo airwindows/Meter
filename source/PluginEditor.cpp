@@ -22,6 +22,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     meter.setOpaque(true);
     meter.resetArrays();
     addAndMakeVisible(meter);
+    meter.outputR = 100.0;
+    meter.outputG = 100.0;
+    meter.outputB = 100.0;
     
     addAndMakeVisible (resetButton);
     resetButton.onClick = [&] {
@@ -138,7 +141,6 @@ void PluginEditor::idle()
     while (processorRef.audioToUI.pop(msg)) {
         switch (msg.what) {
         case PluginProcessor::AudioToUIMessage::NEW_VALUE: break; //no knobs on this plugin
-                
         case PluginProcessor::AudioToUIMessage::RMS_LEFT: meter.pushA(msg.newValue); break;
         case PluginProcessor::AudioToUIMessage::RMS_RIGHT: meter.pushB(msg.newValue); break;
         case PluginProcessor::AudioToUIMessage::PEAK_LEFT: meter.pushC(msg.newValue); break;
@@ -149,8 +151,15 @@ void PluginEditor::idle()
         case PluginProcessor::AudioToUIMessage::ZERO_RIGHT: meter.pushH(msg.newValue); break;
                 
         case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
-                meter.pushIncrement(msg.newValue); repaintTS = true; break;
-        
+                meter.pushIncrement(msg.newValue); repaintTS = true;
+                meter.outputMax = fmax(fmax(meter.outputR,meter.outputG),meter.outputB); if (meter.outputMax < 0.0001f) meter.outputMax = 0.0001f;
+                meter.storeR = pow(meter.outputR/meter.outputMax,3.0f);
+                meter.storeG = pow(meter.outputG/meter.outputMax,3.0f);
+                meter.storeB = pow(meter.outputB/meter.outputMax,3.0f);
+                meter.outputR *= 0.99999f-(meter.outputMax*0.00002f);
+                meter.outputG *= 0.99999f-(meter.outputMax*0.00002f);
+                meter.outputB *= 0.99999f-(meter.outputMax*0.00002f);
+                break;
         default: std::cout << "Unhandled message type " << msg.what << std::endl; break;
         } //end of switch statement for msg.what
     }

@@ -78,8 +78,7 @@ public:
             SLEW_RIGHT,
             ZERO_LEFT,
             ZERO_RIGHT,
-            INCREMENT,
-            HYPE
+            INCREMENT
         } what{NEW_VALUE};
         Parameters which;
         float newValue = 0.0;
