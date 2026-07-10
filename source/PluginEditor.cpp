@@ -151,7 +151,7 @@ void PluginEditor::idle()
         case PluginProcessor::AudioToUIMessage::ZERO_RIGHT: meter.pushH(msg.newValue); break;
                 
         case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
-                meter.pushIncrement(msg.newValue); repaintTS = true;
+                meter.pushIncrement(); repaintTS = true;
                 meter.outputMax = fmax(fmax(meter.outputR,meter.outputG),meter.outputB); if (meter.outputMax < 0.0001f) meter.outputMax = 0.0001f;
                 meter.storeR = pow(meter.outputR/meter.outputMax,3.0f);
                 meter.storeG = pow(meter.outputG/meter.outputMax,3.0f);

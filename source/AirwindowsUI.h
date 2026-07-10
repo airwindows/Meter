@@ -158,11 +158,11 @@ struct AirwindowsMeter : public juce::Component
     int displayWidth = 1280;
     int displayHeight = 720;
     unsigned long dataPosition = 0;
-    float peaksGrade = 0;
-    float slewGrade = 0;
-    float bassGrade = 0;
-    double cumulative = -16.0;
-    double duration = 16.0;
+    float peaksGrade = 0.0f;
+    float slewGrade = 0.0f;
+    float bassGrade = 0.0f;
+    double cumulative = 0.0000001;
+    double duration = 0.00001;
     juce::String totalPackage = juce::String();
     juce::String rating = juce::String();
     juce::String sparkle = juce::String();
@@ -202,7 +202,7 @@ struct AirwindowsMeter : public juce::Component
     void pushF(float X) {dataF[dataPosition] = X;}
     void pushG(float X) {dataG[dataPosition] = X;}
     void pushH(float X) {dataH[dataPosition] = X;}
-    void pushIncrement(float limit) {
+    void pushIncrement() {
         dataPosition++;
         if (dataPosition >= displayWidth) dataPosition = 0;
     }
@@ -213,8 +213,8 @@ struct AirwindowsMeter : public juce::Component
         slewGrade = 0.0f;
         bassGrade = 0.0f;
         totalPackage = juce::String();
-        cumulative = -16.0;
-        duration = 16.0;
+        cumulative = 0.0000001;
+        duration = 0.00001;
         rating = juce::String();
         sparkle = juce::String();
         rumble = juce::String();

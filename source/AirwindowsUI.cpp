@@ -153,16 +153,23 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade = sqrt(bassScore * 100.0f)*0.26f;
         
         if (dataPosition == count) {
-            float allMatch = abs(peaksGrade-slewGrade);
-            if (abs(peaksGrade-bassGrade) > abs(peaksGrade-slewGrade)) allMatch = abs(peaksGrade-bassGrade);
-            dispHue[count] = fmax(fmin(allMatch*0.065f,0.99f)-0.05f,0.001f);
+            double scoreHue = 5.0-((sqrt(cumulative)/sqrt(duration))*5.25);
+            if (scoreHue > 0.69) scoreHue = 0.69;
+            if (scoreHue < 0.0) scoreHue += 1.0;
+            dispHue[count] = (float)scoreHue;
             dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
-            if (peaksGrade < 2) dispSat[count] = 0.0;
-            cumulative += dispSat[count]; //each time, add what the saturation of the hit intensity bar was
-            duration += 1.0f; //and the total duration we'll be dividing by. End result higher is better.
+            if (peaksGrade < 0.01) dispSat[count] = 0.0;
+            float cumulativeLoudness = sqrt(dataA[count]+dataB[count]+0.01f); //whole rating scaled by RMS of each channel
+            //in this way, it'll keep the same rating for anything that was wholly consistent in loudness,
+            //but when RMS rises it will be paying proportionally more attention to the balance.
+            //that means on varying tracks it'll care more about the main part than intros/outros.
+            cumulative += dispSat[count]*cumulativeLoudness; //each time, add what the saturation of the hit intensity bar was
+            duration += cumulativeLoudness; //and the total duration we'll be dividing by. End result higher is better.
+            //again, all this is now scaled by how loud it is: it's weighing the loud parts more heavily,
+            //but continues to need there to be a balance regardless.
         }
         //saturation is an even better guide to balance than the + and will hint at how close you're getting
-        g.setColour(juce::Colour::fromHSV(dispHue[count], dispSat[count], dispSat[count], 1.0f));
+        g.setColour(juce::Colour::fromHSV(dispHue[count], dispSat[count], sqrt(dispSat[count]), 1.0f));
         if (dispSat[count] == 0.0) g.setColour(juce::Colours::white);
         g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.0f*vS);
         //draw that bar that shows color of the text score at any given point
