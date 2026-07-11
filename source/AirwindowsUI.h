@@ -88,6 +88,7 @@ public:
         TARGET_MAC = true;
 #endif
         if (newColour.length() > 0) { //something has been specified, could be anything
+            useToneColor = newColour.equalsIgnoreCase("tonecolor");
             if (newColour.equalsIgnoreCase("darkmode")) {//specify it and you get it (even if system is different)
                 if (TARGET_WIN32) defaultColour = juce::Colour(0xFF1A1A1A);//XP Zune 0xFF1A1A1A
                 else defaultColour = juce::Colour(0xFF1C1C1E);//macOS dark mode 0xFF1C1C1E
@@ -142,6 +143,7 @@ public:
     juce::Image blurImage = juce::Image();
     juce::String newFont = juce::String();
     bool usingNamedImage = false;
+    bool useToneColor = false;
     float applyTrackColour = 0.5;
     juce::Colour LEDColour = juce::Colours::red;
     int knobMode;
@@ -155,6 +157,8 @@ struct AirwindowsMeter : public juce::Component
     
     static constexpr int dataPoints = 5151;
     static constexpr int totalBins = 16;
+    juce::Colour backdropColour = juce::Colours::white;
+    juce::Colour cachedColour = juce::Colours::white;
     int displayWidth = 1280;
     int displayHeight = 720;
     unsigned long dataPosition = 0;
@@ -204,7 +208,7 @@ struct AirwindowsMeter : public juce::Component
     void pushH(float X) {dataH[dataPosition] = X;}
     void pushIncrement() {
         dataPosition++;
-        if (dataPosition >= displayWidth) dataPosition = 0;
+        if (dataPosition >= (unsigned long)fmin(displayWidth,5150)) dataPosition = 0;
     }
 
     void resetArrays(){

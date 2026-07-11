@@ -1,7 +1,7 @@
 #include "PluginEditor.h"
 
 PluginEditor::PluginEditor (PluginProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+: AudioProcessorEditor (&p), processorRef (p)
 {
     juce::ignoreUnused (processorRef);
     setResizable(true, true);
@@ -15,10 +15,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     }
     updateTrackProperties();
     updatePluginSize();
-
+    
     idleTimer = std::make_unique<IdleTimer>(this);
     idleTimer->startTimer(1000/30); //space between UI screen updates. Larger is slower updates to screen
-
+    
     meter.setOpaque(true);
     meter.resetArrays();
     addAndMakeVisible(meter);
@@ -31,14 +31,14 @@ PluginEditor::PluginEditor (PluginProcessor& p)
         meter.resetArrays();
         meter.repaint();
     };
-
-   	setSize (airwindowsLookAndFeel.userWidth, airwindowsLookAndFeel.userHeight);
+    
+    setSize (airwindowsLookAndFeel.userWidth, airwindowsLookAndFeel.userHeight);
     // Make sure that before the constructor has finished, you've set the editor's size to whatever you need it to be.
     //if (airwindowsLookAndFeel.usingNamedImage) {
     //    getConstrainer()->setFixedAspectRatio(1000.0f/537.0f); //the aspect ratio stuff leads to cropping the content area off the top
     //    setResizeLimits(32, 32, 2000, 537); //this will not honor resize limits correctly in all the DAWs
     //}
-
+    
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     //the aspect ratio stuff leads to cropping the content area off the top
@@ -50,22 +50,34 @@ PluginEditor::~PluginEditor(){
 
 void PluginEditor::paint (juce::Graphics& g)
 {
-    if (airwindowsLookAndFeel.blurImage == juce::Image()) {
+    if (airwindowsLookAndFeel.alfInterpolation == 0) g.setImageResamplingQuality(g.lowResamplingQuality);
+    if (airwindowsLookAndFeel.alfInterpolation == 1) g.setImageResamplingQuality(g.mediumResamplingQuality);
+    if (airwindowsLookAndFeel.alfInterpolation == 2) g.setImageResamplingQuality(g.highResamplingQuality); //copy this section to other stretched-bitmap meters
+    if (airwindowsLookAndFeel.blurImage == juce::Image()) { // == means image is BLANK so we do a color
         g.fillAll (airwindowsLookAndFeel.defaultColour);
         if (hostTrackColour != juce::Colour()) {
-            g.setFillType(juce::FillType(hostTrackColour)); g.setOpacity(airwindowsLookAndFeel.applyTrackColour); g.fillAll();
+            g.setFillType(juce::FillType(hostTrackColour)); g.setOpacity(airwindowsLookAndFeel.applyTrackColour);
         }
         airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
         airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
         airwindowsLookAndFeel.setColour(juce::TextButton::buttonColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
         airwindowsLookAndFeel.setColour(juce::TextButton::buttonOnColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
-    } else {
+        if (airwindowsLookAndFeel.useToneColor) {
+            g.fillAll (meter.backdropColour);
+            airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, meter.backdropColour);
+            airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, meter.backdropColour);
+            airwindowsLookAndFeel.setColour(juce::TextButton::buttonColourId, meter.backdropColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
+            airwindowsLookAndFeel.setColour(juce::TextButton::buttonOnColourId, meter.backdropColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
+        } else {
+            g.fillAll (airwindowsLookAndFeel.defaultColour);
+        }
+    } else { //we have an image that might be named and actual size, or might be the overall tiled texture you can use
         if (airwindowsLookAndFeel.usingNamedImage) {
             g.drawImageWithin(airwindowsLookAndFeel.backgroundImage, 0, 0, getLocalBounds().getWidth(), getLocalBounds().getHeight(), 0);
         } else {
             g.setTiledImageFill(airwindowsLookAndFeel.backgroundImage, 0, 0, 1.0f); g.fillAll();
         }
-                
+        
         if (hostTrackColour != juce::Colour()) {
             g.setFillType(juce::FillType(hostTrackColour)); g.setOpacity(airwindowsLookAndFeel.applyTrackColour); g.fillAll();
         }
@@ -140,19 +152,20 @@ void PluginEditor::idle()
     bool repaintTS{false}; //we don't redraw interface just for getting data into the GUI section
     while (processorRef.audioToUI.pop(msg)) {
         switch (msg.what) {
-        case PluginProcessor::AudioToUIMessage::NEW_VALUE: break; //no knobs on this plugin
-        case PluginProcessor::AudioToUIMessage::RMS_LEFT: meter.pushA(msg.newValue); break;
-        case PluginProcessor::AudioToUIMessage::RMS_RIGHT: meter.pushB(msg.newValue); break;
-        case PluginProcessor::AudioToUIMessage::PEAK_LEFT: meter.pushC(msg.newValue); break;
-        case PluginProcessor::AudioToUIMessage::PEAK_RIGHT: meter.pushD(msg.newValue); break;
-        case PluginProcessor::AudioToUIMessage::SLEW_LEFT: meter.pushE(msg.newValue); break;
-        case PluginProcessor::AudioToUIMessage::SLEW_RIGHT: meter.pushF(msg.newValue); break;
-        case PluginProcessor::AudioToUIMessage::ZERO_LEFT: meter.pushG(msg.newValue); break;
-        case PluginProcessor::AudioToUIMessage::ZERO_RIGHT: meter.pushH(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::NEW_VALUE: break; //no knobs on this plugin
+            case PluginProcessor::AudioToUIMessage::RMS_LEFT: meter.pushA(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::RMS_RIGHT: meter.pushB(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::PEAK_LEFT: meter.pushC(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::PEAK_RIGHT: meter.pushD(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::SLEW_LEFT: meter.pushE(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::SLEW_RIGHT: meter.pushF(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::ZERO_LEFT: meter.pushG(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::ZERO_RIGHT: meter.pushH(msg.newValue); break;
                 
-        case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
+            case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(); repaintTS = true;
                 meter.outputMax = fmax(fmax(meter.outputR,meter.outputG),meter.outputB); if (meter.outputMax < 0.0001f) meter.outputMax = 0.0001f;
+                meter.backdropColour = juce::Colour::fromFloatRGBA (pow(meter.outputR/meter.outputMax,3.0f), pow(meter.outputG/meter.outputMax,3.0f), pow(meter.outputB/meter.outputMax,3.0f), 1.0f);
                 meter.storeR = pow(meter.outputR/meter.outputMax,3.0f);
                 meter.storeG = pow(meter.outputG/meter.outputMax,3.0f);
                 meter.storeB = pow(meter.outputB/meter.outputMax,3.0f);
@@ -160,8 +173,18 @@ void PluginEditor::idle()
                 meter.outputG *= 0.99999f-(meter.outputMax*0.00002f);
                 meter.outputB *= 0.99999f-(meter.outputMax*0.00002f);
                 break;
-        default: std::cout << "Unhandled message type " << msg.what << std::endl; break;
+            default: std::cout << "Unhandled message type " << msg.what << std::endl; break;
         } //end of switch statement for msg.what
     }
-    if (repaintTS) meter.repaint();
+    if (repaintTS) {
+        if (airwindowsLookAndFeel.useToneColor && meter.backdropColour.operator!=(meter.cachedColour)) {
+            repaint();
+            meter.cachedColour = meter.backdropColour;
+            //we're going to maybe NOT constantly repaint everything, even in tonecolor mode
+        } else {
+            meter.repaint();
+        }
+        //normally it's the meter we have to update without touching it with the mouse,
+        //but if the whole plugin has to be tone color, it all must repaint.
+    }
 }
