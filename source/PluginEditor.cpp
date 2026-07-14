@@ -21,6 +21,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     
     meter.setOpaque(true);
     meter.resetArrays();
+    meter.addMouseListener(this, false);
     addAndMakeVisible(meter);
     meter.outputR = 100.0;
     meter.outputG = 100.0;
@@ -105,9 +106,9 @@ void PluginEditor::paint (juce::Graphics& g)
     g.drawFittedText(hostTrackName, juce::Rectangle<int>((int)getLocalBounds().getWidth(),(int)(getLocalBounds().getHeight()*0.0618f)), juce::Justification::centredBottom, 1);
     //draw the track name or plugin name embossed. This is because there's an unlimited range of colors and textures that could be in play.
     
-    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.618f));
+    g.setColour(juce::Colours::white); g.setOpacity(0.618f);
     g.fillRect(0, 0, getLocalBounds().getWidth(), linewidth); g.fillRect(0, 0, linewidth, getLocalBounds().getHeight());
-    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.382f));
+    g.setColour(juce::Colours::black); g.setOpacity(0.382f);
     g.fillRect(linewidth, getLocalBounds().getHeight()-linewidth, getLocalBounds().getWidth(), linewidth); g.fillRect(getLocalBounds().getWidth()-linewidth, linewidth, linewidth, getLocalBounds().getHeight()-linewidth);
     g.setColour (juce::Colours::black); g.drawRect(0, 0, getLocalBounds().getWidth(), getLocalBounds().getHeight());
     //draw global bevel effect, either from the color or from the color of the blurred texture, and a black border
@@ -125,7 +126,7 @@ void PluginEditor::resized()
     meter.displayHeight = (int)((0.95f-(((float)linewidth*2.0f)/area.getHeight()))*(float)area.getHeight());
     area.reduce(linewidth, linewidth);
     //getProportion sets first start X and Y placement, then size X and Y placement
-    meter.setBounds(area.getProportion(juce::Rectangle{((float)linewidth*2.0f)/area.getWidth(), 0.05f, 1.0f-(((float)linewidth*4.0f)/area.getWidth()), 0.95f-(((float)linewidth*2.0f)/area.getHeight())}));
+    meter.setBounds(area.getProportion(juce::Rectangle{((float)linewidth*2.0f)/area.getWidth(), 0.05f, 1.0f-(((float)linewidth*5.0f)/area.getWidth()), 0.95f-(((float)linewidth*3.0f)/area.getHeight())}));
     
     resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.084f, 0.033f}));
 }

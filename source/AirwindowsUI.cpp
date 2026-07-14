@@ -2,6 +2,11 @@
 // Initial seed code for the meter created by Paul Walker on 8/23/21.
 #include "AirwindowsUI.h"
 
+void AirwindowsMeter::mouseDown(const juce::MouseEvent &event)
+{
+    if (event.getNumberOfClicks() > 1) resetArrays();
+}
+
 void AirwindowsMeter::paint(juce::Graphics &g)
 {
     float vS = displayHeight/600.0f; // short for vScale: everything * this

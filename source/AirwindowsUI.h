@@ -153,6 +153,7 @@ public:
 
 struct AirwindowsMeter : public juce::Component
 {
+    void mouseDown(const juce::MouseEvent &event) override;
     void paint(juce::Graphics &g) override;
     
     static constexpr int dataPoints = 5151;
