@@ -180,7 +180,8 @@ struct AirwindowsMeter : public juce::Component
     float outputG;
     float outputB;
     float outputMax;
-
+    float sustainedClip;
+    
     std::array<float, totalBins> peakTrack;
     std::array<float, totalBins> slewTrack;
     std::array<float, totalBins> bassTrack;
@@ -224,18 +225,19 @@ struct AirwindowsMeter : public juce::Component
         sparkle = juce::String();
         rumble = juce::String();
         hype = 0.618033988749894f; //0.3819661
-        storeR = 1.0;
-        storeG = 1.0;
-        storeB = 1.0;
-        outputR = 100.0;
-        outputG = 100.0;
-        outputB = 100.0;
+        storeR = 1.0f;
+        storeG = 1.0f;
+        storeB = 1.0f;
+        outputR = 100.0f;
+        outputG = 100.0f;
+        outputB = 100.0f;
+        sustainedClip = 180.0f;
 
         for (unsigned long count = 0; count < totalBins; ++count) //count through all the points in the array
         {
-            peakTrack[count] = 0.0;
-            slewTrack[count] = 0.0;
-            bassTrack[count] = 0.0;
+            peakTrack[count] = 0.0f;
+            slewTrack[count] = 0.0f;
+            bassTrack[count] = 0.0f;
         }
         for (unsigned long count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
