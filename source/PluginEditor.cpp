@@ -23,9 +23,9 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     meter.resetArrays();
     meter.addMouseListener(this, false);
     addAndMakeVisible(meter);
-    meter.outputR = 100.0;
-    meter.outputG = 100.0;
-    meter.outputB = 100.0;
+    meter.outputR = 10.0;
+    meter.outputG = 10.0;
+    meter.outputB = 10.0;
     
     addAndMakeVisible (resetButton);
     resetButton.onClick = [&] {
@@ -106,9 +106,9 @@ void PluginEditor::paint (juce::Graphics& g)
     g.drawFittedText(hostTrackName, juce::Rectangle<int>((int)getLocalBounds().getWidth(),(int)(getLocalBounds().getHeight()*0.0618f)), juce::Justification::centredBottom, 1);
     //draw the track name or plugin name embossed. This is because there's an unlimited range of colors and textures that could be in play.
     
-    g.setColour(juce::Colours::white); g.setOpacity(0.618f);
+    g.setColour(juce::Colours::white); g.setOpacity(0.125f);
     g.fillRect(0, 0, getLocalBounds().getWidth(), linewidth); g.fillRect(0, 0, linewidth, getLocalBounds().getHeight());
-    g.setColour(juce::Colours::black); g.setOpacity(0.382f);
+    g.setColour(juce::Colours::black); g.setOpacity(0.125f);
     g.fillRect(linewidth, getLocalBounds().getHeight()-linewidth, getLocalBounds().getWidth(), linewidth); g.fillRect(getLocalBounds().getWidth()-linewidth, linewidth, linewidth, getLocalBounds().getHeight()-linewidth);
     g.setColour (juce::Colours::black); g.drawRect(0, 0, getLocalBounds().getWidth(), getLocalBounds().getHeight());
     //draw global bevel effect, either from the color or from the color of the blurred texture, and a black border

@@ -228,9 +228,9 @@ struct AirwindowsMeter : public juce::Component
         storeR = 1.0f;
         storeG = 1.0f;
         storeB = 1.0f;
-        outputR = 100.0f;
-        outputG = 100.0f;
-        outputB = 100.0f;
+        outputR = 10.0f;
+        outputG = 10.0f;
+        outputB = 10.0f;
         sustainedClip = 180.0f;
 
         for (unsigned long count = 0; count < totalBins; ++count) //count through all the points in the array

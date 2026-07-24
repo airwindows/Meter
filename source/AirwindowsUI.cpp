@@ -68,9 +68,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             slewDotSizeL = (sin(0.1618f/psDotSizeL)*6.18f)+(sqrt(slewL)*0.1618f);
             bassDotSizeL = meterZeroL*0.1f*dataA[count];
             if (count < dataPosition && count > dataPosition-2) {
-                outputR += psDotSizeL * sqrt(fmax(psDotSizeL,1.0f)) * 0.2f;
-                outputG += slewL * slewDotSizeL * sqrt(fmax(slewDotSizeL,1.0f)) * 0.0009f;
-                outputB += bassDotSizeL * sqrt(fmax(bassDotSizeL,1.0f)) * 13.0f / (bassL+0.666f); //RGB backdrop, L version
+                outputB += psDotSizeL * sqrt(fmax(psDotSizeL,1.0f)) * 0.2f;
+                outputR += slewL * slewDotSizeL * sqrt(fmax(slewDotSizeL,1.0f)) * 0.0009f;
+                outputG += bassDotSizeL * sqrt(fmax(bassDotSizeL,1.0f)) * 13.0f / (bassL+0.666f); //RGB backdrop, L version
             }
             if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f));
             else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
@@ -95,9 +95,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             slewDotSizeR = (sin(0.1618f/psDotSizeR)*6.18f)+(sqrt(slewR)*0.1618f);
             bassDotSizeR = meterZeroR*0.1f*dataB[count];
             if (count < dataPosition && count > dataPosition-2) {
-                outputR += psDotSizeR * sqrt(fmax(psDotSizeR,1.0f)) * 0.2f;
-                outputG += slewR * slewDotSizeR * sqrt(fmax(slewDotSizeR,1.0f)) * 0.0009f;
-                outputB += bassDotSizeR * sqrt(fmax(bassDotSizeR,1.0f)) * 13.0f / (bassR+0.666f);
+                outputB += psDotSizeR * sqrt(fmax(psDotSizeR,1.0f)) * 0.2f;
+                outputR += slewR * slewDotSizeR * sqrt(fmax(slewDotSizeR,1.0f)) * 0.0009f;
+                outputG += bassDotSizeR * sqrt(fmax(bassDotSizeR,1.0f)) * 13.0f / (bassR+0.666f);
                 backR[count] = storeR;
                 backG[count] = storeG;
                 backB[count] = storeB; //RGB backdrop for text
@@ -490,11 +490,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     g.setColour(juce::Colours::black);
     g.fillRect(0, (int)(420.0f*vS), getWidth(), 2); // outline score color line
     
-    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.382f));
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.25f));
     g.fillRect(0, 0, getWidth(), 2);
     g.fillRect(0, 0, 2, getHeight());
     
-    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.618f));
+    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.25f));
     g.fillRect(2, getHeight()-2, getWidth(), 2);
     g.fillRect(getWidth()-2, 2, 2, getHeight()-2);
 }
