@@ -159,7 +159,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             maxBassBin = fmax(bassTrack[binscale], maxBassBin);
         } //now each holds the highest value of the lot
         for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
-            peakTrack[binscale] = fmax(peakTrack[binscale] - (maxPeakBin*0.01f), 0.0f);
+            peakTrack[binscale] = fmax(peakTrack[binscale] - (maxPeakBin*0.012f), 0.0f);
             slewTrack[binscale] = fmax(slewTrack[binscale] - (maxSlewBin*0.01f), 0.0f);
             bassTrack[binscale] = fmax(bassTrack[binscale] - (maxBassBin*0.01f), 0.0f);
         } //bins fall off at fixed speed, not converging on 0
@@ -177,8 +177,8 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade = sqrt(bassScore * 100.0f)*0.26f;
         
         if (dataPosition == count) {
-            float cumulativeLoudness = sqrt(dataA[count]+dataB[count]+0.01f); //whole rating scaled by RMS of each channel
-            cumulative += outputMin*cumulativeLoudness;
+            float cumulativeLoudness = sqrt(dataA[count]+dataB[count]+0.001f); //whole rating scaled by RMS of each channel
+            cumulative += (1.0-pow(1.0-outputMin,1.618f))*cumulativeLoudness;
             duration += cumulativeLoudness;
             //when RMS rises it will be paying proportionally more attention to the balance.
             //that means on varying tracks it'll care more about the main part than intros/outros.
