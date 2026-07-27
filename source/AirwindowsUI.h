@@ -196,8 +196,6 @@ struct AirwindowsMeter : public juce::Component
     std::array<float, dataPoints> dataF;
     std::array<float, dataPoints> dataG;
     std::array<float, dataPoints> dataH;
-    std::array<float, dataPoints> dispHue;//display hue showing score
-    std::array<float, dataPoints> dispSat;//display saturation showing balance
     std::array<float, dataPoints> backR;//backdrop red channel: loud
     std::array<float, dataPoints> backG;//backdrop green channel: bright
     std::array<float, dataPoints> backB;//backdrop blue channel: bass
@@ -252,8 +250,6 @@ struct AirwindowsMeter : public juce::Component
             dataF[count] = 0.0f;
             dataG[count] = 0.0f;
             dataH[count] = 0.0f;
-            dispHue[count] = 0.0f;
-            dispSat[count] = 0.0f;
             backR[count] = 1.0f;
             backG[count] = 1.0f;
             backB[count] = 1.0f;

@@ -115,7 +115,8 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         } //end draw dots on meters R
         g.setColour(juce::Colour::fromFloatRGBA(backR[count], backG[count], backB[count], 1.0f)); //set backdrop colour
         g.fillRect((float)(count)-0.25f, 182.5f*vS, 1.5f, 19.5f*vS);
-        
+        g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.5f*vS);
+
         unsigned long bintracker;
         bintracker = (unsigned long)(peakL * (0.005f*(float)totalBins));//converts 0-200 to 0-bin number for textscore bins
         if (bintracker > 0 && bintracker <= totalBins) {
@@ -176,34 +177,12 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade = sqrt(bassScore * 100.0f)*0.26f;
         
         if (dataPosition == count) {
-            double scoreHue = 5.0-((sqrt(cumulative)/sqrt(duration))*5.25);
-            if (scoreHue > 0.69) scoreHue = 0.69;
-            if (scoreHue < 0.0) scoreHue += 1.0;
-            dispHue[count] = (float)scoreHue;
-            
-            //dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
-            // previously, only grade is peak/slew balance
-            
-            dispSat[count] = 1.0f-(pow(1.0f-outputMin,2.0f));
-            //instead, constantly add degree of white balance and see what that produces.
-            
-            if (peaksGrade < 0.01) dispSat[count] = 0.0;
             float cumulativeLoudness = sqrt(dataA[count]+dataB[count]+0.01f); //whole rating scaled by RMS of each channel
-            //in this way, it'll keep the same rating for anything that was wholly consistent in loudness,
-            //but when RMS rises it will be paying proportionally more attention to the balance.
+            cumulative += 1.0f-(pow(1.0f-outputMin,2.0f))*cumulativeLoudness;
+            duration += cumulativeLoudness;
+            //when RMS rises it will be paying proportionally more attention to the balance.
             //that means on varying tracks it'll care more about the main part than intros/outros.
-            cumulative += dispSat[count]*cumulativeLoudness; //each time, add what the saturation of the hit intensity bar was
-            duration += cumulativeLoudness; //and the total duration we'll be dividing by. End result higher is better.
-            //again, all this is now scaled by how loud it is: it's weighing the loud parts more heavily,
-            //but continues to need there to be a balance regardless.
         }
-        //saturation is an even better guide to balance than the + and will hint at how close you're getting
-        g.setColour(juce::Colour::fromHSV(dispHue[count], dispSat[count], sqrt(dispSat[count]), 1.0f));
-        if (dispSat[count] == 0.0) g.setColour(juce::Colours::white);
-        g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.0f*vS);
-        //draw that bar that shows color of the text score at any given point
-        //note: the bar will freak out if you're pushing levels to loudenation levels as you're forcing the
-        //measurements inside the meter to saturate and overdrive. Keeping max color means keeping balance there too.
         
         if (count == (unsigned long)dataPosition-1) { //only update text score display more infrequently
             if (peaksGrade < 1) peaksGrade = 1;
@@ -437,7 +416,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                 case 27:
                     totalPackage = juce::String("+A"); break;
             } //this is our letter score, incorporating all the measurements
-            if (dataPosition == count) dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
+            //if (dataPosition == count) dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
         }
     }
     
@@ -446,19 +425,15 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.setFont(scaleFont*1.618f);
         g.setOpacity(0.618f);
         g.setColour(juce::Colours::white);
-        g.drawText("tone color", (int)scaleFont+1, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth/3, 32, juce::Justification::topLeft);
-        g.drawText("seek white balance", ((displayWidth*2)/3)-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth/3, 32, juce::Justification::topRight);
-        g.drawText("hit intensity", (int)scaleFont+1, (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("boost color", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth/2, 32, juce::Justification::topRight);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 8, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth-20, 32, juce::Justification::centredTop);
+        g.drawText("tone color", (int)scaleFont+1, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::topLeft);
+        g.drawText("seek white balance", 1-(int)(scaleFont*1.618f), (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::topRight);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 1-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::topRight);
         //underdrawing in white for areas prone to get covered up with dots
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText("tone color", (int)scaleFont, (int)(194.0f*vS)-(int)(scaleFont), displayWidth/3, 32, juce::Justification::topLeft);
-        g.drawText("seek white balance", ((displayWidth*2)/3)-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont), displayWidth/3, 32, juce::Justification::topRight);
-        g.drawText("hit intensity", (int)scaleFont, (int)(412.0f*vS)-(int)(scaleFont), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("boost color", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(412.0f*vS)-(int)(scaleFont), displayWidth/2, 32, juce::Justification::topRight);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 7, (int)(194.0f*vS)-(int)(scaleFont), displayWidth-20, 32, juce::Justification::centredTop);
+        g.drawText("tone color", (int)scaleFont, (int)(194.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::topLeft);
+        g.drawText("seek white balance", 0-(int)(scaleFont*1.618f), (int)(412.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::topRight);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::topRight);
         g.setFont(scaleFont);
         g.drawText("loudness: "+rating, (int)scaleFont, (int)(3*vS), displayWidth/3, 32, juce::Justification::topLeft);
         g.drawText("peaks", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
@@ -479,22 +454,22 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.drawText("45 Hz", (int)scaleFont, (int)(564.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("35 Hz", (int)scaleFont, (int)(575.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("30 Hz", (int)scaleFont, (int)(582.5f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.setColour(juce::Colours::grey);
+        g.setColour(juce::Colours::black);
+        g.setOpacity(0.618f);
         g.fillRect(0, (int)(182.5*vS), getWidth(), 2);
-        g.setColour(juce::Colours::darkgrey);
-        g.fillRect(0, (int)(201.0f*vS), getWidth(), 2); // outline backdrop color line
         g.fillRect(0, (int)(400.0f*vS), getWidth(), 2);
-        g.setColour(juce::Colours::black);
-        g.fillRect(0, (int)(420.0f*vS), getWidth(), 2); // outline score color line
+        g.setOpacity(1.0f);
+        g.fillRect(0, (int)(201.0f*vS), getWidth(), 2);
+        g.fillRect(0, (int)(420.0f*vS), getWidth(), 2); // outline backdrop color line
     } else {
-        g.setColour(juce::Colours::grey);
-        g.fillRect(0, (int)(182.5*vS), getWidth(), 1);
-        g.setColour(juce::Colours::darkgrey);
-        g.fillRect(0, (int)(201.0f*vS), getWidth(), 1); // outline backdrop color line
-        g.fillRect(0, (int)(400.0f*vS), getWidth(), 1);
         g.setColour(juce::Colours::black);
-        g.fillRect(0, (int)(420.0f*vS), getWidth(), 1); // outline score color line
-        g.setFont(scaleFont*12.0f); //in this case we'll draw the text OVER the lines for the tiny window
+        g.setOpacity(0.618f);
+        g.fillRect(0, (int)(182.5*vS), getWidth(), 1);
+        g.fillRect(0, (int)(400.0f*vS), getWidth(), 1);
+        g.setOpacity(1.0f);
+        g.fillRect(0, (int)(201.0f*vS), getWidth(), 1);
+        g.fillRect(0, (int)(420.0f*vS), getWidth(), 1); // outline backdrop color line
+        g.setFont(scaleFont*11.0f); //larger font for the tiny window, and the style seen in ConsoleX3
         g.setOpacity(0.21f);
         g.setColour(juce::Colours::white);
         g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 1, displayWidth, displayHeight, juce::Justification::centred, false);

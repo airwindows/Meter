@@ -26,23 +26,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     meter.outputR = 10.0;
     meter.outputG = 10.0;
     meter.outputB = 10.0;
-    
-    addAndMakeVisible (resetButton);
-    resetButton.onClick = [&] {
-        meter.resetArrays();
-        meter.repaint();
-    };
-    
     setSize (airwindowsLookAndFeel.userWidth, airwindowsLookAndFeel.userHeight);
     // Make sure that before the constructor has finished, you've set the editor's size to whatever you need it to be.
-    //if (airwindowsLookAndFeel.usingNamedImage) {
-    //    getConstrainer()->setFixedAspectRatio(1000.0f/537.0f); //the aspect ratio stuff leads to cropping the content area off the top
-    //    setResizeLimits(32, 32, 2000, 537); //this will not honor resize limits correctly in all the DAWs
-    //}
-    
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
-    //the aspect ratio stuff leads to cropping the content area off the top
 }
 
 PluginEditor::~PluginEditor(){
@@ -91,26 +76,26 @@ void PluginEditor::paint (juce::Graphics& g)
     
     
     if (airwindowsLookAndFeel.newFont == juce::String()) airwindowsLookAndFeel.newFont = "Jost";
-    g.setFont(juce::Font(airwindowsLookAndFeel.newFont, g.getCurrentFont().getHeight(), 0));
-    auto linewidth = getLocalBounds().getWidth(); if (getLocalBounds().getHeight() > linewidth) linewidth = getLocalBounds().getHeight();  linewidth = (int)cbrt(linewidth/2)/2;
-    if ((hostTrackName == juce::String()) || (hostTrackName.length() < 1.0f)) hostTrackName = juce::String("Hit Record Meter"); //if not track name, then name of plugin
-    float radius = getLocalBounds().getWidth(); if (radius > (getLocalBounds().getHeight())*0.0618f) radius = (getLocalBounds().getHeight())*0.0618f;
-    auto embossScale = sqrt(sqrt(radius*0.618f)*1.618f)*0.618f; //this is customized to the needs of the plugin title text area
-    g.setFont ((radius*12.0f) / (float)g.getCurrentFont().getHeight());
+    float whiteLevel = (findColour(juce::ResizableWindow::backgroundColourId).getLightness()+0.37f)*0.618f; //apply about half of this
+    float blackLevel = 1.0f-whiteLevel;
+    whiteLevel *= whiteLevel;
+    blackLevel *= blackLevel;
     
-    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::white, 0.75f)); //highlight
-    g.drawFittedText(hostTrackName, juce::Rectangle<int>((int)(getLocalBounds().getWidth()+embossScale),(int)((getLocalBounds().getHeight()*0.0618f)+embossScale)), juce::Justification::centredBottom, 1);
-    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.75f)); //shadow
-    g.drawFittedText(hostTrackName, juce::Rectangle<int>((int)(getLocalBounds().getWidth()-embossScale),(int)((getLocalBounds().getHeight()*0.0618f)-embossScale)), juce::Justification::centredBottom, 1);
-    g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.25f)); //text inside emboss
-    g.drawFittedText(hostTrackName, juce::Rectangle<int>((int)getLocalBounds().getWidth(),(int)(getLocalBounds().getHeight()*0.0618f)), juce::Justification::centredBottom, 1);
-    //draw the track name or plugin name embossed. This is because there's an unlimited range of colors and textures that could be in play.
+    auto area = getLocalBounds(); // this is a huge huge routine, but not all of it runs at all times!
+    auto linewidth = (int)fmin(area.getHeight(),area.getWidth());
+    linewidth = (int)cbrt(linewidth/2)-1;
+    area.reduce((int)(linewidth*1.618f), (int)(linewidth*1.618f));
+    g.setColour(juce::Colours::white); g.setOpacity(whiteLevel);
+    g.fillRect(0, 0, getLocalBounds().getWidth()-linewidth, linewidth);
+    g.fillRect(0, linewidth, linewidth, getLocalBounds().getHeight()-(linewidth*2));
+    g.setColour(juce::Colours::black); g.setOpacity(blackLevel);
+    g.fillRect(linewidth, getLocalBounds().getHeight()-linewidth, getLocalBounds().getWidth(), linewidth);
+    g.fillRect(getLocalBounds().getWidth()-linewidth, linewidth, linewidth, getLocalBounds().getHeight()-linewidth);
     
-    g.setColour(juce::Colours::white); g.setOpacity(0.125f);
-    g.fillRect(0, 0, getLocalBounds().getWidth(), linewidth); g.fillRect(0, 0, linewidth, getLocalBounds().getHeight());
-    g.setColour(juce::Colours::black); g.setOpacity(0.125f);
-    g.fillRect(linewidth, getLocalBounds().getHeight()-linewidth, getLocalBounds().getWidth(), linewidth); g.fillRect(getLocalBounds().getWidth()-linewidth, linewidth, linewidth, getLocalBounds().getHeight()-linewidth);
-    g.setColour (juce::Colours::black); g.drawRect(0, 0, getLocalBounds().getWidth(), getLocalBounds().getHeight());
+    g.setColour (juce::Colours::black);
+    g.setOpacity(0.384f); g.drawRect(2, 2, getLocalBounds().getWidth()-4, getLocalBounds().getHeight()-4);
+    g.setOpacity(0.618f); g.drawRect(1, 1, getLocalBounds().getWidth()-2, getLocalBounds().getHeight()-2);
+    g.setOpacity(1.000f); g.drawRect(0, 0, getLocalBounds().getWidth(), getLocalBounds().getHeight());
     //draw global bevel effect, either from the color or from the color of the blurred texture, and a black border
 }
 
@@ -121,14 +106,11 @@ void PluginEditor::resized()
     processorRef.pluginHeight = airwindowsLookAndFeel.userHeight = area.getHeight();
     auto linewidth = area.getWidth();
     if (area.getHeight() > linewidth) linewidth = area.getHeight();
-    linewidth = (int)cbrt(linewidth/2)/2;
-    meter.displayWidth = (int)((1.0f-(((float)linewidth*4.0f)/area.getWidth()))*(float)area.getWidth());
-    meter.displayHeight = (int)((0.95f-(((float)linewidth*2.0f)/area.getHeight()))*(float)area.getHeight());
-    area.reduce(linewidth, linewidth);
-    //getProportion sets first start X and Y placement, then size X and Y placement
-    meter.setBounds(area.getProportion(juce::Rectangle{((float)linewidth*2.0f)/area.getWidth(), 0.05f, 1.0f-(((float)linewidth*5.0f)/area.getWidth()), 0.95f-(((float)linewidth*3.0f)/area.getHeight())}));
-    
-    resetButton.setBounds(area.getProportion(juce::Rectangle{0.01f, 0.01f, 0.084f, 0.033f}));
+    linewidth = (int)cbrt(linewidth/2)-1;
+    area.reduce((int)(linewidth*1.618f), (int)(linewidth*1.618f));
+    meter.displayWidth = (int)area.getWidth();
+    meter.displayHeight = (int)area.getHeight(); //meter-only display
+    meter.setBounds(area);
 }
 
 void PluginEditor::sliderValueChanged(juce::Slider *s) {}                           //there are no sliders
@@ -142,7 +124,7 @@ void PluginEditor::updateTrackProperties() {hostTrackColour=processorRef.trackPr
 void PluginEditor::updatePluginSize() {
     airwindowsLookAndFeel.userWidth = processorRef.pluginWidth;
     airwindowsLookAndFeel.userHeight = processorRef.pluginHeight;
-    if (airwindowsLookAndFeel.userWidth < 8 || airwindowsLookAndFeel.userWidth > 16386) airwindowsLookAndFeel.userWidth = 1080;
+    if (airwindowsLookAndFeel.userWidth < 8 || airwindowsLookAndFeel.userWidth > 16386) airwindowsLookAndFeel.userWidth = 1280;
     if (airwindowsLookAndFeel.userHeight < 8 || airwindowsLookAndFeel.userHeight > 16386) airwindowsLookAndFeel.userHeight = 720;
     repaint();
 }
