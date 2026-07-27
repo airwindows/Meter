@@ -180,6 +180,8 @@ struct AirwindowsMeter : public juce::Component
     float outputG;
     float outputB;
     float outputMax;
+    float outputMin;
+    float outputShift;
     float sustainedClip;
     
     std::array<float, totalBins> peakTrack;
@@ -231,6 +233,7 @@ struct AirwindowsMeter : public juce::Component
         outputR = 10.0f;
         outputG = 10.0f;
         outputB = 10.0f;
+        outputMin = 0.0f;
         sustainedClip = 180.0f;
 
         for (unsigned long count = 0; count < totalBins; ++count) //count through all the points in the array

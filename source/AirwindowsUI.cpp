@@ -10,31 +10,32 @@ void AirwindowsMeter::mouseDown(const juce::MouseEvent &event)
 void AirwindowsMeter::paint(juce::Graphics &g)
 {
     float vS = displayHeight/600.0f; // short for vScale: everything * this
-    g.fillAll(juce::Colours::white); //blank screen before doing anything, unless our draw covers the whole display anyway
-    //this is probably quick and optimized
-    g.setColour(juce::Colours::lightgrey);
-    g.fillRect(0,  (int)(60.0f*vS), getWidth(),1); // -6dB markings
-    g.fillRect(0, (int)(101.02*vS), getWidth(),1); //-12dB markings
-    g.fillRect(0, (int)(130.02f*vS), getWidth(),1); //-18dB markings
-    g.fillRect(0, (int)(150.2f*vS), getWidth(),1); //-24dB markings
-    g.fillRect(0, (int)(164.9f*vS), getWidth(),1); //-30dB markings
-    g.fillRect(0, (int)(175.2f*vS), getWidth(),1); //-36dB markings
-    
-    g.fillRect(0,  (int)(260.0f*vS), getWidth(),1); // -6dB markings
-    g.fillRect(0, (int)(301.02*vS), getWidth(),1); //-12dB markings
-    g.fillRect(0, (int)(330.02f*vS), getWidth(),1); //-18dB markings
-    g.fillRect(0, (int)(350.2f*vS), getWidth(),1); //-24dB markings
-    g.fillRect(0, (int)(364.9f*vS), getWidth(),1); //-30dB markings
-    g.fillRect(0, (int)(375.2f*vS), getWidth(),1); //-36dB markings
-    g.fillRect(0, (int)(382.5f*vS), getWidth(),1); //-42dB markings
-    
-    g.fillRect(0,  (int)(460.0f*vS), getWidth(),1); // -6dB markings
-    g.fillRect(0, (int)(501.02*vS), getWidth(),1); //-12dB markings
-    g.fillRect(0, (int)(530.02f*vS), getWidth(),1); //-18dB markings
-    g.fillRect(0, (int)(550.2f*vS), getWidth(),1); //-24dB markings
-    g.fillRect(0, (int)(564.9f*vS), getWidth(),1); //-30dB markings
-    g.fillRect(0, (int)(575.2f*vS), getWidth(),1); //-36dB markings
-    g.fillRect(0, (int)(582.5f*vS), getWidth(),1); //-42dB markings
+    if ((sqrt(vS*61.8f)*1.618f) > 10.0f) {
+        g.fillAll(juce::Colours::white); //blank screen before doing anything, unless our draw covers the whole display anyway
+        g.setColour(juce::Colours::lightgrey);
+        g.fillRect(0,  (int)(60.0f*vS), getWidth(),1); // -6dB markings
+        g.fillRect(0, (int)(101.02*vS), getWidth(),1); //-12dB markings
+        g.fillRect(0, (int)(130.02f*vS), getWidth(),1); //-18dB markings
+        g.fillRect(0, (int)(150.2f*vS), getWidth(),1); //-24dB markings
+        g.fillRect(0, (int)(164.9f*vS), getWidth(),1); //-30dB markings
+        g.fillRect(0, (int)(175.2f*vS), getWidth(),1); //-36dB markings
+        
+        g.fillRect(0,  (int)(260.0f*vS), getWidth(),1); // -6dB markings
+        g.fillRect(0, (int)(301.02*vS), getWidth(),1); //-12dB markings
+        g.fillRect(0, (int)(330.02f*vS), getWidth(),1); //-18dB markings
+        g.fillRect(0, (int)(350.2f*vS), getWidth(),1); //-24dB markings
+        g.fillRect(0, (int)(364.9f*vS), getWidth(),1); //-30dB markings
+        g.fillRect(0, (int)(375.2f*vS), getWidth(),1); //-36dB markings
+        g.fillRect(0, (int)(382.5f*vS), getWidth(),1); //-42dB markings
+        
+        g.fillRect(0,  (int)(460.0f*vS), getWidth(),1); // -6dB markings
+        g.fillRect(0, (int)(501.02*vS), getWidth(),1); //-12dB markings
+        g.fillRect(0, (int)(530.02f*vS), getWidth(),1); //-18dB markings
+        g.fillRect(0, (int)(550.2f*vS), getWidth(),1); //-24dB markings
+        g.fillRect(0, (int)(564.9f*vS), getWidth(),1); //-30dB markings
+        g.fillRect(0, (int)(575.2f*vS), getWidth(),1); //-36dB markings
+        g.fillRect(0, (int)(582.5f*vS), getWidth(),1); //-42dB markings
+    } else g.fillAll(backdropColour); //blank screen before doing anything, unless our draw covers the whole display anyway
     
     for (unsigned long count = 0; count < fmin(displayWidth,5150); ++count) //count through all the points in the array
     {
@@ -179,7 +180,13 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (scoreHue > 0.69) scoreHue = 0.69;
             if (scoreHue < 0.0) scoreHue += 1.0;
             dispHue[count] = (float)scoreHue;
-            dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
+            
+            //dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
+            // previously, only grade is peak/slew balance
+            
+            dispSat[count] = 1.0f-(pow(1.0f-outputMin,2.0f));
+            //instead, constantly add degree of white balance and see what that produces.
+            
             if (peaksGrade < 0.01) dispSat[count] = 0.0;
             float cumulativeLoudness = sqrt(dataA[count]+dataB[count]+0.01f); //whole rating scaled by RMS of each channel
             //in this way, it'll keep the same rating for anything that was wholly consistent in loudness,
@@ -371,9 +378,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             } //this is our letter score, incorporating all the measurements
             
             totalPackage = juce::String("Z");
-            double allMatch = ((sqrt(cumulative)/sqrt(duration))*28.28);
+            double allMatch = ((sqrt(cumulative)/sqrt(duration))*28.0);
             if (allMatch < 1.001) allMatch = 1.001;
-            if (allMatch > 28) allMatch = 28;
+            if (allMatch > 27) allMatch = 27;
             switch ((int)allMatch) {
                 case 1:
                     totalPackage = juce::String("Z"); break;
@@ -429,67 +436,80 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                     totalPackage = juce::String("A"); break;
                 case 27:
                     totalPackage = juce::String("+A"); break;
-                case 28:
-                    totalPackage = juce::String("++A"); break;
             } //this is our letter score, incorporating all the measurements
             if (dataPosition == count) dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
         }
     }
     
     float scaleFont = (sqrt(vS*61.8f)*1.618f);
-    if (scaleFont > 12.0f) {
+    if (scaleFont > 10.0f) {
         g.setFont(scaleFont*1.618f);
+        g.setOpacity(0.618f);
         g.setColour(juce::Colours::white);
-        g.drawText("tone color", 8, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth/3, 32, juce::Justification::topLeft);
-        g.drawText("seek white balance", ((displayWidth*2)/3)-11, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth/3, 32, juce::Justification::topRight);
-        g.drawText("hit intensity", 8, (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("boost color", (displayWidth/2)-11, (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("tone color", (int)scaleFont+1, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth/3, 32, juce::Justification::topLeft);
+        g.drawText("seek white balance", ((displayWidth*2)/3)-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth/3, 32, juce::Justification::topRight);
+        g.drawText("hit intensity", (int)scaleFont+1, (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("boost color", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth/2, 32, juce::Justification::topRight);
         g.drawText(totalPackage+"-"+rating+sparkle+rumble, 8, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth-20, 32, juce::Justification::centredTop);
         //underdrawing in white for areas prone to get covered up with dots
+        g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText("tone color", 7, (int)(194.0f*vS)-(int)(scaleFont), displayWidth/3, 32, juce::Justification::topLeft);
-        g.drawText("seek white balance", ((displayWidth*2)/3)-12, (int)(194.0f*vS)-(int)(scaleFont), displayWidth/3, 32, juce::Justification::topRight);
-        g.drawText("hit intensity", 7, (int)(412.0f*vS)-(int)(scaleFont), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("boost color", (displayWidth/2)-12, (int)(412.0f*vS)-(int)(scaleFont), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("tone color", (int)scaleFont, (int)(194.0f*vS)-(int)(scaleFont), displayWidth/3, 32, juce::Justification::topLeft);
+        g.drawText("seek white balance", ((displayWidth*2)/3)-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont), displayWidth/3, 32, juce::Justification::topRight);
+        g.drawText("hit intensity", (int)scaleFont, (int)(412.0f*vS)-(int)(scaleFont), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("boost color", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(412.0f*vS)-(int)(scaleFont), displayWidth/2, 32, juce::Justification::topRight);
         g.drawText(totalPackage+"-"+rating+sparkle+rumble, 7, (int)(194.0f*vS)-(int)(scaleFont), displayWidth-20, 32, juce::Justification::centredTop);
-        g.setFont(scaleFont*1.1f);
-        g.drawText("loudness: "+rating, 7, (int)(3*vS), displayWidth/3, 32, juce::Justification::topLeft);
-        g.drawText("peaks", (displayWidth/2)-12, (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
-        g.drawText("detail: "+sparkle, 7, (int)(203*vS), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("slews", (displayWidth/2)-12, (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
-        g.drawText("fullness: "+rumble, 7, (int)(423*vS), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("zero cross", (displayWidth/2)-12, (int)(423*vS), displayWidth/2, 32, juce::Justification::topRight);
         g.setFont(scaleFont);
-        g.drawText("-6 dB", 7, (int)(60.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-12 dB", 7, (int)(101.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-18 dB", 7, (int)(130.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-24 dB", 7, (int)(150.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-30 dB", 7, (int)(164.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-36 dB", 7, (int)(175.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("900 Hz", 7, (int)(460.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("210 Hz", 7, (int)(501.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("100 Hz", 7, (int)(530.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("60 Hz", 7, (int)(550.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("45 Hz", 7, (int)(564.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("35 Hz", 7, (int)(575.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("30 Hz", 7, (int)(582.5f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-    } else {
-        g.setFont(scaleFont*6.18f);
-        g.setColour(juce::Colours::white); //underdrawing in white for areas prone to get covered up with dots
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 0, displayWidth, displayHeight, juce::Justification::centred);
+        g.drawText("loudness: "+rating, (int)scaleFont, (int)(3*vS), displayWidth/3, 32, juce::Justification::topLeft);
+        g.drawText("peaks", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("detail: "+sparkle, (int)scaleFont, (int)(203*vS), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("slews", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("fullness: "+rumble, (int)scaleFont, (int)(423*vS), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("zero cross", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(423*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("-6 dB", (int)scaleFont, (int)(60.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-12 dB", (int)scaleFont, (int)(101.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-18 dB", (int)scaleFont, (int)(130.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-24 dB", (int)scaleFont, (int)(150.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-30 dB", (int)scaleFont, (int)(164.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-36 dB", (int)scaleFont, (int)(175.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("900 Hz", (int)scaleFont, (int)(460.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("210 Hz", (int)scaleFont, (int)(501.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("100 Hz", (int)scaleFont, (int)(530.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("60 Hz", (int)scaleFont, (int)(550.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("45 Hz", (int)scaleFont, (int)(564.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("35 Hz", (int)scaleFont, (int)(575.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("30 Hz", (int)scaleFont, (int)(582.5f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.setColour(juce::Colours::grey);
+        g.fillRect(0, (int)(182.5*vS), getWidth(), 2);
+        g.setColour(juce::Colours::darkgrey);
+        g.fillRect(0, (int)(201.0f*vS), getWidth(), 2); // outline backdrop color line
+        g.fillRect(0, (int)(400.0f*vS), getWidth(), 2);
         g.setColour(juce::Colours::black);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 0, displayWidth, displayHeight, juce::Justification::centred);
+        g.fillRect(0, (int)(420.0f*vS), getWidth(), 2); // outline score color line
+    } else {
+        g.setColour(juce::Colours::grey);
+        g.fillRect(0, (int)(182.5*vS), getWidth(), 1);
+        g.setColour(juce::Colours::darkgrey);
+        g.fillRect(0, (int)(201.0f*vS), getWidth(), 1); // outline backdrop color line
+        g.fillRect(0, (int)(400.0f*vS), getWidth(), 1);
+        g.setColour(juce::Colours::black);
+        g.fillRect(0, (int)(420.0f*vS), getWidth(), 1); // outline score color line
+        g.setFont(scaleFont*12.0f); //in this case we'll draw the text OVER the lines for the tiny window
+        g.setOpacity(0.21f);
+        g.setColour(juce::Colours::white);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 1, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 1, 0, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.setOpacity(0.51f);
+        g.setColour(juce::Colours::white);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 1, 1, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.setOpacity(1.0f);
+        g.setColour(juce::Colours::black);
+        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
     }
     
     g.setColour(juce::Colours::grey);
     g.fillRect((int)dataPosition, 0, 1, (int)(599.0f*vS)); //the moving line
-    g.fillRect(0, (int)(182.5*vS), getWidth(), 2);
-    g.setColour(juce::Colours::darkgrey);
-    g.fillRect(0, (int)(201.0f*vS), getWidth(), 2); // outline backdrop color line
-    g.fillRect(0, (int)(400.0f*vS), getWidth(), 2);
-    g.setColour(juce::Colours::black);
-    g.fillRect(0, (int)(420.0f*vS), getWidth(), 2); // outline score color line
-    
+        
     g.setColour (findColour(juce::ResizableWindow::backgroundColourId).interpolatedWith (juce::Colours::black, 0.25f));
     g.fillRect(0, 0, getWidth(), 2);
     g.fillRect(0, 0, 2, getHeight());
