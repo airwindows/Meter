@@ -189,171 +189,171 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (peaksGrade > 26) peaksGrade = 26;
             switch ((int)peaksGrade) {
                 case 1:
-                    rating = juce::String("Z"); break;
+                    rating = juce::String("t"); break; //lowercase grades for more chill, spacious mixes
                 case 2:
-                    rating = juce::String("Y"); break;
+                    rating = juce::String("s"); break; //UPPERCASE for pushing loudness and demanding attention
                 case 3:
-                    rating = juce::String("X"); break;
+                    rating = juce::String("r"); break; //this changes only labeling, not underlying mechanics:
                 case 4:
-                    rating = juce::String("W"); break;
+                    rating = juce::String("q"); break; //it's an attempt to reveal what people actually respond to
                 case 5:
-                    rating = juce::String("V"); break;
+                    rating = juce::String("p"); break; //if we gotta have grades and ratings because of how fun they are,
                 case 6:
-                    rating = juce::String("U"); break;
+                    rating = juce::String("o"); break; //but the grade 'G' is constantly popping up over true top 10 hit records
                 case 7:
-                    rating = juce::String("T"); break;
+                    rating = juce::String("n"); break; //as if it's a kind of maximum score and consequence of getting ideal balance,
                 case 8:
-                    rating = juce::String("S"); break;
+                    rating = juce::String("m"); break; //the obvious thing is to keep the letter grades but add case to them
                 case 9:
-                    rating = juce::String("R"); break;
+                    rating = juce::String("l"); break; //so all the chill open mixes work up to 'a' as a 'high score'
                 case 10:
-                    rating = juce::String("Q"); break;
+                    rating = juce::String("k"); break; //but then increasingly loud stuff goes into 'A", another 'best'
                 case 11:
-                    rating = juce::String("P"); break;
+                    rating = juce::String("j"); break; //and then the very loudest densest things (challenging to balance)
                 case 12:
-                    rating = juce::String("O"); break;
+                    rating = juce::String("i"); break; //would register as 'FFF' this way of counting them,
                 case 13:
-                    rating = juce::String("N"); break;
+                    rating = juce::String("h"); break; //which is also gratifying because in orchestras,
                 case 14:
-                    rating = juce::String("M"); break;
+                    rating = juce::String("g"); break; //that means 'FFF' or triple forte :)
                 case 15:
-                    rating = juce::String("L"); break;
+                    rating = juce::String("f"); break;
                 case 16:
-                    rating = juce::String("K"); break;
+                    rating = juce::String("e"); break;
                 case 17:
-                    rating = juce::String("J"); break;
+                    rating = juce::String("d"); break;
                 case 18:
-                    rating = juce::String("I"); break;
+                    rating = juce::String("c"); break;
                 case 19:
-                    rating = juce::String("H"); break;
+                    rating = juce::String("b"); break;
                 case 20:
-                    rating = juce::String("G"); break;
+                    rating = juce::String("a"); break; //classic vinyl records generate biggest hits at this density
                 case 21:
-                    rating = juce::String("F"); break;
+                    rating = juce::String("A"); break; //modern stuff leans into higher densities like this
                 case 22:
-                    rating = juce::String("E"); break;
-                case 23:
-                    rating = juce::String("D"); break;
-                case 24:
-                    rating = juce::String("C"); break;
-                case 25:
                     rating = juce::String("B"); break;
+                case 23:
+                    rating = juce::String("C"); break;
+                case 24:
+                    rating = juce::String("D"); break;
+                case 25:
+                    rating = juce::String("E"); break;
                 case 26:
-                    rating = juce::String("A"); break;
+                    rating = juce::String("F"); break;
             } //this is our letter score, incorporating all the measurements
             
             if (slewGrade < 1) slewGrade = 1;
             if (slewGrade > 26) slewGrade = 26;
             switch ((int)slewGrade) {
                 case 1:
-                    sparkle = juce::String("Z"); break;
+                    sparkle = juce::String("t"); break;
                 case 2:
-                    sparkle = juce::String("Y"); break;
+                    sparkle = juce::String("s"); break;
                 case 3:
-                    sparkle = juce::String("X"); break;
+                    sparkle = juce::String("r"); break;
                 case 4:
-                    sparkle = juce::String("W"); break;
+                    sparkle = juce::String("q"); break;
                 case 5:
-                    sparkle = juce::String("V"); break;
+                    sparkle = juce::String("p"); break;
                 case 6:
-                    sparkle = juce::String("U"); break;
+                    sparkle = juce::String("o"); break;
                 case 7:
-                    sparkle = juce::String("T"); break;
+                    sparkle = juce::String("n"); break;
                 case 8:
-                    sparkle = juce::String("S"); break;
+                    sparkle = juce::String("m"); break;
                 case 9:
-                    sparkle = juce::String("R"); break;
+                    sparkle = juce::String("l"); break;
                 case 10:
-                    sparkle = juce::String("Q"); break;
+                    sparkle = juce::String("k"); break;
                 case 11:
-                    sparkle = juce::String("P"); break;
+                    sparkle = juce::String("j"); break;
                 case 12:
-                    sparkle = juce::String("O"); break;
+                    sparkle = juce::String("i"); break;
                 case 13:
-                    sparkle = juce::String("N"); break;
+                    sparkle = juce::String("h"); break;
                 case 14:
-                    sparkle = juce::String("M"); break;
+                    sparkle = juce::String("g"); break;
                 case 15:
-                    sparkle = juce::String("L"); break;
+                    sparkle = juce::String("f"); break;
                 case 16:
-                    sparkle = juce::String("K"); break;
+                    sparkle = juce::String("e"); break;
                 case 17:
-                    sparkle = juce::String("J"); break;
+                    sparkle = juce::String("d"); break;
                 case 18:
-                    sparkle = juce::String("I"); break;
+                    sparkle = juce::String("c"); break;
                 case 19:
-                    sparkle = juce::String("H"); break;
+                    sparkle = juce::String("b"); break;
                 case 20:
-                    sparkle = juce::String("G"); break;
+                    sparkle = juce::String("a"); break; //classic vinyl records generate biggest hits at this density
                 case 21:
-                    sparkle = juce::String("F"); break;
+                    sparkle = juce::String("A"); break; //modern stuff leans into higher densities like this
                 case 22:
-                    sparkle = juce::String("E"); break;
-                case 23:
-                    sparkle = juce::String("D"); break;
-                case 24:
-                    sparkle = juce::String("C"); break;
-                case 25:
                     sparkle = juce::String("B"); break;
+                case 23:
+                    sparkle = juce::String("C"); break;
+                case 24:
+                    sparkle = juce::String("D"); break;
+                case 25:
+                    sparkle = juce::String("E"); break;
                 case 26:
-                    sparkle = juce::String("A"); break;
+                    sparkle = juce::String("F"); break;
             } //this is our two letter score, incorporating all the measurements
             
             if (bassGrade < 1) bassGrade = 1;
             if (bassGrade > 26) bassGrade = 26;
             switch ((int)bassGrade) {
                 case 1:
-                    rumble = juce::String("Z"); break;
+                    rumble = juce::String("t"); break;
                 case 2:
-                    rumble = juce::String("Y"); break;
+                    rumble = juce::String("s"); break;
                 case 3:
-                    rumble = juce::String("X"); break;
+                    rumble = juce::String("r"); break;
                 case 4:
-                    rumble = juce::String("W"); break;
+                    rumble = juce::String("q"); break;
                 case 5:
-                    rumble = juce::String("V"); break;
+                    rumble = juce::String("p"); break;
                 case 6:
-                    rumble = juce::String("U"); break;
+                    rumble = juce::String("o"); break;
                 case 7:
-                    rumble = juce::String("T"); break;
+                    rumble = juce::String("n"); break;
                 case 8:
-                    rumble = juce::String("S"); break;
+                    rumble = juce::String("m"); break;
                 case 9:
-                    rumble = juce::String("R"); break;
+                    rumble = juce::String("l"); break;
                 case 10:
-                    rumble = juce::String("Q"); break;
+                    rumble = juce::String("k"); break;
                 case 11:
-                    rumble = juce::String("P"); break;
+                    rumble = juce::String("j"); break;
                 case 12:
-                    rumble = juce::String("O"); break;
+                    rumble = juce::String("i"); break;
                 case 13:
-                    rumble = juce::String("N"); break;
+                    rumble = juce::String("h"); break;
                 case 14:
-                    rumble = juce::String("M"); break;
+                    rumble = juce::String("g"); break;
                 case 15:
-                    rumble = juce::String("L"); break;
+                    rumble = juce::String("f"); break;
                 case 16:
-                    rumble = juce::String("K"); break;
+                    rumble = juce::String("e"); break;
                 case 17:
-                    rumble = juce::String("J"); break;
+                    rumble = juce::String("d"); break;
                 case 18:
-                    rumble = juce::String("I"); break;
+                    rumble = juce::String("c"); break;
                 case 19:
-                    rumble = juce::String("H"); break;
+                    rumble = juce::String("b"); break;
                 case 20:
-                    rumble = juce::String("G"); break;
+                    rumble = juce::String("a"); break; //classic vinyl records generate biggest hits at this density
                 case 21:
-                    rumble = juce::String("F"); break;
+                    rumble = juce::String("A"); break; //modern stuff leans into higher densities like this
                 case 22:
-                    rumble = juce::String("E"); break;
-                case 23:
-                    rumble = juce::String("D"); break;
-                case 24:
-                    rumble = juce::String("C"); break;
-                case 25:
                     rumble = juce::String("B"); break;
+                case 23:
+                    rumble = juce::String("C"); break;
+                case 24:
+                    rumble = juce::String("D"); break;
+                case 25:
+                    rumble = juce::String("E"); break;
                 case 26:
-                    rumble = juce::String("A"); break;
+                    rumble = juce::String("F"); break;
             } //this is our letter score, incorporating all the measurements
             
             totalPackage = juce::String("Z");
