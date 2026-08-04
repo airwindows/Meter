@@ -1,5 +1,11 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#ifndef M_PI
+#  define M_PI (3.14159265358979323846)
+#endif
+#ifndef M_PI_2
+#  define M_PI_2 (1.57079632679489661923)
+#endif
 
 //==============================================================================
 PluginProcessor::PluginProcessor():AudioProcessor (
@@ -195,7 +201,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         //}
     } //Handle inbound messages from the UI thread
     
-    double rmsSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
+    double windowSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
     
     for (int i = 0; i < buffer.getNumSamples(); ++i)
@@ -223,9 +229,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             float rectifiedR = fabs(*inR);
             if (rectifiedL > peakLeft) peakLeft = rectifiedL;
             if (rectifiedR > peakRight) peakRight = rectifiedR;
-            rmsLeft += (rectifiedL * rectifiedL);
-            rmsRight += (rectifiedR * rectifiedR);
-            rmsCount++;
+            windowCount++;
             
             zeroLeft += zeroCrossScale;
             if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
@@ -250,11 +254,9 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         *outL = *inL;
         *outR = *inR; //this is a meter. Raw pass-through
         
-        if (rmsCount > rmsSize)
+        if (windowCount > windowSize)
         {
             AudioToUIMessage msg; //define the thing we're telling JUCE
-            msg.what = AudioToUIMessage::RMS_LEFT; msg.newValue = (float)sqrt(sqrt(rmsLeft/rmsCount)); audioToUI.push(msg);
-            msg.what = AudioToUIMessage::RMS_RIGHT; msg.newValue = (float)sqrt(sqrt(rmsRight/rmsCount)); audioToUI.push(msg);
             msg.what = AudioToUIMessage::PEAK_LEFT; msg.newValue = (float)sqrt(peakLeft); audioToUI.push(msg);
             msg.what = AudioToUIMessage::PEAK_RIGHT; msg.newValue = (float)sqrt(peakRight); audioToUI.push(msg);
             msg.what = AudioToUIMessage::SLEW_LEFT; msg.newValue = (float)slewLeft; audioToUI.push(msg);
@@ -262,14 +264,6 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
-            
-            //if (getPlayHead()->getPosition().hasValue() && !getPlayHead()->getPosition()->getIsPlaying()){}
-            //this was a start on making it not update when Reaper's playhead is not in motion
-            //in this state, it works in TwistedWave and does nothing in Reaper
-            //Note however it's not in the double processing? and so not in Reaper?
-
-            rmsLeft = 0.0;
-            rmsRight = 0.0;
             peakLeft = 0.0;
             peakRight = 0.0;
             slewLeft = 0.0;
@@ -278,7 +272,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             zeroRight = 0.0;
             longestZeroLeft = 0.0;
             longestZeroRight = 0.0;
-            rmsCount = 0;
+            windowCount = 0;
         }
     }
 }
@@ -314,7 +308,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         //}
     } //Handle inbound messages from the UI thread
     
-    double rmsSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
+    double windowSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
 
     for (int i = 0; i < buffer.getNumSamples(); ++i)
@@ -342,9 +336,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             double rectifiedR = fabs(*inR);
             if (rectifiedL > peakLeft) peakLeft = rectifiedL;
             if (rectifiedR > peakRight) peakRight = rectifiedR;
-            rmsLeft += (rectifiedL * rectifiedL);
-            rmsRight += (rectifiedR * rectifiedR);
-            rmsCount++;
+            windowCount++;
             
             zeroLeft += zeroCrossScale;
             if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
@@ -369,11 +361,9 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         *outL = *inL;
         *outR = *inR; //this is a meter. Raw pass-through
         
-        if (rmsCount > rmsSize)
+        if (windowCount > windowSize)
         {
             AudioToUIMessage msg; //define the thing we're telling JUCE
-            msg.what = AudioToUIMessage::RMS_LEFT; msg.newValue = (float)sqrt(sqrt(rmsLeft/rmsCount)); audioToUI.push(msg);
-            msg.what = AudioToUIMessage::RMS_RIGHT; msg.newValue = (float)sqrt(sqrt(rmsRight/rmsCount)); audioToUI.push(msg);
             msg.what = AudioToUIMessage::PEAK_LEFT; msg.newValue = (float)sqrt(peakLeft); audioToUI.push(msg);
             msg.what = AudioToUIMessage::PEAK_RIGHT; msg.newValue = (float)sqrt(peakRight); audioToUI.push(msg);
             msg.what = AudioToUIMessage::SLEW_LEFT; msg.newValue = (float)slewLeft; audioToUI.push(msg);
@@ -381,8 +371,6 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
-            rmsLeft = 0.0;
-            rmsRight = 0.0;
             peakLeft = 0.0;
             peakRight = 0.0;
             slewLeft = 0.0;
@@ -391,7 +379,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             zeroRight = 0.0;
             longestZeroLeft = 0.0;
             longestZeroRight = 0.0;
-            rmsCount = 0;
+            windowCount = 0;
         }
     }
 }

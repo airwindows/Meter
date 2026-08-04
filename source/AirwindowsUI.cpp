@@ -52,14 +52,14 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         float slewDotSizeR = 0.0f;
         float bassDotSizeL = 0.0f;
         float bassDotSizeR = 0.0f;
-        float peakL = dataC[count] * 200.0f;
-        float peakR = dataD[count] * 200.0f;
-        float slewL = sqrt(dataE[count])*300.0f;
-        float slewR = sqrt(dataF[count])*300.0f;
-        float meterZeroL = (sqrt(dataG[count])*6.0f)-6.0f;
+        float peakL = dataPL[count] * 200.0f;
+        float peakR = dataPR[count] * 200.0f;
+        float slewL = sqrt(dataSL[count])*300.0f;
+        float slewR = sqrt(dataSR[count])*300.0f;
+        float meterZeroL = (sqrt(dataZL[count])*6.0f)-6.0f;
         if (meterZeroL > 192.0f) meterZeroL = 192.0f;
         float bassL = fmin((sqrt(meterZeroL)*16.2f)-20.0f,199.0f);
-        float meterZeroR = (sqrt(dataH[count])*6.0f)-6.0f;
+        float meterZeroR = (sqrt(dataZR[count])*6.0f)-6.0f;
         if (meterZeroR > 192.0f) meterZeroR = 192.0f;
         float bassR = fmin((sqrt(meterZeroR)*16.2f)-20.0f,199.0f);
         //begin draw dots on meters L
@@ -70,19 +70,19 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (peakR > 197.0f) sustainedClip *= 0.975f; //if both are clipping, escalate
         } else sustainedClip = 180.0f;
         if (peakL > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
-            psDotSizeL = (8.3144112499811f * sqrt(dataA[count] * dataB[count])) / (fabs(((peakL*((6.6180339887f)/7.0f))-slewL) * (7.0f/meterZeroL) )+1.0f);
-            psDotSizeL += sin(pow(fmin(dataC[count]*8.5f,6.18f) / (fabs(((peakL*((4.6180339887f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
+            psDotSizeL = (8.3144112499811f * sqrt(dataPL[count] * dataPR[count])) / (fabs(((peakL*((6.6180339887f)/7.0f))-slewL) * (7.0f/meterZeroL) )+1.0f);
+            psDotSizeL += sin(pow(fmin(dataPL[count]*8.5f,6.18f) / (fabs(((peakL*((4.6180339887f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
             slewDotSizeL = (sin(0.1618f/psDotSizeL)*6.18f)+(sqrt(slewL)*0.1618f);
-            bassDotSizeL = meterZeroL*0.1f*dataA[count];
+            bassDotSizeL = sqrt(meterZeroL*0.1f*dataPL[count]);
             if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f));
             else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f)); //set COLOR
-            if (psDotSizeL > 1.0f) g.fillRect((float)count, (float)((200.0f - peakL)*vS), (float)fmax(psDotSizeL,2.0), (float)(fmax(psDotSizeL,dataC[count]*5.0f)*vS)); //draw blue dots
+            if (psDotSizeL > 1.0f) g.fillRect((float)count, (float)((200.0f - peakL)*vS), (float)fmax(psDotSizeL,2.0), (float)(fmax(psDotSizeL,dataPL[count]*5.0f)*vS)); //draw blue dots
             else if (slewL > peakL) g.fillRect((float)count, (float)((200.0f - peakL)*vS), 2.0f, (float)(3.0*vS));
-            else g.fillRect((float)count, (float)((200.0f - peakL)*vS), (float)(9.0f*dataA[count]), (float)((9.0f*dataA[count])*vS)); //draw red or green dots
+            else g.fillRect((float)count, (float)((200.0f - peakL)*vS), (float)(9.0f*dataPL[count]), (float)((9.0f*dataPL[count])*vS)); //draw red or green dots
             if (slewL > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
             else g.fillRect((float)count, (float)((400.0f-slewL)*vS), slewDotSizeL, (float)(slewDotSizeL*vS)); //draw slew
-            g.fillRect((float)count, ((400.0f+bassL)*vS), bassDotSizeL, bassDotSizeL*vS); //zero cross subs
+            g.fillRect((float)count, ((400.0f+bassL)*vS), bassDotSizeL+0.618f, bassDotSizeL*vS); //zero cross subs
         } //end draw dots on meters L
         //begin draw dots on meters R
         if (peakR > 197.0f) {
@@ -92,10 +92,10 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (peakL > 197.0f) sustainedClip *= 0.975f; //if both are clipping, escalate
         } else sustainedClip = 180.0f;
         if (peakR > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
-            psDotSizeR = (8.3144112499811f * sqrt(dataB[count] * dataA[count])) / (fabs(((peakR*((6.6180339887f)/7.0f))-slewR) * (7.0f/meterZeroR) )+1.0f);
-            psDotSizeR += sin(pow(fmin(dataD[count]*8.5f,6.18f) / (fabs(((peakR*((4.6180339887f)/5.0f))-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
+            psDotSizeR = (8.3144112499811f * sqrt(dataPL[count] * dataPR[count])) / (fabs(((peakR*((6.6180339887f)/7.0f))-slewR) * (7.0f/meterZeroR) )+1.0f);
+            psDotSizeR += sin(pow(fmin(dataPL[count]*8.5f,6.18f) / (fabs(((peakR*((4.6180339887f)/5.0f))-slewR) * (7.0f/meterZeroR) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
             slewDotSizeR = (sin(0.1618f/psDotSizeR)*6.18f)+(sqrt(slewR)*0.1618f);
-            bassDotSizeR = meterZeroR*0.1f*dataB[count];
+            bassDotSizeR = sqrt(meterZeroR*0.1f*dataPR[count]);
             if (count < dataPosition && count > dataPosition-2) {
                 backR[count] = storeR;
                 backG[count] = storeG;
@@ -104,12 +104,12 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (psDotSizeR > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f));
             else if (slewR > peakR) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f)); //set COLOR
-            if (psDotSizeR > 1.0f) g.fillRect((float)count, (float)((200.0f - peakR)*vS), (float)fmax(psDotSizeR,2.0), (float)(fmax(psDotSizeR,dataD[count]*5.0f)*vS)); //draw blue dots
+            if (psDotSizeR > 1.0f) g.fillRect((float)count, (float)((200.0f - peakR)*vS), (float)fmax(psDotSizeR,2.0), (float)(fmax(psDotSizeR,dataPL[count]*5.0f)*vS)); //draw blue dots
             else if (slewR > peakR) g.fillRect((float)count, (float)((200.0f - peakR)*vS), 2.0f, (float)(3.0*vS));
-            else g.fillRect((float)count, (float)((200.0f - peakR)*vS), (float)(9.0f*dataB[count]), (float)((9.0f*dataB[count])*vS)); //draw red or green dots
+            else g.fillRect((float)count, (float)((200.0f - peakR)*vS), (float)(9.0f*dataPR[count]), (float)((9.0f*dataPR[count])*vS)); //draw red or green dots
             if (slewR > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
             else g.fillRect((float)count, (float)((400.0f-slewR)*vS), slewDotSizeR, (float)(slewDotSizeR*vS)); //draw slew
-            g.fillRect((float)count, ((400.0f+bassR)*vS), bassDotSizeR, bassDotSizeR*vS); //zero cross subs
+            g.fillRect((float)count, ((400.0f+bassR)*vS), bassDotSizeR+0.618f, bassDotSizeR*vS); //zero cross subs
         } //end draw dots on meters R
         g.setColour(juce::Colour::fromFloatRGBA(backR[count], backG[count], backB[count], 1.0f)); //set backdrop colour
         g.fillRect((float)(count)-0.25f, 182.5f*vS, 1.5f, 19.5f*vS);
@@ -161,8 +161,8 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             outputB += peakScore;
             outputR += slewScore;
             outputG += bassScore;
-            outputVol = sqrt(fmax(fmax(fmax(dataA[count],dataB[count]),fmax(dataC[count],dataD[count])),fmax(dataE[count],dataF[count])));
-            //our volume measurement gets kicked up towards 0 by ANY event, not just RMS
+            outputVol = sqrt(fmax(fmax(dataPL[count],dataPR[count]),fmax(dataSL[count],dataSR[count])));
+            //our volume measurement gets kicked up towards 0 by peak or slew
         }
         if (dataPosition == count) {
             float applyCurve = fmin(fmin(outputR,outputG),outputB) / fmax(fmax(outputR,outputG),outputB+0.0000001f);

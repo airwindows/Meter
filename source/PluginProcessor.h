@@ -70,8 +70,6 @@ public:
         enum What
         {
             NEW_VALUE,
-            RMS_LEFT,
-            RMS_RIGHT,
             PEAK_LEFT,
             PEAK_RIGHT,
             SLEW_LEFT,
@@ -122,8 +120,6 @@ public:
     LockFreeQueue<UIToAudioMessage> uiToAudio;
     LockFreeQueue<AudioToUIMessage> audioToUI;
 
-    double rmsLeft = 0.0;
-    double rmsRight = 0.0;
     double peakLeft = 0.0;
     double peakRight = 0.0;
     double slewLeft = 0.0;
@@ -136,7 +132,7 @@ public:
     double longestZeroRight = 0.0;
     bool wasPositiveL = false;
     bool wasPositiveR = false;
-    int rmsCount = 0;
+    int windowCount = 0;
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)

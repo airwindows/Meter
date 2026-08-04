@@ -190,26 +190,22 @@ struct AirwindowsMeter : public juce::Component
     std::array<float, totalBins> slewTrack;
     std::array<float, totalBins> bassTrack;
     
-    std::array<float, dataPoints> dataA;
-    std::array<float, dataPoints> dataB;
-    std::array<float, dataPoints> dataC;
-    std::array<float, dataPoints> dataD;
-    std::array<float, dataPoints> dataE;
-    std::array<float, dataPoints> dataF;
-    std::array<float, dataPoints> dataG;
-    std::array<float, dataPoints> dataH;
+    std::array<float, dataPoints> dataPL;
+    std::array<float, dataPoints> dataPR;
+    std::array<float, dataPoints> dataSL;
+    std::array<float, dataPoints> dataSR;
+    std::array<float, dataPoints> dataZL;
+    std::array<float, dataPoints> dataZR;
     std::array<float, dataPoints> backR;//backdrop red channel: loud
     std::array<float, dataPoints> backG;//backdrop green channel: bright
     std::array<float, dataPoints> backB;//backdrop blue channel: bass
 
-    void pushA(float X) {dataA[dataPosition] = X;}
-    void pushB(float X) {dataB[dataPosition] = X;}
-    void pushC(float X) {dataC[dataPosition] = X;}
-    void pushD(float X) {dataD[dataPosition] = X;}
-    void pushE(float X) {dataE[dataPosition] = X;}
-    void pushF(float X) {dataF[dataPosition] = X;}
-    void pushG(float X) {dataG[dataPosition] = X;}
-    void pushH(float X) {dataH[dataPosition] = X;}
+    void pushPeakL(float X) {dataPL[dataPosition] = X;}
+    void pushPeakR(float X) {dataPR[dataPosition] = X;}
+    void pushSlewL(float X) {dataSL[dataPosition] = X;}
+    void pushSlewR(float X) {dataSR[dataPosition] = X;}
+    void pushZeroL(float X) {dataZL[dataPosition] = X;}
+    void pushZeroR(float X) {dataZR[dataPosition] = X;}
     void pushIncrement() {
         dataPosition++;
         if (dataPosition >= (unsigned long)fmin(displayWidth,5150)) dataPosition = 0;
@@ -247,14 +243,12 @@ struct AirwindowsMeter : public juce::Component
         }
         for (unsigned long count = 0; count < dataPoints; ++count) //count through all the points in the array
         {
-            dataA[count] = 0.0f;
-            dataB[count] = 0.0f;
-            dataC[count] = 0.0f;
-            dataD[count] = 0.0f;
-            dataE[count] = 0.0f;
-            dataF[count] = 0.0f;
-            dataG[count] = 0.0f;
-            dataH[count] = 0.0f;
+            dataPL[count] = 0.0f;
+            dataPR[count] = 0.0f;
+            dataSL[count] = 0.0f;
+            dataSR[count] = 0.0f;
+            dataZL[count] = 0.0f;
+            dataZR[count] = 0.0f;
             backR[count] = pluginColour.getFloatRed();
             backG[count] = pluginColour.getFloatGreen();
             backB[count] = pluginColour.getFloatBlue();

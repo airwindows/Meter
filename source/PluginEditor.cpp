@@ -139,15 +139,12 @@ void PluginEditor::idle()
     while (processorRef.audioToUI.pop(msg)) {
         switch (msg.what) {
             case PluginProcessor::AudioToUIMessage::NEW_VALUE: break; //no knobs on this plugin
-            case PluginProcessor::AudioToUIMessage::RMS_LEFT: meter.pushA(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::RMS_RIGHT: meter.pushB(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::PEAK_LEFT: meter.pushC(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::PEAK_RIGHT: meter.pushD(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::SLEW_LEFT: meter.pushE(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::SLEW_RIGHT: meter.pushF(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::ZERO_LEFT: meter.pushG(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::ZERO_RIGHT: meter.pushH(msg.newValue); break;
-                
+            case PluginProcessor::AudioToUIMessage::PEAK_LEFT: meter.pushPeakL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::PEAK_RIGHT: meter.pushPeakR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::SLEW_LEFT: meter.pushSlewL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::SLEW_RIGHT: meter.pushSlewR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::ZERO_LEFT: meter.pushZeroL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::ZERO_RIGHT: meter.pushZeroR(msg.newValue); break;
             case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(); repaintTS = true;
                 
