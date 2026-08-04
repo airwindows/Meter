@@ -1,6 +1,12 @@
 // AirwindowsUI by Chris Johnson
 // Initial seed code for the meter created by Paul Walker on 8/23/21.
 #include "AirwindowsUI.h"
+#ifndef M_PI
+#  define M_PI (3.14159265358979323846)
+#endif
+#ifndef M_PI_2
+#  define M_PI_2 (1.57079632679489661923)
+#endif
 
 void AirwindowsMeter::mouseDown(const juce::MouseEvent &event)
 {
@@ -77,11 +83,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f));
             else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f)); //set COLOR
-            if (psDotSizeL > 1.0f) g.fillRect((float)count, (float)((200.0f - peakL)*vS), (float)fmax(psDotSizeL,2.0), (float)(fmax(psDotSizeL,dataPL[count]*5.0f)*vS)); //draw blue dots
-            else if (slewL > peakL) g.fillRect((float)count, (float)((200.0f - peakL)*vS), 2.0f, (float)(3.0*vS));
-            else g.fillRect((float)count, (float)((200.0f - peakL)*vS), (float)(9.0f*dataPL[count]), (float)((9.0f*dataPL[count])*vS)); //draw red or green dots
+            g.fillRect((float)count, (float)((200.0f - peakL)*vS), psDotSizeL+0.618f, (psDotSizeL+0.618f)*vS);
             if (slewL > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
-            else g.fillRect((float)count, (float)((400.0f-slewL)*vS), slewDotSizeL, (float)(slewDotSizeL*vS)); //draw slew
+            else g.fillRect((float)count, (float)((400.0f-slewL)*vS), slewDotSizeL+0.618f, slewDotSizeL*vS); //draw slew
             g.fillRect((float)count, ((400.0f+bassL)*vS), bassDotSizeL+0.618f, bassDotSizeL*vS); //zero cross subs
         } //end draw dots on meters L
         //begin draw dots on meters R
@@ -104,11 +108,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (psDotSizeR > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewR-peakR)/256.0f,0.0f), fmin((peakR-slewR)/256.0f,0.0f), 1.0f, 1.0f));
             else if (slewR > peakR) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewR-peakR))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakR-slewR))/256.0f), 0.0f, 1.0f)); //set COLOR
-            if (psDotSizeR > 1.0f) g.fillRect((float)count, (float)((200.0f - peakR)*vS), (float)fmax(psDotSizeR,2.0), (float)(fmax(psDotSizeR,dataPL[count]*5.0f)*vS)); //draw blue dots
-            else if (slewR > peakR) g.fillRect((float)count, (float)((200.0f - peakR)*vS), 2.0f, (float)(3.0*vS));
-            else g.fillRect((float)count, (float)((200.0f - peakR)*vS), (float)(9.0f*dataPR[count]), (float)((9.0f*dataPR[count])*vS)); //draw red or green dots
+            g.fillRect((float)count, (float)((200.0f - peakR)*vS), psDotSizeR+0.618f, (psDotSizeR+0.618f)*vS);
             if (slewR > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
-            else g.fillRect((float)count, (float)((400.0f-slewR)*vS), slewDotSizeR, (float)(slewDotSizeR*vS)); //draw slew
+            else g.fillRect((float)count, (float)((400.0f-slewR)*vS), slewDotSizeR+0.618f, slewDotSizeR*vS); //draw slew
             g.fillRect((float)count, ((400.0f+bassR)*vS), bassDotSizeR+0.618f, bassDotSizeR*vS); //zero cross subs
         } //end draw dots on meters R
         g.setColour(juce::Colour::fromFloatRGBA(backR[count], backG[count], backB[count], 1.0f)); //set backdrop colour
