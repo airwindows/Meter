@@ -35,7 +35,13 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.fillRect(0, (int)(564.9f*vS), getWidth(),1); //-30dB markings
         g.fillRect(0, (int)(575.2f*vS), getWidth(),1); //-36dB markings
         g.fillRect(0, (int)(582.5f*vS), getWidth(),1); //-42dB markings
-    } else g.fillAll(backdropColour); //blank screen before doing anything, unless our draw covers the whole display anyway
+    } else {
+        juce::ColourGradient backdropGradient = juce::ColourGradient::vertical(juce::Colours::white, 0.0f, backdropColour, 600.0f*vS); //600 tall version
+        backdropGradient.addColour(gradientMin, backdropColour.interpolatedWith(juce::Colours::white, gradientMin));
+        //the mid point of the gradient goes toward the bottom and goes whiter when everything's in balance
+        g.setFillType(backdropGradient);
+        g.fillAll(); //blank screen before doing anything, unless our draw covers the whole display anyway
+    } //blank screen before doing anything, unless our draw covers the whole display anyway
     
     for (unsigned long count = 0; count < fmin(displayWidth,5150); ++count) //count through all the points in the array
     {
@@ -68,11 +74,6 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             psDotSizeL += sin(pow(fmin(dataC[count]*8.5f,6.18f) / (fabs(((peakL*((4.6180339887f)/5.0f))-slewL) * (7.0f/meterZeroL) )+1.0f),1.618f)*0.13f) * 1.467577515170776f;
             slewDotSizeL = (sin(0.1618f/psDotSizeL)*6.18f)+(sqrt(slewL)*0.1618f);
             bassDotSizeL = meterZeroL*0.1f*dataA[count];
-            if (count < dataPosition && count > dataPosition-2) {
-                outputB += psDotSizeL * sqrt(fmax(psDotSizeL,1.0f)) * 0.2f;
-                outputR += slewL * slewDotSizeL * sqrt(fmax(slewDotSizeL,1.0f)) * 0.0009f;
-                outputG += bassDotSizeL * sqrt(fmax(bassDotSizeL,1.0f)) * 13.0f / (bassL+0.666f); //RGB backdrop, L version
-            }
             if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmin((slewL-peakL)/256.0f,0.0f), fmin((peakL-slewL)/256.0f,0.0f), 1.0f, 1.0f));
             else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((180.0f+(slewL-peakL))/256.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else g.setColour(juce::Colour::fromFloatRGBA(0.0f, ((255.0f-(peakL-slewL))/256.0f), 0.0f, 1.0f)); //set COLOR
@@ -96,9 +97,6 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             slewDotSizeR = (sin(0.1618f/psDotSizeR)*6.18f)+(sqrt(slewR)*0.1618f);
             bassDotSizeR = meterZeroR*0.1f*dataB[count];
             if (count < dataPosition && count > dataPosition-2) {
-                outputB += psDotSizeR * sqrt(fmax(psDotSizeR,1.0f)) * 0.2f;
-                outputR += slewR * slewDotSizeR * sqrt(fmax(slewDotSizeR,1.0f)) * 0.0009f;
-                outputG += bassDotSizeR * sqrt(fmax(bassDotSizeR,1.0f)) * 13.0f / (bassR+0.666f);
                 backR[count] = storeR;
                 backG[count] = storeG;
                 backB[count] = storeB; //RGB backdrop for text
@@ -115,332 +113,420 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         } //end draw dots on meters R
         g.setColour(juce::Colour::fromFloatRGBA(backR[count], backG[count], backB[count], 1.0f)); //set backdrop colour
         g.fillRect((float)(count)-0.25f, 182.5f*vS, 1.5f, 19.5f*vS);
-        g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.5f*vS);
-
+        g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.5f*vS); //draw tonecolor bars
+        
         unsigned long bintracker;
         bintracker = (unsigned long)(peakL * (0.005f*(float)totalBins));//converts 0-200 to 0-bin number for textscore bins
-        if (bintracker > 0 && bintracker <= totalBins) {
-            if ((dataC[count]*dataD[count]) < 1.99f) peakTrack[bintracker] += psDotSizeL * sqrt(fmax(psDotSizeL,1.0f)) * 0.2f;
-            else peakTrack[bintracker] -= psDotSizeL * sqrt(fmax(psDotSizeL,1.0f)) * 0.2f;
-        }
+        bintracker = (unsigned long)(totalBins - (fabs((int)bintracker-(int)totalBins))); //mirror around max value so it reflects
+        if (bintracker > 0 && bintracker <= totalBins) peakTrack[bintracker] += psDotSizeL;
         bintracker = (unsigned long)(peakR * (0.005f*(float)totalBins));
-        if (bintracker > 0 && bintracker <= totalBins) {
-            if ((dataC[count]*dataD[count]) < 1.99f) peakTrack[bintracker] += psDotSizeR * sqrt(fmax(psDotSizeR,1.0f)) * 0.2f;
-            else peakTrack[bintracker] -= psDotSizeR * sqrt(fmax(psDotSizeR,1.0f)) * 0.2f;
-        } //peak textscore bins
-        bintracker = (unsigned long)(slewL * (0.005f*(float)totalBins));
-        if (bintracker > 0 && bintracker <= totalBins) {
-            if ((dataE[count]*dataE[count]) < 1.33f) slewTrack[bintracker] += slewL * slewDotSizeL * sqrt(fmax(slewDotSizeL,1.0f)) * 0.0009f;
-            else slewTrack[bintracker] -= slewL * slewDotSizeL * sqrt(fmax(slewDotSizeL,1.0f)) * 0.0009f;
-        }
+        bintracker = (unsigned long)(totalBins - (fabs((int)bintracker-(int)totalBins)));
+        if (bintracker > 0 && bintracker <= totalBins) peakTrack[bintracker] += psDotSizeR;
+        //peak textscore bins
+        bintracker = (unsigned long)(slewL * (0.005f*(float)totalBins));//converts 0-200 to 0-bin number for textscore bins
+        bintracker = (unsigned long)(totalBins - (fabs((int)bintracker-(int)totalBins))); //mirror around max value so it reflects
+        if (bintracker > 0 && bintracker <= totalBins) slewTrack[bintracker] += slewDotSizeL;
         bintracker = (unsigned long)(slewR * (0.005f*(float)totalBins));
-        if (bintracker > 0 && bintracker <= totalBins) {
-            if ((dataE[count]*dataE[count]) < 1.33f) slewTrack[bintracker] += slewR * slewDotSizeR * sqrt(fmax(slewDotSizeR,1.0f)) * 0.0009f;
-            else slewTrack[bintracker] -= slewR * slewDotSizeR * sqrt(fmax(slewDotSizeR,1.0f)) * 0.0009f;
-        } //slew textscore bins
-        bintracker = (unsigned long)(bassL * (0.005f*(float)totalBins));
-        if (bintracker > 0 && bintracker <= totalBins) {
-            if ((dataC[count]*dataD[count]) < 1.99f) bassTrack[bintracker] += bassDotSizeL * sqrt(fmax(bassDotSizeL,1.0f)) * 13.0f / (bassL+0.666f);
-            else bassTrack[bintracker] -= bassDotSizeL * sqrt(fmax(bassDotSizeL,1.0f)) * 13.0f / (bassL+0.666f);
-        }
+        bintracker = (unsigned long)(totalBins - (fabs((int)bintracker-(int)totalBins)));
+        if (bintracker > 0 && bintracker <= totalBins) slewTrack[bintracker] += slewDotSizeR;
+        //slew textscore bins
+        bintracker = (unsigned long)(bassL * (0.005f*(float)totalBins));//converts 0-200 to 0-bin number for textscore bins
+        bintracker = (unsigned long)(totalBins - (fabs((int)bintracker-(int)totalBins))); //mirror around max value so it reflects
+        if (bintracker > 0 && bintracker <= totalBins) bassTrack[bintracker] += bassDotSizeL;
         bintracker = (unsigned long)(bassR * (0.005f*(float)totalBins));
-        if (bintracker > 0 && bintracker <= totalBins) {
-            if ((dataC[count]*dataD[count]) < 1.99f) bassTrack[bintracker] += bassDotSizeR * sqrt(fmax(bassDotSizeR,1.0f)) * 13.0f / (bassR+0.666f);
-            else bassTrack[bintracker] -= bassDotSizeR * sqrt(fmax(bassDotSizeR,1.0f)) * 13.0f / (bassR+0.666f);
-        } //bass textscore bins
+        bintracker = (unsigned long)(totalBins - (fabs((int)bintracker-(int)totalBins)));
+        if (bintracker > 0 && bintracker <= totalBins) bassTrack[bintracker] += bassDotSizeR;
+        //bass textscore bins
+        
         //bins are for reinforcing score of a dispersed cloud of dot positions rather than maxing out a position
-        
-        float maxPeakBin = 0.0f;
-        float maxSlewBin = 0.0f;
-        float maxBassBin = 0.0f;
-        for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
-            maxPeakBin = fmax(peakTrack[binscale], maxPeakBin);
-            maxSlewBin = fmax(slewTrack[binscale], maxSlewBin);
-            maxBassBin = fmax(bassTrack[binscale], maxBassBin);
-        } //now each holds the highest value of the lot
-        for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
-            peakTrack[binscale] = fmax(peakTrack[binscale] - (maxPeakBin*0.012f), 0.0f);
-            slewTrack[binscale] = fmax(slewTrack[binscale] - (maxSlewBin*0.01f), 0.0f);
-            bassTrack[binscale] = fmax(bassTrack[binscale] - (maxBassBin*0.01f), 0.0f);
-        } //bins fall off at fixed speed, not converging on 0
-        
         float peakScore = 0.0;
         float slewScore = 0.0;
         float bassScore = 0.0;
+        float sinScale = 0.0;
         for (unsigned long binscale = 0; binscale < totalBins; ++binscale) {
-            peakScore += peakTrack[binscale];
-            slewScore += slewTrack[binscale];
-            bassScore += bassTrack[binscale];
+            peakTrack[binscale] = fmax(fmin(peakTrack[binscale]-0.1618033988749894f, 1.618033988749894f),0.0f); //decrement speed
+            sinScale = fmax(sin(((float)binscale/(float)totalBins)*(float)M_PI_2),0.0f);
+            //sin(1.57) weighting means big red dots in good places, ignore green slews at bottom
+            peakScore += (float)sin(peakTrack[binscale]) * sinScale;
+            
+            slewTrack[binscale] = fmax(fmin(slewTrack[binscale]-0.1618033988749894f, 1.618033988749894f),0.0f); //decrement speed
+            slewScore += (float)sin(slewTrack[binscale]) * sinScale;
+            
+            bassTrack[binscale] = fmax(fmin(bassTrack[binscale]-0.1618033988749894f, 1.618033988749894f),0.0f); //decrement speed
+            sinScale = fmax(sin(((float)binscale/(float)totalBins)*(float)M_PI),0.0f);
+            //sin(3.1415) does a sine weighting on zero cross meter, but resists overweighting midrange sections
+            bassScore += (float)sin(bassTrack[binscale]) * sinScale;
         }
-        if (sqrt(peakScore * 100.0f)*0.26f > peaksGrade) peaksGrade = sqrt(peakScore * 100.0f)*0.26f;
-        if (sqrt(slewScore * 100.0f)*0.26f > slewGrade) slewGrade = sqrt(slewScore * 100.0f)*0.26f;
-        if (sqrt(bassScore * 100.0f)*0.26f > bassGrade) bassGrade = sqrt(bassScore * 100.0f)*0.26f;
-        
+        if (count < dataPosition && count > dataPosition-2) {
+            outputB += peakScore;
+            outputR += slewScore;
+            outputG += bassScore;
+            outputVol = sqrt(fmax(fmax(fmax(dataA[count],dataB[count]),fmax(dataC[count],dataD[count])),fmax(dataE[count],dataF[count])));
+            //our volume measurement gets kicked up towards 0 by ANY event, not just RMS
+        }
         if (dataPosition == count) {
-            float cumulativeLoudness = sqrt(dataA[count]+dataB[count]+0.001f); //whole rating scaled by RMS of each channel
-            cumulative += (1.0-pow(1.0-outputMin,1.618f))*cumulativeLoudness;
-            duration += cumulativeLoudness;
-            //when RMS rises it will be paying proportionally more attention to the balance.
+            float applyCurve = fmin(fmin(outputR,outputG),outputB) / fmax(fmax(outputR,outputG),outputB+0.0000001f);
+            applyCurve = 1.0f-pow(1.0f-applyCurve,1.618033988749894f);
+            cumulative += applyCurve * outputVol;
+            duration += outputVol;
+            //when loudness rises it will be paying proportionally more attention to the balance.
             //that means on varying tracks it'll care more about the main part than intros/outros.
         }
-        
         if (count == (unsigned long)dataPosition-1) { //only update text score display more infrequently
-            if (peaksGrade < 1) peaksGrade = 1;
-            if (peaksGrade > 26) peaksGrade = 26;
-            switch ((int)peaksGrade) {
+            if (pow(peakScore, 1.618033988749894f) > peakGrade) peakGrade = pow(peakScore, 1.618033988749894f);
+            if (pow(slewScore, 1.618033988749894f) > slewGrade) slewGrade = pow(slewScore, 1.618033988749894f);
+            if (pow(bassScore, 1.618033988749894f) > bassGrade) bassGrade = pow(bassScore, 1.618033988749894f);
+            if (peakGrade < 0) peakGrade = 0;
+            if (peakGrade > 28) peakGrade = 28;
+            switch ((int)peakGrade) {
+                case 0:
+                    power = juce::String("s"); break;
                 case 1:
-                    rating = juce::String("t"); break; //lowercase grades for more chill, spacious mixes
+                    power = juce::String("r"); break;
                 case 2:
-                    rating = juce::String("s"); break; //UPPERCASE for pushing loudness and demanding attention
+                    power = juce::String("q"); break;
                 case 3:
-                    rating = juce::String("r"); break; //this changes only labeling, not underlying mechanics:
+                    power = juce::String("p"); break;
                 case 4:
-                    rating = juce::String("q"); break; //it's an attempt to reveal what people actually respond to
+                    power = juce::String("o"); break;
                 case 5:
-                    rating = juce::String("p"); break; //if we gotta have grades and ratings because of how fun they are,
+                    power = juce::String("n"); break;
                 case 6:
-                    rating = juce::String("o"); break; //but the grade 'G' is constantly popping up over true top 10 hit records
+                    power = juce::String("m"); break;
                 case 7:
-                    rating = juce::String("n"); break; //as if it's a kind of maximum score and consequence of getting ideal balance,
+                    power = juce::String("l"); break;
                 case 8:
-                    rating = juce::String("m"); break; //the obvious thing is to keep the letter grades but add case to them
+                    power = juce::String("k"); break;
                 case 9:
-                    rating = juce::String("l"); break; //so all the chill open mixes work up to 'a' as a 'high score'
+                    power = juce::String("j"); break;
                 case 10:
-                    rating = juce::String("k"); break; //but then increasingly loud stuff goes into 'A", another 'best'
+                    power = juce::String("i"); break;
                 case 11:
-                    rating = juce::String("j"); break; //and then the very loudest densest things (challenging to balance)
+                    power = juce::String("h"); break;
                 case 12:
-                    rating = juce::String("i"); break; //would register as 'FFF' this way of counting them,
+                    power = juce::String("g"); break;
                 case 13:
-                    rating = juce::String("h"); break; //which is also gratifying because in orchestras,
+                    power = juce::String("f"); break;
                 case 14:
-                    rating = juce::String("g"); break; //that means 'FFF' or triple forte :)
+                    power = juce::String("e"); break;
                 case 15:
-                    rating = juce::String("f"); break;
+                    power = juce::String("d"); break;
                 case 16:
-                    rating = juce::String("e"); break;
+                    power = juce::String("c"); break;
                 case 17:
-                    rating = juce::String("d"); break;
+                    power = juce::String("b"); break;
                 case 18:
-                    rating = juce::String("c"); break;
+                    power = juce::String("a"); break;
                 case 19:
-                    rating = juce::String("b"); break;
+                    power = juce::String("A"); break;
                 case 20:
-                    rating = juce::String("a"); break; //classic vinyl records generate biggest hits at this density
+                    power = juce::String("B"); break;
                 case 21:
-                    rating = juce::String("A"); break; //modern stuff leans into higher densities like this
+                    power = juce::String("C"); break;
                 case 22:
-                    rating = juce::String("B"); break;
+                    power = juce::String("D"); break;
                 case 23:
-                    rating = juce::String("C"); break;
+                    power = juce::String("E"); break;
                 case 24:
-                    rating = juce::String("D"); break;
+                    power = juce::String("F"); break;
                 case 25:
-                    rating = juce::String("E"); break;
+                    power = juce::String("G"); break;
                 case 26:
-                    rating = juce::String("F"); break;
+                    power = juce::String("H"); break;
+                case 27:
+                    power = juce::String("I"); break;
+                case 28:
+                    power = juce::String("J"); break;
             } //this is our letter score, incorporating all the measurements
             
-            if (slewGrade < 1) slewGrade = 1;
-            if (slewGrade > 26) slewGrade = 26;
+            if (slewGrade < 0) slewGrade = 0;
+            if (slewGrade > 32) slewGrade = 32;
             switch ((int)slewGrade) {
+                case 0:
+                    detail = juce::String("w"); break;
                 case 1:
-                    sparkle = juce::String("t"); break;
+                    detail = juce::String("v"); break;
                 case 2:
-                    sparkle = juce::String("s"); break;
+                    detail = juce::String("u"); break;
                 case 3:
-                    sparkle = juce::String("r"); break;
+                    detail = juce::String("t"); break;
                 case 4:
-                    sparkle = juce::String("q"); break;
+                    detail = juce::String("s"); break;
                 case 5:
-                    sparkle = juce::String("p"); break;
+                    detail = juce::String("r"); break;
                 case 6:
-                    sparkle = juce::String("o"); break;
+                    detail = juce::String("q"); break;
                 case 7:
-                    sparkle = juce::String("n"); break;
+                    detail = juce::String("p"); break;
                 case 8:
-                    sparkle = juce::String("m"); break;
+                    detail = juce::String("o"); break;
                 case 9:
-                    sparkle = juce::String("l"); break;
+                    detail = juce::String("n"); break;
                 case 10:
-                    sparkle = juce::String("k"); break;
+                    detail = juce::String("m"); break;
                 case 11:
-                    sparkle = juce::String("j"); break;
+                    detail = juce::String("l"); break;
                 case 12:
-                    sparkle = juce::String("i"); break;
+                    detail = juce::String("k"); break;
                 case 13:
-                    sparkle = juce::String("h"); break;
+                    detail = juce::String("j"); break;
                 case 14:
-                    sparkle = juce::String("g"); break;
+                    detail = juce::String("i"); break;
                 case 15:
-                    sparkle = juce::String("f"); break;
+                    detail = juce::String("h"); break;
                 case 16:
-                    sparkle = juce::String("e"); break;
+                    detail = juce::String("g"); break;
                 case 17:
-                    sparkle = juce::String("d"); break;
+                    detail = juce::String("f"); break;
                 case 18:
-                    sparkle = juce::String("c"); break;
+                    detail = juce::String("e"); break;
                 case 19:
-                    sparkle = juce::String("b"); break;
+                    detail = juce::String("d"); break;
                 case 20:
-                    sparkle = juce::String("a"); break; //classic vinyl records generate biggest hits at this density
+                    detail = juce::String("c"); break;
                 case 21:
-                    sparkle = juce::String("A"); break; //modern stuff leans into higher densities like this
+                    detail = juce::String("b"); break;
                 case 22:
-                    sparkle = juce::String("B"); break;
+                    detail = juce::String("a"); break;
                 case 23:
-                    sparkle = juce::String("C"); break;
+                    detail = juce::String("A"); break;
                 case 24:
-                    sparkle = juce::String("D"); break;
+                    detail = juce::String("B"); break;
                 case 25:
-                    sparkle = juce::String("E"); break;
+                    detail = juce::String("C"); break;
                 case 26:
-                    sparkle = juce::String("F"); break;
+                    detail = juce::String("D"); break;
+                case 27:
+                    detail = juce::String("E"); break;
+                case 28:
+                    detail = juce::String("F"); break;
+                case 29:
+                    detail = juce::String("G"); break;
+                case 30:
+                    detail = juce::String("H"); break;
+                case 31:
+                    detail = juce::String("I"); break;
+                case 32:
+                    detail = juce::String("J"); break;
             } //this is our two letter score, incorporating all the measurements
             
-            if (bassGrade < 1) bassGrade = 1;
-            if (bassGrade > 26) bassGrade = 26;
+            if (bassGrade < 0) bassGrade = 0;
+            if (bassGrade > 28) bassGrade = 28;
             switch ((int)bassGrade) {
+                case 0:
+                    authority = juce::String("s"); break;
                 case 1:
-                    rumble = juce::String("t"); break;
+                    authority = juce::String("r"); break;
                 case 2:
-                    rumble = juce::String("s"); break;
+                    authority = juce::String("q"); break;
                 case 3:
-                    rumble = juce::String("r"); break;
+                    authority = juce::String("p"); break;
                 case 4:
-                    rumble = juce::String("q"); break;
+                    authority = juce::String("o"); break;
                 case 5:
-                    rumble = juce::String("p"); break;
+                    authority = juce::String("n"); break;
                 case 6:
-                    rumble = juce::String("o"); break;
+                    authority = juce::String("m"); break;
                 case 7:
-                    rumble = juce::String("n"); break;
+                    authority = juce::String("l"); break;
                 case 8:
-                    rumble = juce::String("m"); break;
+                    authority = juce::String("k"); break;
                 case 9:
-                    rumble = juce::String("l"); break;
+                    authority = juce::String("j"); break;
                 case 10:
-                    rumble = juce::String("k"); break;
+                    authority = juce::String("i"); break;
                 case 11:
-                    rumble = juce::String("j"); break;
+                    authority = juce::String("h"); break;
                 case 12:
-                    rumble = juce::String("i"); break;
+                    authority = juce::String("g"); break;
                 case 13:
-                    rumble = juce::String("h"); break;
+                    authority = juce::String("f"); break;
                 case 14:
-                    rumble = juce::String("g"); break;
+                    authority = juce::String("e"); break;
                 case 15:
-                    rumble = juce::String("f"); break;
+                    authority = juce::String("d"); break;
                 case 16:
-                    rumble = juce::String("e"); break;
+                    authority = juce::String("c"); break;
                 case 17:
-                    rumble = juce::String("d"); break;
+                    authority = juce::String("b"); break;
                 case 18:
-                    rumble = juce::String("c"); break;
+                    authority = juce::String("a"); break;
                 case 19:
-                    rumble = juce::String("b"); break;
+                    authority = juce::String("A"); break;
                 case 20:
-                    rumble = juce::String("a"); break; //classic vinyl records generate biggest hits at this density
+                    authority = juce::String("B"); break;
                 case 21:
-                    rumble = juce::String("A"); break; //modern stuff leans into higher densities like this
+                    authority = juce::String("C"); break;
                 case 22:
-                    rumble = juce::String("B"); break;
+                    authority = juce::String("D"); break;
                 case 23:
-                    rumble = juce::String("C"); break;
+                    authority = juce::String("E"); break;
                 case 24:
-                    rumble = juce::String("D"); break;
+                    authority = juce::String("F"); break;
                 case 25:
-                    rumble = juce::String("E"); break;
+                    authority = juce::String("G"); break;
                 case 26:
-                    rumble = juce::String("F"); break;
+                    authority = juce::String("H"); break;
+                case 27:
+                    authority = juce::String("I"); break;
+                case 28:
+                    authority = juce::String("J"); break;
             } //this is our letter score, incorporating all the measurements
             
-            totalPackage = juce::String("Z");
-            double allMatch = ((sqrt(cumulative)/sqrt(duration))*28.0);
-            if (allMatch < 1.001) allMatch = 1.001;
-            if (allMatch > 27) allMatch = 27;
+            totalPackage = juce::String(" ");
+            double allMatch = (1.0-pow(1.0-(cumulative/duration),1.618033988749894))*27.618033988749894;
+            if (allMatch < 0.0) allMatch = 0.0;
+            if (allMatch > 27.0) allMatch = 27.0;
             switch ((int)allMatch) {
+                case 0:
+                    totalPackage = juce::String(" "); break;
                 case 1:
-                    totalPackage = juce::String("Z"); break;
+                    totalPackage = juce::String(" "); break;
                 case 2:
-                    totalPackage = juce::String("Y"); break;
+                    totalPackage = juce::String("Z"); break;
                 case 3:
-                    totalPackage = juce::String("X"); break;
+                    totalPackage = juce::String("Y"); break;
                 case 4:
-                    totalPackage = juce::String("W"); break;
+                    totalPackage = juce::String("X"); break;
                 case 5:
-                    totalPackage = juce::String("V"); break;
+                    totalPackage = juce::String("W"); break;
                 case 6:
-                    totalPackage = juce::String("U"); break;
+                    totalPackage = juce::String("V"); break;
                 case 7:
-                    totalPackage = juce::String("T"); break;
+                    totalPackage = juce::String("U"); break;
                 case 8:
-                    totalPackage = juce::String("S"); break;
+                    totalPackage = juce::String("T"); break;
                 case 9:
-                    totalPackage = juce::String("R"); break;
+                    totalPackage = juce::String("S"); break;
                 case 10:
-                    totalPackage = juce::String("Q"); break;
+                    totalPackage = juce::String("R"); break;
                 case 11:
-                    totalPackage = juce::String("P"); break;
+                    totalPackage = juce::String("Q"); break;
                 case 12:
-                    totalPackage = juce::String("O"); break;
+                    totalPackage = juce::String("P"); break;
                 case 13:
-                    totalPackage = juce::String("N"); break;
+                    totalPackage = juce::String("O"); break;
                 case 14:
-                    totalPackage = juce::String("M"); break;
+                    totalPackage = juce::String("N"); break;
                 case 15:
-                    totalPackage = juce::String("L"); break;
+                    totalPackage = juce::String("M"); break;
                 case 16:
-                    totalPackage = juce::String("K"); break;
+                    totalPackage = juce::String("L"); break;
                 case 17:
-                    totalPackage = juce::String("J"); break;
+                    totalPackage = juce::String("K"); break;
                 case 18:
-                    totalPackage = juce::String("I"); break;
+                    totalPackage = juce::String("J"); break;
                 case 19:
-                    totalPackage = juce::String("H"); break;
+                    totalPackage = juce::String("I"); break;
                 case 20:
-                    totalPackage = juce::String("G"); break;
+                    totalPackage = juce::String("H"); break;
                 case 21:
-                    totalPackage = juce::String("F"); break;
+                    totalPackage = juce::String("G"); break;
                 case 22:
-                    totalPackage = juce::String("E"); break;
+                    totalPackage = juce::String("F"); break;
                 case 23:
-                    totalPackage = juce::String("D"); break;
+                    totalPackage = juce::String("E"); break;
                 case 24:
-                    totalPackage = juce::String("C"); break;
+                    totalPackage = juce::String("D"); break;
                 case 25:
-                    totalPackage = juce::String("B"); break;
+                    totalPackage = juce::String("C"); break;
                 case 26:
-                    totalPackage = juce::String("A"); break;
+                    totalPackage = juce::String("B"); break;
                 case 27:
-                    totalPackage = juce::String("+A"); break;
-            } //this is our letter score, incorporating all the measurements
-            //if (dataPosition == count) dispSat[count] = 1.0f-fmax(abs(peaksGrade-slewGrade)*0.12f,0.0f);
+                    totalPackage = juce::String("A"); break;
+ } //this is our letter score, incorporating all the measurements
         }
     }
     
     float scaleFont = (sqrt(vS*61.8f)*1.618f);
     if (scaleFont > 10.0f) {
         g.setFont(scaleFont*1.618f);
+        g.setColour(juce::Colours::black);
+        g.drawText("power "+power, (int)scaleFont/2, (int)(3*vS), displayWidth/3, 32, juce::Justification::topLeft);
+        g.drawText("peaks", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
+        //power is the intensity of varying peak energy, between maximum and minimum.
+        //it can't be always maximum because that is just constant loudness and can't startle or vary.
+        //Power is the derivative, the unexpected. it's the ability of sound to be producing peak 'aura' beyond what our ears think is the median loud.
+        //we do not leave crest factor to be quiet with it, we leave crest factor so we can constantly have the ear tickled by stuff happening,
+        //that alerts the brain to peaks far beyond what the loudness seems to be. If they aren't present, the sound is boring.
+        //The key is DERIVATIVE: peaks matter to the extent that they extend beyond the RMS (root-mean-square, body/density of the sound),
+        //and power is the extent to which peaks are both happening and varying from each other constantly. That's a second derivative.
+        //This cloud expands as the capacity for loudness surprise rises: if you have continuously playing sound,
+        //whether it's a drone or saturation or simply a reverberation in your mix, it'll restrict the ability of the peak cloud
+        //to drop lower. Limiting the volume or bass of such sustaining elements works to widen the peak cloud's range,
+        //bearing in mind that the ideal situation is constant peak activity at every dB level at once at all times.
+        //This is of course impossible and a contradiction, which is what makes it interesting :)
+        //We hear 'activity at very low dB during loud sounds' as openness of the sound, drama/excitement, and mix ease of listening.
+        
+        g.drawText("detail "+detail, (int)scaleFont/2, (int)(203*vS), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("slews", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
+        //detail is the intensity of varying slew energy, between maximum and minimum.
+        //it can't be always maximum because that is just hardness and glare and sounds bad to people.
+        //it also can't be minimum or it comes off as dull and uneventful in the treble range, so there's a balance to be struck.
+        //Recording mediums used to set hard limits to how much treble you could have in the very high frequencies, an artificial limit,
+        //but it accidentally served to restrict detail to where it would balance with power (maximized peak energy) because it would
+        //end up quieter, balanced with the more hearable RMS loudness, allowing the power to be experienced as a sound event.
+        //Modern technology has no such limitations, so detail is commonly made to balance with RMS loudness in a context where
+        //ONLY RMS remains and the peak energy is not there anymore. (also, detail can contribute to loudness)
+        //That means you can get a 'correct' RMS/detail balance, but it only highlights the lack of power from missing peak energy.
+        //When you balance detail with a loudness balance that retains power and uses it, it still sounds 'correct' but the aura
+        //of the thing is very different, because the active peak energy is also sensed and it too can be in balance with other parts of the sound.
+        //this is the same phenomenon as the balance of taste stimuli in Heinz ketchup. It's like a cheat code.
+        
+        g.drawText("authority "+authority, (int)scaleFont/2, (int)(423*vS), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("zero crosses", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(423*vS), displayWidth/2, 32, juce::Justification::topRight);
+        //authority is the amount of varying zero cross energy, between maximum and minimum.
+        //it can't be always maximum because that is just one frequency and reads as boring, plus it doesn't translate across bassbins as well.
+        //The zero cross meter measures how long the audio can go before crossing the middle of the waveform again.
+        //As such, loudness of bass makes it go higher and loudness of treble tends to disrupt this and take away low zero cross data.
+        //Thing is, high and mid frequencies do also show up here, and it is just as subject to the need for an 'evenly spaced dot cloud'
+        //as everything else, but we hear evenness of this cloud as a sense of scale, especially when it reaches low frequencies.
+        //Simple resonant lows down here produce only one point of zero cross, which is why something as simple as an electronic kick
+        //that drops in frequency 'translates' better and is more interesting to feel and hear. Sweeping across bassbin resonances works better.
+        //But the way higher frequency content interferes with the zero cross is mix-dependent too: for instance, if you lack low mids that
+        //should be there, the zero cross will have gaps of no data and then the bass all by itself all the way at the bottom.
+        //Bringing in audio at other frequency ranges directly brings in zero cross ranges as they interfere with the zero crossings,
+        //and this can be tracked as a dot cloud like the other meters, but maximizing this area (especially with the includion of DEEP bass)
+        //is what produces a sense of imposing, majestic authority to the track.
+        //This is pretty easily screwed up by having RMS too high, peaks too clipped, and detail boosted to match what RMS is doing.
+        //The funny thing is that, since this can be made to balance with peak energy and not simply RMS, that means if you have a
+        //high power mix with lots of energy beyond simple RMS, maximizing authority means hitting on all frequencies with perfect low mids.
+        //That is a recipe for bass authority, not simply bass loudness, so authority is 'power through peaks, but for the lows'.
+        //considering what a black art that sort of thing is, it's useful to view it in this light.
+        
         g.setOpacity(0.618f);
         g.setColour(juce::Colours::white);
-        g.drawText("tone color", (int)scaleFont+1, (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::topLeft);
-        g.drawText("seek white balance", 1-(int)(scaleFont*1.618f), (int)(412.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::topRight);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 1-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::topRight);
+        g.drawText(totalPackage+power+detail+authority, 1-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::centredTop);
         //underdrawing in white for areas prone to get covered up with dots
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText("tone color", (int)scaleFont, (int)(194.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::topLeft);
-        g.drawText("seek white balance", 0-(int)(scaleFont*1.618f), (int)(412.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::topRight);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::topRight);
+        g.drawText(totalPackage+power+detail+authority, 0-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::centredTop);
+        //the Hit Record Letter Grade is 'totalPackage' followed by Power, Detail and Scale in order. If you have different priorities,
+        //it's fair to want those in a different order for your quality metric: bass music might go scale first, pop might want detail.
+        //I'm using power first simply because it is the most spectacular contrast between modern production and lasting hit status,
+        //and so it most highlights what is lacking in production done wrong, and music that won't last or be heard beyond the moment.
+        //The importance of totalPackage is that it's a running tally of how well balanced each of these existing categories are with each other.
+        //This is best understood with the ketchup analogy again: you can have corn syrup sweet all day long, but it gets cloying.
+        //But if you balance it with a lot of salt, and some bitterness, and sourness, no one sensation predominates and the composite
+        //ends up with a compelling, addictive profile and takes over entire supermarket shelves :)
+        //The sound of music can do that as well, and as much as any given characteristic can have its own superfans
+        //(rock for power, pop for detail, orchestration or bassmusic for scale) the ability to cross over and go huge
+        //is conditional on making ALL the categories max out, but max out in a way that is perfectly balanced.
+        //As such, you can get a high hit record score at totally different music intensities, because there's no ONE ultimate density
+        //for musical event: it seems like there's a correlation with natural phenomena similar to how we can be impressed both by
+        //a gentle rain's moderate alerting quality, and by the force of a giant scary thunderstorm. These all produce balanced
+        //point-clouds of audio data, with dangerous wind increasing the bass that gives you scale, and rain producing power and detail.
+        //So the final score letter ends up being a derivative of derivatives: where each of the categories is about how well a data point
+        //sits alongside other data points and how evenly it's distributed to produce a sensation that's a part of how music is heard,
+        //the final score letter is about how well all the parts come together into a whole, even though it's not actually
+        //made up of the other letters: the other letters are maximum scores, an indicator of where you might direct attention
+        //in fixing up a mix, but the final score is a running tally of the experience of the whole music as it unfolds.
+        //the weight of any given moment is governed by how intense the moment is, but not simply by RMS loudness, the weight of a moment
+        //over time is set by the highest peak or slew or RMS (handles scale) at that moment. So, if something dramatic happens,
+        //Meter builds more of it into the score, but if there's a quiet intro or a fade, Meter pays less attention to that in favor of
+        //caring about what happens when the music is active. Not no attention, just scaled to how intense the music is actively trying to be.
+        
         g.setFont(scaleFont);
-        g.drawText("loudness: "+rating, (int)scaleFont, (int)(3*vS), displayWidth/3, 32, juce::Justification::topLeft);
-        g.drawText("peaks", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
-        g.drawText("detail: "+sparkle, (int)scaleFont, (int)(203*vS), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("slews", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
-        g.drawText("fullness: "+rumble, (int)scaleFont, (int)(423*vS), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("zero cross", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(423*vS), displayWidth/2, 32, juce::Justification::topRight);
         g.drawText("-6 dB", (int)scaleFont, (int)(60.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("-12 dB", (int)scaleFont, (int)(101.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("-18 dB", (int)scaleFont, (int)(130.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
@@ -469,17 +555,18 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.setOpacity(1.0f);
         g.fillRect(0, (int)(201.0f*vS), getWidth(), 1);
         g.fillRect(0, (int)(420.0f*vS), getWidth(), 1); // outline backdrop color line
+               
         g.setFont(scaleFont*11.0f); //larger font for the tiny window, and the style seen in ConsoleX3
         g.setOpacity(0.21f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 1, displayWidth, displayHeight, juce::Justification::centred, false);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 1, 0, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.drawText(totalPackage+power+detail+authority, 0, 1, displayWidth, displayHeight+1, juce::Justification::centred, false);
+        g.drawText(totalPackage+power+detail+authority, 1, 0, displayWidth+1, displayHeight, juce::Justification::centred, false);
         g.setOpacity(0.51f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 1, 1, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.drawText(totalPackage+power+detail+authority, 1, 1, displayWidth+1, displayHeight+1, juce::Justification::centred, false);
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText(totalPackage+"-"+rating+sparkle+rumble, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.drawText(totalPackage+power+detail+authority, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
     }
     
     g.setColour(juce::Colours::grey);

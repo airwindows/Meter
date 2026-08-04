@@ -19,6 +19,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     idleTimer = std::make_unique<IdleTimer>(this);
     idleTimer->startTimer(1000/30); //space between UI screen updates. Larger is slower updates to screen
     
+    meter.pluginColour = airwindowsLookAndFeel.defaultColour;
     meter.setOpaque(true);
     meter.resetArrays();
     meter.addMouseListener(this, false);
@@ -48,6 +49,7 @@ void PluginEditor::paint (juce::Graphics& g)
         airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
         airwindowsLookAndFeel.setColour(juce::TextButton::buttonColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
         airwindowsLookAndFeel.setColour(juce::TextButton::buttonOnColourId, airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour));
+        meter.pluginColour = airwindowsLookAndFeel.defaultColour.interpolatedWith (hostTrackColour, airwindowsLookAndFeel.applyTrackColour);
         if (airwindowsLookAndFeel.useToneColor) {
             g.fillAll (meter.backdropColour);
             airwindowsLookAndFeel.setColour(juce::ResizableWindow::backgroundColourId, meter.backdropColour);
@@ -72,6 +74,7 @@ void PluginEditor::paint (juce::Graphics& g)
         airwindowsLookAndFeel.setColour(juce::Slider::thumbColourId, airwindowsLookAndFeel.defaultColour);
         airwindowsLookAndFeel.setColour(juce::TextButton::buttonColourId, airwindowsLookAndFeel.defaultColour);
         airwindowsLookAndFeel.setColour(juce::TextButton::buttonOnColourId, airwindowsLookAndFeel.defaultColour);
+        meter.pluginColour = airwindowsLookAndFeel.defaultColour;
     } //find the color of the background tile or image, if there is one. Please use low-contrast stuff, but I'm not your mom :)
     
     
@@ -147,15 +150,21 @@ void PluginEditor::idle()
                 
             case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(); repaintTS = true;
-                meter.outputMax = fmax(fmax(meter.outputR,meter.outputG),meter.outputB); if (meter.outputMax < 0.0001f) meter.outputMax = 0.0001f;
+                
+                meter.outputMax = fmax(fmax(meter.outputR+0.00000001f,meter.outputG),meter.outputB);
                 meter.outputMin = fmin(fmin(meter.outputR,meter.outputG),meter.outputB) / meter.outputMax;
-                meter.backdropColour = juce::Colour::fromFloatRGBA (pow(meter.outputR/meter.outputMax,3.0f), pow(meter.outputG/meter.outputMax,3.0f), pow(meter.outputB/meter.outputMax,3.0f), 1.0f);
-                meter.storeR = pow(meter.outputR/meter.outputMax,3.0f);
-                meter.storeG = pow(meter.outputG/meter.outputMax,3.0f);
-                meter.storeB = pow(meter.outputB/meter.outputMax,3.0f);
-                meter.outputR *= 0.99999f-(meter.outputMax*0.00002f);
-                meter.outputG *= 0.99999f-(meter.outputMax*0.00002f);
-                meter.outputB *= 0.99999f-(meter.outputMax*0.00002f);
+                meter.gradientMin = meter.outputMin*meter.outputMin*meter.outputMin;
+                //smallest number means brightest color, relative to highest number will be 1.0 meaning white
+                meter.outputMin = 1.0f-((1.0f-meter.outputMin)*0.125f*meter.outputVol*meter.outputVol);
+                //quiet parts converge on 1.0 also, to slow color activity in fades
+                meter.outputMin = fmax(fmin(meter.outputMin,1.0f),0.0f);
+                meter.backdropColour = juce::Colour::fromFloatRGBA (pow(meter.outputR/meter.outputMax, 1.618033988749894f), pow(meter.outputG/meter.outputMax, 1.618033988749894f), pow(meter.outputB/meter.outputMax, 1.618033988749894f), 1.0f);
+                meter.storeR = pow(meter.outputR/meter.outputMax, 1.618033988749894f);
+                meter.storeG = pow(meter.outputG/meter.outputMax, 1.618033988749894f);
+                meter.storeB = pow(meter.outputB/meter.outputMax, 1.618033988749894f);
+                meter.outputR *= meter.outputMin;
+                meter.outputG *= meter.outputMin;
+                meter.outputB *= meter.outputMin;
                 break;
             default: std::cout << "Unhandled message type " << msg.what << std::endl; break;
         } //end of switch statement for msg.what

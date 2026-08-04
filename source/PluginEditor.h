@@ -38,8 +38,7 @@ private:
    std::unique_ptr<IdleTimer> idleTimer;
     AirwindowsLookAndFeel airwindowsLookAndFeel;
     AirwindowsMeter meter;
-    juce::TextButton resetButton {"Reset"};
- 
+    
     juce::Colour hostTrackColour = juce::Colours::lightgrey;
     juce::String hostTrackName = juce::String();
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)

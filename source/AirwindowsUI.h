@@ -157,22 +157,22 @@ struct AirwindowsMeter : public juce::Component
     void paint(juce::Graphics &g) override;
     
     static constexpr int dataPoints = 5151;
-    static constexpr int totalBins = 16;
+    static constexpr int totalBins = 14;
     juce::Colour backdropColour = juce::Colours::white;
     juce::Colour cachedColour = juce::Colours::white;
+    juce::Colour pluginColour = juce::Colours::white; //will be set to the plugin's background color: for blanking the tonecolor bars
     int displayWidth = 1280;
     int displayHeight = 720;
     unsigned long dataPosition = 0;
-    float peaksGrade = 0.0f;
+    float peakGrade = 0.0f;
     float slewGrade = 0.0f;
     float bassGrade = 0.0f;
     double cumulative = 0.0000001;
     double duration = 0.00001;
     juce::String totalPackage = juce::String();
-    juce::String rating = juce::String();
-    juce::String sparkle = juce::String();
-    juce::String rumble = juce::String();
-    float hype = 0.618033988749894f; //this is now set in stone :)
+    juce::String power = juce::String();
+    juce::String detail = juce::String();
+    juce::String authority = juce::String();
     float storeR;
     float storeG;
     float storeB;
@@ -181,6 +181,8 @@ struct AirwindowsMeter : public juce::Component
     float outputB;
     float outputMax;
     float outputMin;
+    float gradientMin; //need the simpler form for GFX
+    float outputVol;
     float outputShift;
     float sustainedClip;
     
@@ -215,16 +217,15 @@ struct AirwindowsMeter : public juce::Component
 
     void resetArrays(){
         dataPosition = 0;
-        peaksGrade = 0.0f;
+        peakGrade = 0.0f;
         slewGrade = 0.0f;
         bassGrade = 0.0f;
         totalPackage = juce::String();
         cumulative = 0.0000001;
         duration = 0.00001;
-        rating = juce::String();
-        sparkle = juce::String();
-        rumble = juce::String();
-        hype = 0.618033988749894f; //0.3819661
+        power = juce::String();
+        detail = juce::String();
+        authority = juce::String();
         storeR = 1.0f;
         storeG = 1.0f;
         storeB = 1.0f;
@@ -232,8 +233,12 @@ struct AirwindowsMeter : public juce::Component
         outputG = 10.0f;
         outputB = 10.0f;
         outputMin = 0.0f;
+        gradientMin = 0.0f;
+        outputVol = 0.0f;
         sustainedClip = 180.0f;
-
+        backdropColour = juce::Colours::white;
+        cachedColour = juce::Colours::white;
+        
         for (unsigned long count = 0; count < totalBins; ++count) //count through all the points in the array
         {
             peakTrack[count] = 0.0f;
@@ -250,10 +255,11 @@ struct AirwindowsMeter : public juce::Component
             dataF[count] = 0.0f;
             dataG[count] = 0.0f;
             dataH[count] = 0.0f;
-            backR[count] = 1.0f;
-            backG[count] = 1.0f;
-            backB[count] = 1.0f;
+            backR[count] = pluginColour.getFloatRed();
+            backG[count] = pluginColour.getFloatGreen();
+            backB[count] = pluginColour.getFloatBlue();
         }
+        repaint(); //and update the UI to immediately see the result
     }
 };
 

@@ -205,39 +205,46 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         auto inL = mainInput.getReadPointer(0, i); //in isBussesLayoutSupported, we have already
         auto inR = mainInput.getReadPointer(1, i); //specified that we can only be stereo and never mono
 
-        float currentslewL = (fabs(*inL-(float)previousLeft)/28000.0f)*(float)getSampleRate();
-        float currentslewR = (fabs(*inR-(float)previousRight)/28000.0f)*(float)getSampleRate();
-        if (currentslewL > slewLeft) slewLeft = currentslewL;
-        if (currentslewR > slewRight) slewRight = currentslewR;
-        previousLeft = *inL;
-        previousRight = *inR;
-        //slew measurement is NOT rectified
-        
-        float rectifiedL = fabs(*inL);
-        float rectifiedR = fabs(*inR);
-        if (rectifiedL > peakLeft) peakLeft = rectifiedL;
-        if (rectifiedR > peakRight) peakRight = rectifiedR;
-        rmsLeft += (rectifiedL * rectifiedL);
-        rmsRight += (rectifiedR * rectifiedR);
-        rmsCount++; //rms loudness IS rectified
-        
-        zeroLeft += zeroCrossScale;
-        if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
-        if (wasPositiveL && *inL < 0.0) {
-            wasPositiveL = false;
-            zeroLeft = 0.0;
-        } else if (!wasPositiveL && *inL > 0.0) {
-            wasPositiveL = true;
-            zeroLeft = 0.0;
+        bool audioPlaying = true;
+        auto playHead = getPlayHead();
+        if (playHead) {auto playHeadPos = playHead->getPosition();
+            if(playHeadPos->getTimeInSeconds() > 0.0) audioPlaying = playHeadPos->getIsPlaying();
+            //I have a sound editor that generates a playhead but won't do IsPlaying. This checks if the DAW speaks 'playHead'.
         }
-        zeroRight += zeroCrossScale;
-        if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
-        if (wasPositiveR && *inR < 0.0) {
-            wasPositiveR = false;
-            zeroRight = 0.0;
-        } else if (!wasPositiveR && *inR > 0.0) {
-            wasPositiveR = true;
-            zeroRight = 0.0;
+        if (audioPlaying) {
+            float currentslewL = (fabs(*inL-(float)previousLeft)/32000.0f)*(float)getSampleRate();
+            float currentslewR = (fabs(*inR-(float)previousRight)/32000.0f)*(float)getSampleRate();
+            if (currentslewL > slewLeft) slewLeft = currentslewL;
+            if (currentslewR > slewRight) slewRight = currentslewR;
+            previousLeft = *inL;
+            previousRight = *inR;
+            
+            float rectifiedL = fabs(*inL);
+            float rectifiedR = fabs(*inR);
+            if (rectifiedL > peakLeft) peakLeft = rectifiedL;
+            if (rectifiedR > peakRight) peakRight = rectifiedR;
+            rmsLeft += (rectifiedL * rectifiedL);
+            rmsRight += (rectifiedR * rectifiedR);
+            rmsCount++;
+            
+            zeroLeft += zeroCrossScale;
+            if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
+            if (wasPositiveL && *inL < 0.0) {
+                wasPositiveL = false;
+                zeroLeft = 0.0;
+            } else if (!wasPositiveL && *inL > 0.0) {
+                wasPositiveL = true;
+                zeroLeft = 0.0;
+            }
+            zeroRight += zeroCrossScale;
+            if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
+            if (wasPositiveR && *inR < 0.0) {
+                wasPositiveR = false;
+                zeroRight = 0.0;
+            } else if (!wasPositiveR && *inR > 0.0) {
+                wasPositiveR = true;
+                zeroRight = 0.0;
+            }
         }
                
         *outL = *inL;
@@ -317,39 +324,46 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         auto inL = mainInput.getReadPointer(0, i); //in isBussesLayoutSupported, we have already
         auto inR = mainInput.getReadPointer(1, i); //specified that we can only be stereo and never mono
 
-        double currentslewL = (fabs(*inL-previousLeft)/28000.0f)*getSampleRate();
-        double currentslewR = (fabs(*inR-previousRight)/28000.0f)*getSampleRate();
-        if (currentslewL > slewLeft) slewLeft = currentslewL;
-        if (currentslewR > slewRight) slewRight = currentslewR;
-        previousLeft = *inL;
-        previousRight = *inR;
-        //slew measurement is NOT rectified
-        
-        double rectifiedL = fabs(*inL);
-        double rectifiedR = fabs(*inR);
-        if (rectifiedL > peakLeft) peakLeft = rectifiedL;
-        if (rectifiedR > peakRight) peakRight = rectifiedR;
-        rmsLeft += (rectifiedL * rectifiedL);
-        rmsRight += (rectifiedR * rectifiedR);
-        rmsCount++; //rms loudness IS rectified
-        
-        zeroLeft += zeroCrossScale;
-        if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
-        if (wasPositiveL && *inL < 0.0) {
-            wasPositiveL = false;
-            zeroLeft = 0.0;
-        } else if (!wasPositiveL && *inL > 0.0) {
-            wasPositiveL = true;
-            zeroLeft = 0.0;
+        bool audioPlaying = true;
+        auto playHead = getPlayHead();
+        if (playHead) {auto playHeadPos = playHead->getPosition();
+            if(playHeadPos->getTimeInSeconds() > 0.0) audioPlaying = playHeadPos->getIsPlaying();
+            //I have a sound editor that generates a playhead but won't do IsPlaying. This checks if the DAW speaks 'playHead'.
         }
-        zeroRight += zeroCrossScale;
-        if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
-        if (wasPositiveR && *inR < 0.0) {
-            wasPositiveR = false;
-            zeroRight = 0.0;
-        } else if (!wasPositiveR && *inR > 0.0) {
-            wasPositiveR = true;
-            zeroRight = 0.0;
+        if (audioPlaying) {
+            double currentslewL = (fabs(*inL-previousLeft)/32000.0f)*getSampleRate();
+            double currentslewR = (fabs(*inR-previousRight)/32000.0f)*getSampleRate();
+            if (currentslewL > slewLeft) slewLeft = currentslewL;
+            if (currentslewR > slewRight) slewRight = currentslewR;
+            previousLeft = *inL;
+            previousRight = *inR;
+            
+            double rectifiedL = fabs(*inL);
+            double rectifiedR = fabs(*inR);
+            if (rectifiedL > peakLeft) peakLeft = rectifiedL;
+            if (rectifiedR > peakRight) peakRight = rectifiedR;
+            rmsLeft += (rectifiedL * rectifiedL);
+            rmsRight += (rectifiedR * rectifiedR);
+            rmsCount++;
+            
+            zeroLeft += zeroCrossScale;
+            if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
+            if (wasPositiveL && *inL < 0.0) {
+                wasPositiveL = false;
+                zeroLeft = 0.0;
+            } else if (!wasPositiveL && *inL > 0.0) {
+                wasPositiveL = true;
+                zeroLeft = 0.0;
+            }
+            zeroRight += zeroCrossScale;
+            if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
+            if (wasPositiveR && *inR < 0.0) {
+                wasPositiveR = false;
+                zeroRight = 0.0;
+            } else if (!wasPositiveR && *inR > 0.0) {
+                wasPositiveR = true;
+                zeroRight = 0.0;
+            }
         }
 
         *outL = *inL;
