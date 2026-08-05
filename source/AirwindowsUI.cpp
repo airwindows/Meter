@@ -79,9 +79,10 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             psDotSizeL = (dataPL[count]*64.0f) / (fabs((peakL*0.945433426957143f)-slewL)+6.18033988749894f);
             slewDotSizeL = (sin(0.1618f/psDotSizeL)*6.18f)+(sqrt(slewL)*0.1618f);
             bassDotSizeL = sqrt(meterZeroL*0.1f*dataPL[count]);
-            if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmax((slewL-(peakL*0.945433426957143f)),0.0f)*0.1f, fmax(((peakL*0.945433426957143f)-slewL),0.0f)*0.01f, 1.0f, 1.0f)); //0.015625f
+            if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmax((slewL-(peakL*0.945433426957143f)),0.0f)*0.1f,
+                                                                           fmax(((peakL*0.945433426957143f)-slewL),0.0f)*0.01f, 1.0f, 1.0f));
             else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((64.0f+slewL)/128.0f,1.0f), 0.0f, 0.0f, 1.0f));
-            else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((140.0f-peakL)/140.0f,0.0f), 0.0f, 1.0f)); //set COLOR
+            else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((160.0f-peakL)/160.0f,0.0f), 0.0f, 1.0f)); //set COLOR
             g.fillRect((float)count, (float)((200.0f - peakL)*vS), psDotSizeL+0.618f, (psDotSizeL+0.618f)*vS);
             if (slewL > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
             else g.fillRect((float)count, (float)((400.0f-slewL)*vS), slewDotSizeL+0.618f, slewDotSizeL*vS); //draw slew
@@ -103,23 +104,27 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                 backG[count] = storeG;
                 backB[count] = storeB; //RGB backdrop for text
             }
-            if (psDotSizeR > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmax((slewR-(peakR*0.945433426957143f)),0.0f)*0.1f, fmax(((peakR*0.945433426957143f)-slewR),0.0f)*0.01f, 1.0f, 1.0f));
+            if (psDotSizeR > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmax((slewR-(peakR*0.945433426957143f)),0.0f)*0.1f,
+                                                                           fmax(((peakR*0.945433426957143f)-slewR),0.0f)*0.01f, 1.0f, 1.0f));
             else if (slewR > peakR) g.setColour(juce::Colour::fromFloatRGBA(fmin((64.0f+slewR)/128.0f,1.0f), 0.0f, 0.0f, 1.0f));
-            else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((140.0f-peakR)/140.0f,0.0f), 0.0f, 1.0f)); //set COLOR
+            else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((160.0f-peakR)/160.0f,0.0f), 0.0f, 1.0f)); //set COLOR
             g.fillRect((float)count, (float)((200.0f - peakR)*vS), psDotSizeR+0.618f, (psDotSizeR+0.618f)*vS);
             if (slewR > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
             else g.fillRect((float)count, (float)((400.0f-slewR)*vS), slewDotSizeR+0.618f, slewDotSizeR*vS); //draw slew
             g.fillRect((float)count, ((400.0f+bassR)*vS), bassDotSizeR+0.618f, bassDotSizeR*vS); //zero cross subs
         } //end draw dots on meters R
+        
         g.setColour(juce::Colour::fromFloatRGBA(backR[count], backG[count], backB[count], 1.0f)); //set backdrop colour
         g.fillRect((float)(count)-0.25f, 182.5f*vS, 1.5f, 19.5f*vS);
         g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.5f*vS); //draw tonecolor bars
         
         unsigned long bintracker;
-        bintracker = (unsigned long)(peakL * (0.005f*(float)totalBins));//converts 0-200 to 0-bin number for textscore bins
+        bintracker = (unsigned long)((peakL-((180.0f-sustainedClip)*1.618033988749894f)) * (0.005f*(float)totalBins));
+        //converts 0-200 to 0-bin number for textscore bins, and the peak measurement will also try to incorporate varying clip lengths
+        //on the grounds that FOR loudenated stuff, variety in the length of total clip registers for our purposes.
         bintracker = (unsigned long)(totalBins - (fabs((int)bintracker-(int)totalBins))); //mirror around max value so it reflects
         if (bintracker > 0 && bintracker <= totalBins) peakTrack[bintracker] += psDotSizeL;
-        bintracker = (unsigned long)(peakR * (0.005f*(float)totalBins));
+        bintracker = (unsigned long)((peakR-((180.0f-sustainedClip)*1.618033988749894f)) * (0.005f*(float)totalBins));
         bintracker = (unsigned long)(totalBins - (fabs((int)bintracker-(int)totalBins)));
         if (bintracker > 0 && bintracker <= totalBins) peakTrack[bintracker] += psDotSizeR;
         //peak textscore bins
