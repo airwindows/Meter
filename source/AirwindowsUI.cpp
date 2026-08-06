@@ -46,7 +46,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         backdropGradient.addColour(gradientMin, backdropColour.interpolatedWith(juce::Colours::white, gradientMin));
         //the mid point of the gradient goes toward the bottom and goes whiter when everything's in balance
         g.setFillType(backdropGradient);
-        g.fillAll(); //blank screen before doing anything, unless our draw covers the whole display anyway
+        g.fillAll();
     } //blank screen before doing anything, unless our draw covers the whole display anyway
     
     for (unsigned long count = 0; count < fmin(displayWidth,5150); ++count) //count through all the points in the array
