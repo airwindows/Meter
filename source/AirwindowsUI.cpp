@@ -441,7 +441,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                     totalPackage = juce::String("A"); break;
             } //this is our letter score, incorporating all the measurements
             directions = juce::String(" ");
-            directionsOpacity = fmax(0.925f-backdropColour.getLightness(),0.0f);
+            directionsOpacity = fmax(0.925f-backdropColour.getLightness(),0.0f)*1.618033988749894f;
             float directionsHue = backdropColour.getHue()*30.0f;
             switch ((int)directionsHue) {
                 case 0:
@@ -548,13 +548,13 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.setOpacity(0.618f);
         g.setColour(juce::Colours::white);
         g.drawText(totalPackage+power+detail+authority, 1-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::centredTop);
-        g.setOpacity(directionsOpacity*0.618f);
+        g.setOpacity(fmin(directionsOpacity,0.618f));
         g.drawText(directions, 1-(int)(scaleFont*1.618f), (int)(413.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::centredTop);
         //underdrawing in white for areas prone to get covered up with dots
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
         g.drawText(totalPackage+power+detail+authority, 0-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::centredTop);
-        g.setOpacity(directionsOpacity);
+        g.setOpacity(fmin(directionsOpacity,1.0f));
         g.drawText(directions, 0-(int)(scaleFont*1.618f), (int)(413.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::centredTop);
         //the Hit Record Letter Grade is 'totalPackage' followed by Power, Detail and Scale in order. If you have different priorities,
         //it's fair to want those in a different order for your quality metric: bass music might go scale first, pop might want detail.
