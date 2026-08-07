@@ -439,16 +439,62 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                     totalPackage = juce::String("B"); break;
                 case 27:
                     totalPackage = juce::String("A"); break;
- } //this is our letter score, incorporating all the measurements
+            } //this is our letter score, incorporating all the measurements
+            directions = juce::String(" ");
+            directionsOpacity = fmax(0.925f-backdropColour.getLightness(),0.0f);
+            float directionsHue = backdropColour.getHue()*30.0f;
+            switch ((int)directionsHue) {
+                case 0:
+                    directions = juce::String("less bright"); break;
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    directions = juce::String("too much air"); break;
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                    directions = juce::String("allow fullness"); break;
+                case 10:
+                case 11:
+                case 12:
+                case 13:
+                    directions = juce::String("allow detail"); break;
+                case 14:
+                case 15:
+                case 16:
+                case 17:
+                case 18:
+                    directions = juce::String("allow activity"); break;
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                    directions = juce::String("less boring"); break;
+                case 23:
+                case 24:
+                case 25:
+                    directions = juce::String("less harrowing"); break;
+                case 26:
+                case 27:
+                case 28:
+                    directions = juce::String("more calm"); break;
+                case 29:
+                case 30:
+                    directions = juce::String("less bright"); break;
+            } //this is tone color interpreted as instructions. Not an AI, it's just what you'd do!
+            //the opacity will be a factor of balance, so if you don't want to see it, mix right
         }
     }
     
-    float scaleFont = (sqrt(vS*61.8f)*1.618f);
+    float scaleFont = (sqrt(vS*64.0f)*1.618f);
     if (scaleFont > 10.0f) {
         g.setFont(scaleFont*1.618f);
         g.setColour(juce::Colours::black);
         g.drawText("power "+power, (int)scaleFont/2, (int)(3*vS), displayWidth/3, 32, juce::Justification::topLeft);
-        g.drawText("peaks", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("peaks", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
         //power is the intensity of varying peak energy, between maximum and minimum.
         //it can't be always maximum because that is just constant loudness and can't startle or vary.
         //Power is the derivative, the unexpected. it's the ability of sound to be producing peak 'aura' beyond what our ears think is the median loud.
@@ -464,7 +510,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         //We hear 'activity at very low dB during loud sounds' as openness of the sound, drama/excitement, and mix ease of listening.
         
         g.drawText("detail "+detail, (int)scaleFont/2, (int)(203*vS), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("slews", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("slews", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
         //detail is the intensity of varying slew energy, between maximum and minimum.
         //it can't be always maximum because that is just hardness and glare and sounds bad to people.
         //it also can't be minimum or it comes off as dull and uneventful in the treble range, so there's a balance to be struck.
@@ -479,7 +525,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         //this is the same phenomenon as the balance of taste stimuli in Heinz ketchup. It's like a cheat code.
         
         g.drawText("authority "+authority, (int)scaleFont/2, (int)(423*vS), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("zero crosses", (displayWidth/2)-(int)(scaleFont*1.618f), (int)(423*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.drawText("zero crosses", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(423*vS), displayWidth/2, 32, juce::Justification::topRight);
         //authority is the amount of varying zero cross energy, between maximum and minimum.
         //it can't be always maximum because that is just one frequency and reads as boring, plus it doesn't translate across bassbins as well.
         //The zero cross meter measures how long the audio can go before crossing the middle of the waveform again.
@@ -502,10 +548,14 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.setOpacity(0.618f);
         g.setColour(juce::Colours::white);
         g.drawText(totalPackage+power+detail+authority, 1-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::centredTop);
+        g.setOpacity(directionsOpacity*0.618f);
+        g.drawText(directions, 1-(int)(scaleFont*1.618f), (int)(413.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::centredTop);
         //underdrawing in white for areas prone to get covered up with dots
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
         g.drawText(totalPackage+power+detail+authority, 0-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::centredTop);
+        g.setOpacity(directionsOpacity);
+        g.drawText(directions, 0-(int)(scaleFont*1.618f), (int)(413.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::centredTop);
         //the Hit Record Letter Grade is 'totalPackage' followed by Power, Detail and Scale in order. If you have different priorities,
         //it's fair to want those in a different order for your quality metric: bass music might go scale first, pop might want detail.
         //I'm using power first simply because it is the most spectacular contrast between modern production and lasting hit status,
@@ -531,6 +581,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         //Meter builds more of it into the score, but if there's a quiet intro or a fade, Meter pays less attention to that in favor of
         //caring about what happens when the music is active. Not no attention, just scaled to how intense the music is actively trying to be.
         
+        g.setOpacity(1.0f);
         g.setFont(scaleFont);
         g.drawText("-6 dB", (int)scaleFont, (int)(60.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("-12 dB", (int)scaleFont, (int)(101.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);

@@ -155,10 +155,15 @@ void PluginEditor::idle()
                 meter.outputMin = 1.0f-((1.0f-meter.outputMin)*0.125f*meter.outputVol*meter.outputVol);
                 //quiet parts converge on 1.0 also, to slow color activity in fades
                 meter.outputMin = fmax(fmin(meter.outputMin,1.0f),0.0f);
-                meter.backdropColour = juce::Colour::fromFloatRGBA (pow(meter.outputR/meter.outputMax, 1.618033988749894f), pow(meter.outputG/meter.outputMax, 1.618033988749894f), pow(meter.outputB/meter.outputMax, 1.618033988749894f), 1.0f);
-                meter.storeR = pow(meter.outputR/meter.outputMax, 1.618033988749894f);
+                meter.storeR = pow(meter.outputR/meter.outputMax, 1.618033988749894f);;
                 meter.storeG = pow(meter.outputG/meter.outputMax, 1.618033988749894f);
                 meter.storeB = pow(meter.outputB/meter.outputMax, 1.618033988749894f);
+                //if all these are nearly white, they're near 1.0, but cyan is too much like white to be visible.
+                //this causes scores to look wrong, because cyan tints 'should' score higher but it's an optical illusion.
+                //Cyan is R0 G1 B1, so we will make up a color-tinter that reduces G and B by the amount that they match,
+                meter.cyanFix = pow((1.0f-meter.storeR)*(1.0f-meter.storeR)*(1.0f-((meter.storeG-meter.storeB)*(meter.storeG-meter.storeB))),1.618033988749894f);
+                meter.storeG -= meter.cyanFix; meter.storeB -= meter.cyanFix; //darken cyan tints for visual reference to white balance
+                meter.backdropColour = juce::Colour::fromFloatRGBA (meter.storeR, meter.storeG, meter.storeB, 1.0f);
                 meter.outputR *= meter.outputMin;
                 meter.outputG *= meter.outputMin;
                 meter.outputB *= meter.outputMin;

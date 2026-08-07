@@ -170,15 +170,18 @@ struct AirwindowsMeter : public juce::Component
     double cumulative = 0.0000001;
     double duration = 0.00001;
     juce::String totalPackage = juce::String();
+    juce::String directions = juce::String();
+    float directionsOpacity;
     juce::String power = juce::String();
     juce::String detail = juce::String();
     juce::String authority = juce::String();
     float storeR;
     float storeG;
-    float storeB;
+    float storeB; //these are used ONLY to draw colors on screen
     float outputR;
     float outputG;
-    float outputB;
+    float outputB; //these get values applied to them to produce scores
+    float cyanFix; //need this to run inside a switch statement
     float outputMax;
     float outputMin;
     float gradientMin; //need the simpler form for GFX
@@ -217,6 +220,8 @@ struct AirwindowsMeter : public juce::Component
         slewGrade = 0.0f;
         bassGrade = 0.0f;
         totalPackage = juce::String();
+        directions = juce::String();
+        directionsOpacity = 0.0f;
         cumulative = 0.0000001;
         duration = 0.00001;
         power = juce::String();
@@ -225,6 +230,7 @@ struct AirwindowsMeter : public juce::Component
         storeR = 1.0f;
         storeG = 1.0f;
         storeB = 1.0f;
+        cyanFix = 1.0f;
         outputR = 10.0f;
         outputG = 10.0f;
         outputB = 10.0f;
