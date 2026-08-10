@@ -32,7 +32,6 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.fillRect(0, (int)(350.2f*vS), getWidth(),1); //-24dB markings
         g.fillRect(0, (int)(364.9f*vS), getWidth(),1); //-30dB markings
         g.fillRect(0, (int)(375.2f*vS), getWidth(),1); //-36dB markings
-        g.fillRect(0, (int)(382.5f*vS), getWidth(),1); //-42dB markings
         
         g.fillRect(0,  (int)(460.0f*vS), getWidth(),1); // -6dB markings
         g.fillRect(0, (int)(501.02*vS), getWidth(),1); //-12dB markings
@@ -40,7 +39,6 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.fillRect(0, (int)(550.2f*vS), getWidth(),1); //-24dB markings
         g.fillRect(0, (int)(564.9f*vS), getWidth(),1); //-30dB markings
         g.fillRect(0, (int)(575.2f*vS), getWidth(),1); //-36dB markings
-        g.fillRect(0, (int)(582.5f*vS), getWidth(),1); //-42dB markings
     } else {
         juce::ColourGradient backdropGradient = juce::ColourGradient::vertical(juce::Colours::white, 0.0f, backdropColour, 600.0f*vS); //600 tall version
         backdropGradient.addColour(gradientMin, backdropColour.interpolatedWith(juce::Colours::white, gradientMin));
@@ -71,7 +69,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         //begin draw dots on meters L
         if (peakL > 197.0f) {
             g.setColour(juce::Colour(255, 0, 0));
-            g.fillRect((float)count, sustainedClip*vS, 1.9f, (181.9f-sustainedClip)*vS);
+            g.fillRect((float)count, ((219.0f+sustainedClip)*vS), 1.9f, (181.9f-sustainedClip)*vS);
             sustainedClip *= 0.99f; //peak is clipping!
             if (peakR > 197.0f) sustainedClip *= 0.975f; //if both are clipping, escalate
         } else sustainedClip = 180.0f;
@@ -83,15 +81,15 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                                                                            fmax(((peakL*0.945433426957143f)-slewL),0.0f)*0.012f, 1.0f, 1.0f));
             else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((64.0f+slewL)/128.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((160.0f-peakL)/160.0f,0.0f), 0.0f, 1.0f)); //set COLOR
-            g.fillRect((float)count, (float)((200.0f - peakL)*vS), psDotSizeL+0.618f, (psDotSizeL+0.618f)*vS);
-            if (slewL > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
-            else g.fillRect((float)count, (float)((400.0f-slewL)*vS), slewDotSizeL+0.618f, slewDotSizeL*vS); //draw slew
-            g.fillRect((float)count, ((400.0f+bassL)*vS), bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f), (bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f))*vS); //zero cross subs
+            g.fillRect((float)count, (float)((400.0f - peakL)*vS), psDotSizeL+0.618f, (psDotSizeL+0.618f)*vS);
+            if (slewL > 194.0f) g.fillRect((float)count, (float)((599.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
+            else g.fillRect((float)count, (float)((600.0f-slewL)*vS), slewDotSizeL+0.618f, slewDotSizeL*vS); //draw slew
+            if (bassL < 199.0f-(bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f))) g.fillRect((float)count, bassL*vS, bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f), (bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f))*vS); //zero cross subs
         } //end draw dots on meters L
         //begin draw dots on meters R
         if (peakR > 197.0f) {
             g.setColour(juce::Colour(255, 0, 0));
-            g.fillRect((float)count, sustainedClip*vS, 1.9f, (181.9f-sustainedClip)*vS);
+            g.fillRect((float)count, ((219.0f+sustainedClip)*vS), 1.9f, (181.9f-sustainedClip)*vS);
             sustainedClip *= 0.99f; //peak is clipping!
             if (peakL > 197.0f) sustainedClip *= 0.975f; //if both are clipping, escalate
         } else sustainedClip = 180.0f;
@@ -108,15 +106,16 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                                                                            fmax(((peakR*0.945433426957143f)-slewR),0.0f)*0.012f, 1.0f, 1.0f));
             else if (slewR > peakR) g.setColour(juce::Colour::fromFloatRGBA(fmin((64.0f+slewR)/128.0f,1.0f), 0.0f, 0.0f, 1.0f));
             else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((160.0f-peakR)/160.0f,0.0f), 0.0f, 1.0f)); //set COLOR
-            g.fillRect((float)count, (float)((200.0f - peakR)*vS), psDotSizeR+0.618f, (psDotSizeR+0.618f)*vS);
-            if (slewR > 194.0f) g.fillRect((float)count, (float)((400.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
-            else g.fillRect((float)count, (float)((400.0f-slewR)*vS), slewDotSizeR+0.618f, slewDotSizeR*vS); //draw slew
-            g.fillRect((float)count, ((400.0f+bassR)*vS), bassDotSizeR+fmax(pow(peakR/140.0f,4.0f),0.0f), (bassDotSizeR+fmax(pow(peakL/140.0f,4.0f),0.0f))*vS); //zero cross subs
+            g.fillRect((float)count, (float)((400.0f - peakR)*vS), psDotSizeR+0.618f, (psDotSizeR+0.618f)*vS);
+            if (slewR > 194.0f) g.fillRect((float)count, (float)((599.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
+            else g.fillRect((float)count, (float)((600.0f-slewR)*vS), slewDotSizeR+0.618f, slewDotSizeR*vS); //draw slew
+            if (bassR < 199.0f-(bassDotSizeR+fmax(pow(peakR/140.0f,4.0f),0.0f))) g.fillRect((float)count, bassR*vS, bassDotSizeR+fmax(pow(peakR/140.0f,4.0f),0.0f), (bassDotSizeR+fmax(pow(peakL/140.0f,4.0f),0.0f))*vS); //zero cross subs
         } //end draw dots on meters R
         
         g.setColour(juce::Colour::fromFloatRGBA(backR[count], backG[count], backB[count], 1.0f)); //set backdrop colour
-        g.fillRect((float)(count)-0.25f, 182.5f*vS, 1.5f, 19.5f*vS);
-        g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.5f*vS); //draw tonecolor bars
+        g.fillRect((float)(count)-0.25f, 0.0f, 1.5f, 19.5f*vS); //top bar
+        //g.fillRect((float)(count)-0.25f, 182.5f*vS, 1.5f, 19.5f*vS);
+        //g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.5f*vS); //draw tonecolor bars
         
         unsigned long bintracker;
         bintracker = (unsigned long)((peakL-((180.0f-sustainedClip)*1.618033988749894f)) * (0.005f*(float)totalBins));
@@ -493,40 +492,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
     if (scaleFont > 10.0f) {
         g.setFont(scaleFont*1.618f);
         g.setColour(juce::Colours::black);
-        g.drawText("power "+power, (int)scaleFont/2, (int)(3*vS), displayWidth/3, 32, juce::Justification::topLeft);
-        g.drawText("peaks", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(3*vS), displayWidth/2, 32, juce::Justification::topRight);
-        //power is the intensity of varying peak energy, between maximum and minimum.
-        //it can't be always maximum because that is just constant loudness and can't startle or vary.
-        //Power is the derivative, the unexpected. it's the ability of sound to be producing peak 'aura' beyond what our ears think is the median loud.
-        //we do not leave crest factor to be quiet with it, we leave crest factor so we can constantly have the ear tickled by stuff happening,
-        //that alerts the brain to peaks far beyond what the loudness seems to be. If they aren't present, the sound is boring.
-        //The key is DERIVATIVE: peaks matter to the extent that they extend beyond the RMS (root-mean-square, body/density of the sound),
-        //and power is the extent to which peaks are both happening and varying from each other constantly. That's a second derivative.
-        //This cloud expands as the capacity for loudness surprise rises: if you have continuously playing sound,
-        //whether it's a drone or saturation or simply a reverberation in your mix, it'll restrict the ability of the peak cloud
-        //to drop lower. Limiting the volume or bass of such sustaining elements works to widen the peak cloud's range,
-        //bearing in mind that the ideal situation is constant peak activity at every dB level at once at all times.
-        //This is of course impossible and a contradiction, which is what makes it interesting :)
-        //We hear 'activity at very low dB during loud sounds' as openness of the sound, drama/excitement, and mix ease of listening.
-        
-        g.drawText("detail "+detail, (int)scaleFont/2, (int)(203*vS), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("slews", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
-        //detail is the intensity of varying slew energy, between maximum and minimum.
-        //it can't be always maximum because that is just hardness and glare and sounds bad to people.
-        //it also can't be minimum or it comes off as dull and uneventful in the treble range, so there's a balance to be struck.
-        //Recording mediums used to set hard limits to how much treble you could have in the very high frequencies, an artificial limit,
-        //but it accidentally served to restrict detail to where it would balance with power (maximized peak energy) because it would
-        //end up quieter, balanced with the more hearable RMS loudness, allowing the power to be experienced as a sound event.
-        //Modern technology has no such limitations, so detail is commonly made to balance with RMS loudness in a context where
-        //ONLY RMS remains and the peak energy is not there anymore. (also, detail can contribute to loudness)
-        //That means you can get a 'correct' RMS/detail balance, but it only highlights the lack of power from missing peak energy.
-        //When you balance detail with a loudness balance that retains power and uses it, it still sounds 'correct' but the aura
-        //of the thing is very different, because the active peak energy is also sensed and it too can be in balance with other parts of the sound.
-        //this is the same phenomenon as the balance of taste stimuli in Heinz ketchup. It's like a cheat code.
-        
-        g.drawText("authority "+authority, (int)scaleFont/2, (int)(423*vS), displayWidth/2, 32, juce::Justification::topLeft);
-        g.drawText("zero crosses", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(423*vS), displayWidth/2, 32, juce::Justification::topRight);
-        //authority is the amount of varying zero cross energy, between maximum and minimum.
+        g.drawText("authority "+authority, (int)scaleFont/2, (int)(23.0f*vS), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("zero crosses", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(23.0f*vS), displayWidth/2, 32, juce::Justification::topRight);
+        g.setOpacity(fmin(directionsOpacity,1.0f));
+        g.drawText(directions, 0, (int)(23.0f*vS), displayWidth, 32, juce::Justification::centredTop);
+         //authority is the amount of varying zero cross energy, between maximum and minimum.
         //it can't be always maximum because that is just one frequency and reads as boring, plus it doesn't translate across bassbins as well.
         //The zero cross meter measures how long the audio can go before crossing the middle of the waveform again.
         //As such, loudness of bass makes it go higher and loudness of treble tends to disrupt this and take away low zero cross data.
@@ -545,18 +515,46 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         //That is a recipe for bass authority, not simply bass loudness, so authority is 'power through peaks, but for the lows'.
         //considering what a black art that sort of thing is, it's useful to view it in this light.
         
+        g.setOpacity(1.0f);
+        g.drawText("power "+power, (int)scaleFont/2, (int)(203*vS), displayWidth/3, 32, juce::Justification::topLeft);
+        g.drawText("peaks", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(203*vS), displayWidth/2, 32, juce::Justification::topRight);
+        //power is the intensity of varying peak energy, between maximum and minimum.
+        //it can't be always maximum because that is just constant loudness and can't startle or vary.
+        //Power is the derivative, the unexpected. it's the ability of sound to be producing peak 'aura' beyond what our ears think is the median loud.
+        //we do not leave crest factor to be quiet with it, we leave crest factor so we can constantly have the ear tickled by stuff happening,
+        //that alerts the brain to peaks far beyond what the loudness seems to be. If they aren't present, the sound is boring.
+        //The key is DERIVATIVE: peaks matter to the extent that they extend beyond the RMS (root-mean-square, body/density of the sound),
+        //and power is the extent to which peaks are both happening and varying from each other constantly. That's a second derivative.
+        //This cloud expands as the capacity for loudness surprise rises: if you have continuously playing sound,
+        //whether it's a drone or saturation or simply a reverberation in your mix, it'll restrict the ability of the peak cloud
+        //to drop lower. Limiting the volume or bass of such sustaining elements works to widen the peak cloud's range,
+        //bearing in mind that the ideal situation is constant peak activity at every dB level at once at all times.
+        //This is of course impossible and a contradiction, which is what makes it interesting :)
+        //We hear 'activity at very low dB during loud sounds' as openness of the sound, drama/excitement, and mix ease of listening.
+        
+        g.drawText("detail "+detail, (int)scaleFont/2, (int)(403*vS), displayWidth/2, 32, juce::Justification::topLeft);
+        g.drawText("slews", (displayWidth/2)-(int)(scaleFont*0.618f), (int)(403*vS), displayWidth/2, 32, juce::Justification::topRight);
+        //detail is the intensity of varying slew energy, between maximum and minimum.
+        //it can't be always maximum because that is just hardness and glare and sounds bad to people.
+        //it also can't be minimum or it comes off as dull and uneventful in the treble range, so there's a balance to be struck.
+        //Recording mediums used to set hard limits to how much treble you could have in the very high frequencies, an artificial limit,
+        //but it accidentally served to restrict detail to where it would balance with power (maximized peak energy) because it would
+        //end up quieter, balanced with the more hearable RMS loudness, allowing the power to be experienced as a sound event.
+        //Modern technology has no such limitations, so detail is commonly made to balance with RMS loudness in a context where
+        //ONLY RMS remains and the peak energy is not there anymore. (also, detail can contribute to loudness)
+        //That means you can get a 'correct' RMS/detail balance, but it only highlights the lack of power from missing peak energy.
+        //When you balance detail with a loudness balance that retains power and uses it, it still sounds 'correct' but the aura
+        //of the thing is very different, because the active peak energy is also sensed and it too can be in balance with other parts of the sound.
+        //this is the same phenomenon as the balance of taste stimuli in Heinz ketchup. It's like a cheat code.
+        
         g.setOpacity(0.618f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+power+detail+authority, 1-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::centredTop);
-        g.setOpacity(fmin(directionsOpacity,0.618f));
-        g.drawText(directions, 1-(int)(scaleFont*1.618f), (int)(413.0f*vS)-(int)(scaleFont-1.0f), displayWidth, 32, juce::Justification::centredTop);
+        g.drawText(totalPackage+authority+power+detail, 1, 1, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
         //underdrawing in white for areas prone to get covered up with dots
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText(totalPackage+power+detail+authority, 0-(int)(scaleFont*1.618f), (int)(194.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::centredTop);
-        g.setOpacity(fmin(directionsOpacity,1.0f));
-        g.drawText(directions, 0-(int)(scaleFont*1.618f), (int)(413.0f*vS)-(int)(scaleFont), displayWidth, 32, juce::Justification::centredTop);
-        //the Hit Record Letter Grade is 'totalPackage' followed by Power, Detail and Scale in order. If you have different priorities,
+        g.drawText(totalPackage+authority+power+detail, 0, 0, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
+       //the Hit Record Letter Grade is 'totalPackage' followed by Power, Detail and Scale in order. If you have different priorities,
         //it's fair to want those in a different order for your quality metric: bass music might go scale first, pop might want detail.
         //I'm using power first simply because it is the most spectacular contrast between modern production and lasting hit status,
         //and so it most highlights what is lacking in production done wrong, and music that won't last or be heard beyond the moment.
@@ -583,46 +581,54 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         
         g.setOpacity(1.0f);
         g.setFont(scaleFont);
-        g.drawText("-6 dB", (int)scaleFont, (int)(60.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-12 dB", (int)scaleFont, (int)(101.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-18 dB", (int)scaleFont, (int)(130.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-24 dB", (int)scaleFont, (int)(150.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-30 dB", (int)scaleFont, (int)(164.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("-36 dB", (int)scaleFont, (int)(175.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("900 Hz", (int)scaleFont, (int)(460.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("210 Hz", (int)scaleFont, (int)(501.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("100 Hz", (int)scaleFont, (int)(530.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("60 Hz", (int)scaleFont, (int)(550.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("45 Hz", (int)scaleFont, (int)(564.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("35 Hz", (int)scaleFont, (int)(575.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.drawText("30 Hz", (int)scaleFont, (int)(582.5f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
-        g.setColour(juce::Colours::black);
-        g.setOpacity(0.618f);
-        g.fillRect(0, (int)(182.5*vS), getWidth(), 2);
-        g.fillRect(0, (int)(400.0f*vS), getWidth(), 2);
+        g.drawText("900 Hz", (int)scaleFont, (int)(60.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("210 Hz", (int)scaleFont, (int)(101.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("100 Hz", (int)scaleFont, (int)(130.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("60 Hz", (int)scaleFont, (int)(150.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("45 Hz", (int)scaleFont, (int)(164.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("35 Hz", (int)scaleFont, (int)(175.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        
+        g.drawText("-6 dB", (int)scaleFont, (int)(260.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-12 dB", (int)scaleFont, (int)(301.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-18 dB", (int)scaleFont, (int)(330.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-24 dB", (int)scaleFont, (int)(350.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-30 dB", (int)scaleFont, (int)(364.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("-36 dB", (int)scaleFont, (int)(375.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+
+        g.setColour(juce::Colours::darkgrey);
         g.setOpacity(1.0f);
-        g.fillRect(0, (int)(201.0f*vS), getWidth(), 2);
-        g.fillRect(0, (int)(420.0f*vS), getWidth(), 2); // outline backdrop color line
+        g.fillRect(0, (int)(20.0f*vS), getWidth(), 2); // outline backdrop color line
+        g.setColour(juce::Colours::lightgrey);
+        g.fillRect(0, (int)(199.0f*vS), getWidth(), 1);
+        g.fillRect(0, (int)(399.0f*vS), getWidth(), 1); // meter borders
+        g.fillRect(0, (int)(599.0f*vS), getWidth(), 1); // meter borders
+        g.setColour(juce::Colours::darkgrey);
+        g.fillRect(0, (int)(200.0f*vS), getWidth(), 2);
+        g.fillRect(0, (int)(400.0f*vS), getWidth(), 2); // meter borders
+
     } else {
-        g.setColour(juce::Colours::black);
-        g.setOpacity(0.618f);
-        g.fillRect(0, (int)(182.5*vS), getWidth(), 1);
-        g.fillRect(0, (int)(400.0f*vS), getWidth(), 1);
+        g.setColour(juce::Colours::darkgrey);
         g.setOpacity(1.0f);
-        g.fillRect(0, (int)(201.0f*vS), getWidth(), 1);
-        g.fillRect(0, (int)(420.0f*vS), getWidth(), 1); // outline backdrop color line
-               
+        g.fillRect(0, (int)(20.0f*vS), getWidth(), 1); // outline backdrop color line
+        g.setColour(juce::Colours::lightgrey);
+        g.fillRect(0, (int)(199.0f*vS), getWidth(), 1);
+        g.fillRect(0, (int)(399.0f*vS), getWidth(), 1); // meter borders
+        g.fillRect(0, (int)(599.0f*vS), getWidth(), 1); // meter borders
+       g.setColour(juce::Colours::darkgrey);
+        g.fillRect(0, (int)(200.0f*vS), getWidth(), 2);
+        g.fillRect(0, (int)(400.0f*vS), getWidth(), 2); // meter borders
+
         g.setFont(scaleFont*11.0f); //larger font for the tiny window, and the style seen in ConsoleX3
         g.setOpacity(0.21f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+power+detail+authority, 0, 1, displayWidth, displayHeight+1, juce::Justification::centred, false);
-        g.drawText(totalPackage+power+detail+authority, 1, 0, displayWidth+1, displayHeight, juce::Justification::centred, false);
+        g.drawText(totalPackage+authority+power+detail, 0, 1, displayWidth, displayHeight+1, juce::Justification::centred, false);
+        g.drawText(totalPackage+authority+power+detail, 1, 0, displayWidth+1, displayHeight, juce::Justification::centred, false);
         g.setOpacity(0.51f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+power+detail+authority, 1, 1, displayWidth+1, displayHeight+1, juce::Justification::centred, false);
+        g.drawText(totalPackage+authority+power+detail, 1, 1, displayWidth+1, displayHeight+1, juce::Justification::centred, false);
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText(totalPackage+power+detail+authority, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.drawText(totalPackage+authority+power+detail, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
     }
     
     g.setColour(juce::Colours::grey);
