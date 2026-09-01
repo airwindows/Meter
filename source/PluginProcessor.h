@@ -58,7 +58,8 @@ public:
         {
             NEW_VALUE,
             BEGIN_EDIT,
-            END_EDIT
+            END_EDIT,
+            FLIP
         } what{NEW_VALUE};
         Parameters which;
         float newValue = 0.0;
@@ -133,6 +134,8 @@ public:
     bool wasPositiveL = false;
     bool wasPositiveR = false;
     int windowCount = 0;
+    bool audioPlaying = true;
+    bool playheadMoving = false;
 
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)

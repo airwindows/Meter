@@ -211,13 +211,13 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         auto inL = mainInput.getReadPointer(0, i); //in isBussesLayoutSupported, we have already
         auto inR = mainInput.getReadPointer(1, i); //specified that we can only be stereo and never mono
         
-        //bool audioPlaying = true;
-        //auto playHead = getPlayHead();
-        //if (playHead) {auto playHeadPos = playHead->getPosition();
-        //    if(playHeadPos->getTimeInSeconds() > 0.0) audioPlaying = playHeadPos->getIsPlaying();
+        
+        auto playHead = getPlayHead();
+        if (playHead) {auto playHeadPos = playHead->getPosition();
+            if (playHeadPos->getTimeInSeconds() > 0.0) playheadMoving = !playHeadPos->getIsPlaying();
         //I have a sound editor that generates a playhead but won't do IsPlaying. This checks if the DAW speaks 'playHead'.
-        //}
-        //if (audioPlaying) {
+        }
+        if (audioPlaying != playheadMoving) {
         float currentslewL = (fabs(*inL-(float)previousLeft)/32000.0f)*(float)getSampleRate();
         float currentslewR = (fabs(*inR-(float)previousRight)/32000.0f)*(float)getSampleRate();
         if (currentslewL > slewLeft) slewLeft = currentslewL;
@@ -249,7 +249,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             wasPositiveR = true;
             zeroRight = 0.0;
         }
-        //}
+        }
         
         *outL = *inL;
         *outR = *inR; //this is a meter. Raw pass-through
@@ -318,13 +318,12 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         auto inL = mainInput.getReadPointer(0, i); //in isBussesLayoutSupported, we have already
         auto inR = mainInput.getReadPointer(1, i); //specified that we can only be stereo and never mono
 
-        //bool audioPlaying = true;
-        //auto playHead = getPlayHead();
-        //if (playHead) {auto playHeadPos = playHead->getPosition();
-        //    if(playHeadPos->getTimeInSeconds() > 0.0) audioPlaying = playHeadPos->getIsPlaying();
+        auto playHead = getPlayHead();
+        if (playHead) {auto playHeadPos = playHead->getPosition();
+            if (playHeadPos->getTimeInSeconds() > 0.0) playheadMoving = !playHeadPos->getIsPlaying();
         //I have a sound editor that generates a playhead but won't do IsPlaying. This checks if the DAW speaks 'playHead'.
-        //}
-        //if (audioPlaying) {
+        }
+        if (audioPlaying != playheadMoving) {
         double currentslewL = (fabs(*inL-previousLeft)/32000.0f)*getSampleRate();
         double currentslewR = (fabs(*inR-previousRight)/32000.0f)*getSampleRate();
         if (currentslewL > slewLeft) slewLeft = currentslewL;
@@ -356,7 +355,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             wasPositiveR = true;
             zeroRight = 0.0;
         }
-        //}
+        }
         
         *outL = *inL;
         *outR = *inR; //this is a meter. Raw pass-through

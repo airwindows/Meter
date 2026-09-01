@@ -11,6 +11,7 @@
 void AirwindowsMeter::mouseDown(const juce::MouseEvent &event)
 {
     if (event.getNumberOfClicks() > 1) resetArrays();
+    else meterPlaying = !meterPlaying;
 }
 
 void AirwindowsMeter::paint(juce::Graphics &g)
@@ -439,6 +440,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                 case 27:
                     totalPackage = juce::String("A"); break;
             } //this is our letter score, incorporating all the measurements
+            
+            if (power == detail && authority == detail) totalPackage = "+"+totalPackage;
+            
             directions = juce::String(" ");
             directionsOpacity = fmax(0.925f-backdropColour.getLightness(),0.0f)*1.618033988749894f;
             float directionsHue = backdropColour.getHue()*30.0f;

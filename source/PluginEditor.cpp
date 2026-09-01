@@ -171,6 +171,7 @@ void PluginEditor::idle()
             default: std::cout << "Unhandled message type " << msg.what << std::endl; break;
         } //end of switch statement for msg.what
     }
+    processorRef.audioPlaying = meter.meterPlaying;
     if (repaintTS) {
         if (airwindowsLookAndFeel.useToneColor && meter.backdropColour.operator!=(meter.cachedColour)) {
             repaint();

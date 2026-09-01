@@ -188,6 +188,7 @@ struct AirwindowsMeter : public juce::Component
     float outputVol;
     float outputShift;
     float sustainedClip;
+    bool meterPlaying;
     
     std::array<float, totalBins> peakTrack;
     std::array<float, totalBins> slewTrack;
@@ -238,6 +239,7 @@ struct AirwindowsMeter : public juce::Component
         gradientMin = 0.0f;
         outputVol = 0.0f;
         sustainedClip = 180.0f;
+        meterPlaying = true;
         backdropColour = juce::Colours::white;
         cachedColour = juce::Colours::white;
         
