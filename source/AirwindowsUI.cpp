@@ -442,7 +442,14 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             } //this is our letter score, incorporating all the measurements
             
             if (power == detail && authority == detail) totalPackage = "+"+totalPackage;
-            
+            if (abs((int)(peakGrade) - (int)(slewGrade-4.0f)) < 2
+                && abs((int)(bassGrade) - (int)(slewGrade-4.0f)) < 2
+                && abs((int)(peakGrade) - (int)(bassGrade)) < 2) totalPackage = "+"+totalPackage;
+            //our new metric is, plus if none of the measurement areas are more than one letter grade away from each other.
+            //so, aba is fine, but abc has c and a too far apart, and doesn't get a plus. This tracks less aggressive hits,
+            //and allows for less twitchy comparisons than needing them all identical letters to get the plus.
+            //Note that slew is tweaked slightly to get in the balance zone.
+
             directions = juce::String(" ");
             directionsOpacity = fmax(0.925f-backdropColour.getLightness(),0.0f)*1.618033988749894f;
             float directionsHue = backdropColour.getHue()*30.0f;
