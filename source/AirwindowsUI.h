@@ -169,7 +169,10 @@ struct AirwindowsMeter : public juce::Component
     float bassGrade = 0.0f;
     double cumulative = 0.0000001;
     double duration = 0.00001;
+    double cumulativePlus = 0.0000001;
+    double durationPlus = 0.000001;
     juce::String totalPackage = juce::String();
+    juce::String finalPercent = juce::String();
     juce::String directions = juce::String();
     float directionsOpacity;
     juce::String power = juce::String();
@@ -221,10 +224,13 @@ struct AirwindowsMeter : public juce::Component
         slewGrade = 0.0f;
         bassGrade = 0.0f;
         totalPackage = juce::String();
+        finalPercent = juce::String();
         directions = juce::String();
         directionsOpacity = 0.0f;
         cumulative = 0.0000001;
         duration = 0.00001;
+        cumulativePlus = 0.0000001;
+        durationPlus = 0.00001;
         power = juce::String();
         detail = juce::String();
         authority = juce::String();

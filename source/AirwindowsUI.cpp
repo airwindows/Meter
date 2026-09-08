@@ -441,10 +441,15 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                     totalPackage = juce::String("A"); break;
             } //this is our letter score, incorporating all the measurements
             
-            if (power == detail && authority == detail) totalPackage = "+"+totalPackage;
+            durationPlus += 1.0;
             if (abs((int)(peakGrade) - (int)(slewGrade-4.0f)) < 2
                 && abs((int)(bassGrade) - (int)(slewGrade-4.0f)) < 2
-                && abs((int)(peakGrade) - (int)(bassGrade)) < 2) totalPackage = "+"+totalPackage;
+                && abs((int)(peakGrade) - (int)(bassGrade)) < 2) {
+                totalPackage = "+"+totalPackage;
+                cumulativePlus += 1.0;
+            }
+            finalPercent = " "+juce::String((int)((cumulativePlus/durationPlus)*100.0))+"%";
+            if (finalPercent.compare(" 0%") < 1) finalPercent = juce::String();
             //our new metric is, plus if none of the measurement areas are more than one letter grade away from each other.
             //so, aba is fine, but abc has c and a too far apart, and doesn't get a plus. This tracks less aggressive hits,
             //and allows for less twitchy comparisons than needing them all identical letters to get the plus.
@@ -560,11 +565,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         
         g.setOpacity(0.618f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+authority+power+detail, 1, 1, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
+        g.drawText(totalPackage+authority+power+detail+finalPercent, 1, 1, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
         //underdrawing in white for areas prone to get covered up with dots
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText(totalPackage+authority+power+detail, 0, 0, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
+        g.drawText(totalPackage+authority+power+detail+finalPercent, 0, 0, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
        //the Hit Record Letter Grade is 'totalPackage' followed by Power, Detail and Scale in order. If you have different priorities,
         //it's fair to want those in a different order for your quality metric: bass music might go scale first, pop might want detail.
         //I'm using power first simply because it is the most spectacular contrast between modern production and lasting hit status,
@@ -632,14 +637,14 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.setFont(scaleFont*11.0f); //larger font for the tiny window, and the style seen in ConsoleX3
         g.setOpacity(0.21f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+authority+power+detail, 0, 1, displayWidth, displayHeight+1, juce::Justification::centred, false);
-        g.drawText(totalPackage+authority+power+detail, 1, 0, displayWidth+1, displayHeight, juce::Justification::centred, false);
+        g.drawText(totalPackage+authority+power+detail+finalPercent, 0, 1, displayWidth, displayHeight+1, juce::Justification::centred, false);
+        g.drawText(totalPackage+authority+power+detail+finalPercent, 1, 0, displayWidth+1, displayHeight, juce::Justification::centred, false);
         g.setOpacity(0.51f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+authority+power+detail, 1, 1, displayWidth+1, displayHeight+1, juce::Justification::centred, false);
+        g.drawText(totalPackage+authority+power+detail+finalPercent, 1, 1, displayWidth+1, displayHeight+1, juce::Justification::centred, false);
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText(totalPackage+authority+power+detail, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.drawText(totalPackage+authority+power+detail+finalPercent, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
     }
     
     g.setColour(juce::Colours::grey);
