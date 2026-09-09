@@ -164,33 +164,36 @@ struct AirwindowsMeter : public juce::Component
     int displayWidth = 1280;
     int displayHeight = 720;
     unsigned long dataPosition = 0;
-    float peakGrade = 0.0f;
-    float slewGrade = 0.0f;
-    float bassGrade = 0.0f;
+    int peakGrade = 0;
+    int slewGrade = 0;
+    int bassGrade = 0;
+    int peakPrevGrade = 0;
+    int slewPrevGrade = 0;
+    int bassPrevGrade = 0;
     double cumulative = 0.0000001;
     double duration = 0.00001;
     double cumulativePlus = 0.0000001;
     double durationPlus = 0.000001;
     juce::String totalPackage = juce::String();
-    juce::String finalPercent = juce::String();
+    juce::String bonusScore = juce::String();
     juce::String directions = juce::String();
     float directionsOpacity;
     juce::String power = juce::String();
     juce::String detail = juce::String();
     juce::String authority = juce::String();
-    float storeR;
-    float storeG;
-    float storeB; //these are used ONLY to draw colors on screen
-    float outputR;
-    float outputG;
-    float outputB; //these get values applied to them to produce scores
-    float cyanFix; //need this to run inside a switch statement
-    float outputMax;
-    float outputMin;
-    float gradientMin; //need the simpler form for GFX
-    float outputVol;
-    float outputShift;
-    float sustainedClip;
+    double storeR;
+    double storeG;
+    double storeB; //these are used ONLY to draw colors on screen
+    double outputR;
+    double outputG;
+    double outputB; //these get values applied to them to produce scores
+    double cyanFix; //need this to run inside a switch statement
+    double outputMax;
+    double outputMin;
+    double gradientMin; //need the simpler form for GFX
+    double outputVol;
+    double outputShift;
+    double sustainedClip;
     bool meterPlaying;
     
     std::array<float, totalBins> peakTrack;
@@ -207,12 +210,12 @@ struct AirwindowsMeter : public juce::Component
     std::array<float, dataPoints> backG;//backdrop green channel: bright
     std::array<float, dataPoints> backB;//backdrop blue channel: bass
 
-    void pushPeakL(float X) {dataPL[dataPosition] = X;}
-    void pushPeakR(float X) {dataPR[dataPosition] = X;}
-    void pushSlewL(float X) {dataSL[dataPosition] = X;}
-    void pushSlewR(float X) {dataSR[dataPosition] = X;}
-    void pushZeroL(float X) {dataZL[dataPosition] = X;}
-    void pushZeroR(float X) {dataZR[dataPosition] = X;}
+    void pushPeakL(float X) {dataPL[dataPosition] = X; dataPL[dataPosition+1] = X;}
+    void pushPeakR(float X) {dataPR[dataPosition] = X; dataPR[dataPosition+1] = X;}
+    void pushSlewL(float X) {dataSL[dataPosition] = X; dataSL[dataPosition+1] = X;}
+    void pushSlewR(float X) {dataSR[dataPosition] = X; dataSR[dataPosition+1] = X;}
+    void pushZeroL(float X) {dataZL[dataPosition] = X; dataZL[dataPosition+1] = X;}
+    void pushZeroR(float X) {dataZR[dataPosition] = X; dataZR[dataPosition+1] = X;}
     void pushIncrement() {
         dataPosition++;
         if (dataPosition >= (unsigned long)fmin(displayWidth,5150)) dataPosition = 0;
@@ -220,11 +223,14 @@ struct AirwindowsMeter : public juce::Component
 
     void resetArrays(){
         dataPosition = 0;
-        peakGrade = 0.0f;
-        slewGrade = 0.0f;
-        bassGrade = 0.0f;
+        peakGrade = 0;
+        slewGrade = 0;
+        bassGrade = 0;
+        peakPrevGrade = 0;
+        slewPrevGrade = 0;
+        bassPrevGrade = 0; //to bump a grade you have to exceed it twice
         totalPackage = juce::String();
-        finalPercent = juce::String();
+        bonusScore = juce::String();
         directions = juce::String();
         directionsOpacity = 0.0f;
         cumulative = 0.0000001;

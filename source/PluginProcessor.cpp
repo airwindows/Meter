@@ -210,49 +210,50 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
         auto outR = mainOutput.getWritePointer(1, i);
         auto inL = mainInput.getReadPointer(0, i); //in isBussesLayoutSupported, we have already
         auto inR = mainInput.getReadPointer(1, i); //specified that we can only be stereo and never mono
-        
+        double inputSampleL = *inL;
+        double inputSampleR = *inR;
         
         auto playHead = getPlayHead();
         if (playHead) {auto playHeadPos = playHead->getPosition();
             if (playHeadPos->getTimeInSeconds() > 0.0) playheadMoving = !playHeadPos->getIsPlaying();
-        //I have a sound editor that generates a playhead but won't do IsPlaying. This checks if the DAW speaks 'playHead'.
+            //I have a sound editor that generates a playhead but won't do IsPlaying. This checks if the DAW speaks 'playHead'.
         }
         if (audioPlaying != playheadMoving) {
-        float currentslewL = (fabs(*inL-(float)previousLeft)/32000.0f)*(float)getSampleRate();
-        float currentslewR = (fabs(*inR-(float)previousRight)/32000.0f)*(float)getSampleRate();
-        if (currentslewL > slewLeft) slewLeft = currentslewL;
-        if (currentslewR > slewRight) slewRight = currentslewR;
-        previousLeft = *inL;
-        previousRight = *inR;
-        
-        float rectifiedL = fabs(*inL);
-        float rectifiedR = fabs(*inR);
-        if (rectifiedL > peakLeft) peakLeft = rectifiedL;
-        if (rectifiedR > peakRight) peakRight = rectifiedR;
-        windowCount++;
-        
-        zeroLeft += zeroCrossScale;
-        if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
-        if (wasPositiveL && *inL < 0.0) {
-            wasPositiveL = false;
-            zeroLeft = 0.0;
-        } else if (!wasPositiveL && *inL > 0.0) {
-            wasPositiveL = true;
-            zeroLeft = 0.0;
+            double currentslewL = (fabs(inputSampleL-previousLeft)/32000.0)*getSampleRate();
+            double currentslewR = (fabs(inputSampleR-previousRight)/32000.0)*getSampleRate();
+            if (currentslewL > slewLeft) slewLeft = currentslewL;
+            if (currentslewR > slewRight) slewRight = currentslewR;
+            previousLeft = inputSampleL;
+            previousRight = inputSampleR;
+            
+            double rectifiedL = fabs(inputSampleL);
+            double rectifiedR = fabs(inputSampleR);
+            if (rectifiedL > peakLeft) peakLeft = rectifiedL;
+            if (rectifiedR > peakRight) peakRight = rectifiedR;
+            windowCount++;
+            
+            zeroLeft += zeroCrossScale;
+            if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
+            if (wasPositiveL && inputSampleL < 0.0) {
+                wasPositiveL = false;
+                zeroLeft = 0.0;
+            } else if (!wasPositiveL && inputSampleL > 0.0) {
+                wasPositiveL = true;
+                zeroLeft = 0.0;
+            }
+            zeroRight += zeroCrossScale;
+            if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
+            if (wasPositiveR && inputSampleR < 0.0) {
+                wasPositiveR = false;
+                zeroRight = 0.0;
+            } else if (!wasPositiveR && inputSampleR > 0.0) {
+                wasPositiveR = true;
+                zeroRight = 0.0;
+            }
         }
-        zeroRight += zeroCrossScale;
-        if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
-        if (wasPositiveR && *inR < 0.0) {
-            wasPositiveR = false;
-            zeroRight = 0.0;
-        } else if (!wasPositiveR && *inR > 0.0) {
-            wasPositiveR = true;
-            zeroRight = 0.0;
-        }
-        }
         
-        *outL = *inL;
-        *outR = *inR; //this is a meter. Raw pass-through
+        *outL = (float)inputSampleL;
+        *outR = (float)inputSampleR; //this is a meter. Raw pass-through
         
         if (windowCount > windowSize)
         {
@@ -317,48 +318,50 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
         auto outR = mainOutput.getWritePointer(1, i);
         auto inL = mainInput.getReadPointer(0, i); //in isBussesLayoutSupported, we have already
         auto inR = mainInput.getReadPointer(1, i); //specified that we can only be stereo and never mono
-
+        double inputSampleL = *inL;
+        double inputSampleR = *inR;
+        
         auto playHead = getPlayHead();
         if (playHead) {auto playHeadPos = playHead->getPosition();
             if (playHeadPos->getTimeInSeconds() > 0.0) playheadMoving = !playHeadPos->getIsPlaying();
-        //I have a sound editor that generates a playhead but won't do IsPlaying. This checks if the DAW speaks 'playHead'.
+            //I have a sound editor that generates a playhead but won't do IsPlaying. This checks if the DAW speaks 'playHead'.
         }
         if (audioPlaying != playheadMoving) {
-        double currentslewL = (fabs(*inL-previousLeft)/32000.0f)*getSampleRate();
-        double currentslewR = (fabs(*inR-previousRight)/32000.0f)*getSampleRate();
-        if (currentslewL > slewLeft) slewLeft = currentslewL;
-        if (currentslewR > slewRight) slewRight = currentslewR;
-        previousLeft = *inL;
-        previousRight = *inR;
-        
-        double rectifiedL = fabs(*inL);
-        double rectifiedR = fabs(*inR);
-        if (rectifiedL > peakLeft) peakLeft = rectifiedL;
-        if (rectifiedR > peakRight) peakRight = rectifiedR;
-        windowCount++;
-        
-        zeroLeft += zeroCrossScale;
-        if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
-        if (wasPositiveL && *inL < 0.0) {
-            wasPositiveL = false;
-            zeroLeft = 0.0;
-        } else if (!wasPositiveL && *inL > 0.0) {
-            wasPositiveL = true;
-            zeroLeft = 0.0;
+            double currentslewL = (fabs(inputSampleL-previousLeft)/32000.0)*getSampleRate();
+            double currentslewR = (fabs(inputSampleR-previousRight)/32000.0)*getSampleRate();
+            if (currentslewL > slewLeft) slewLeft = currentslewL;
+            if (currentslewR > slewRight) slewRight = currentslewR;
+            previousLeft = inputSampleL;
+            previousRight = inputSampleR;
+            
+            double rectifiedL = fabs(inputSampleL);
+            double rectifiedR = fabs(inputSampleR);
+            if (rectifiedL > peakLeft) peakLeft = rectifiedL;
+            if (rectifiedR > peakRight) peakRight = rectifiedR;
+            windowCount++;
+            
+            zeroLeft += zeroCrossScale;
+            if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
+            if (wasPositiveL && inputSampleL < 0.0) {
+                wasPositiveL = false;
+                zeroLeft = 0.0;
+            } else if (!wasPositiveL && inputSampleL > 0.0) {
+                wasPositiveL = true;
+                zeroLeft = 0.0;
+            }
+            zeroRight += zeroCrossScale;
+            if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
+            if (wasPositiveR && inputSampleR < 0.0) {
+                wasPositiveR = false;
+                zeroRight = 0.0;
+            } else if (!wasPositiveR && inputSampleR > 0.0) {
+                wasPositiveR = true;
+                zeroRight = 0.0;
+            }
         }
-        zeroRight += zeroCrossScale;
-        if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
-        if (wasPositiveR && *inR < 0.0) {
-            wasPositiveR = false;
-            zeroRight = 0.0;
-        } else if (!wasPositiveR && *inR > 0.0) {
-            wasPositiveR = true;
-            zeroRight = 0.0;
-        }
-        }
         
-        *outL = *inL;
-        *outR = *inR; //this is a meter. Raw pass-through
+        *outL = inputSampleL;
+        *outR = inputSampleR; //this is a meter. Raw pass-through
         
         if (windowCount > windowSize)
         {

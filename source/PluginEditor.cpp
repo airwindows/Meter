@@ -148,14 +148,14 @@ void PluginEditor::idle()
             case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(); repaintTS = true;
                 
-                meter.outputMax = fmax(fmax(meter.outputR+0.00000001f,meter.outputG),meter.outputB);
+                meter.outputMax = fmax(fmax(meter.outputR+0.000001f,meter.outputG),meter.outputB);
                 meter.outputMin = fmin(fmin(meter.outputR,meter.outputG),meter.outputB) / meter.outputMax;
                 meter.gradientMin = meter.outputMin*meter.outputMin*meter.outputMin;
                 //smallest number means brightest color, relative to highest number will be 1.0 meaning white
                 meter.outputMin = 1.0f-((1.0f-meter.outputMin)*0.125f*meter.outputVol*meter.outputVol);
                 //quiet parts converge on 1.0 also, to slow color activity in fades
                 meter.outputMin = fmax(fmin(meter.outputMin,1.0f),0.0f);
-                meter.storeR = pow(meter.outputR/meter.outputMax, 1.618033988749894f);;
+                meter.storeR = pow(meter.outputR/meter.outputMax, 1.618033988749894f);
                 meter.storeG = pow(meter.outputG/meter.outputMax, 1.618033988749894f);
                 meter.storeB = pow(meter.outputB/meter.outputMax, 1.618033988749894f);
                 //if all these are nearly white, they're near 1.0, but cyan is too much like white to be visible.
@@ -163,7 +163,7 @@ void PluginEditor::idle()
                 //Cyan is R0 G1 B1, so we will make up a color-tinter that reduces G and B by the amount that they match,
                 meter.cyanFix = pow((1.0f-meter.storeR)*(1.0f-meter.storeR)*(1.0f-((meter.storeG-meter.storeB)*(meter.storeG-meter.storeB))),1.618033988749894f);
                 meter.storeG -= meter.cyanFix; meter.storeB -= meter.cyanFix; //darken cyan tints for visual reference to white balance
-                meter.backdropColour = juce::Colour::fromFloatRGBA (meter.storeR, meter.storeG, meter.storeB, 1.0f);
+                meter.backdropColour = juce::Colour::fromFloatRGBA ((float)meter.storeR, (float)meter.storeG, (float)meter.storeB, 1.0f);
                 meter.outputR *= meter.outputMin;
                 meter.outputG *= meter.outputMin;
                 meter.outputB *= meter.outputMin;

@@ -42,7 +42,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.fillRect(0, (int)(575.2f*vS), getWidth(),1); //-36dB markings
     } else {
         juce::ColourGradient backdropGradient = juce::ColourGradient::vertical(juce::Colours::white, 0.0f, backdropColour, 600.0f*vS); //600 tall version
-        backdropGradient.addColour(gradientMin, backdropColour.interpolatedWith(juce::Colours::white, gradientMin));
+        backdropGradient.addColour((float)gradientMin, backdropColour.interpolatedWith(juce::Colours::white, (float)gradientMin));
         //the mid point of the gradient goes toward the bottom and goes whiter when everything's in balance
         g.setFillType(backdropGradient);
         g.fillAll();
@@ -70,53 +70,49 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         //begin draw dots on meters L
         if (peakL > 197.0f) {
             g.setColour(juce::Colour(255, 0, 0));
-            g.fillRect((float)count, ((219.0f+sustainedClip)*vS), 1.9f, (181.9f-sustainedClip)*vS);
+            g.fillRect((float)count, ((219.0f+(float)sustainedClip)*vS), 1.9f, (181.9f-(float)sustainedClip)*vS);
             sustainedClip *= 0.99f; //peak is clipping!
             if (peakR > 197.0f) sustainedClip *= 0.975f; //if both are clipping, escalate
         } else sustainedClip = 180.0f;
-        if (peakL > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
-            psDotSizeL = (dataPL[count]*64.0f) / (fabs((peakL*0.945433426957143f)-slewL)+6.18033988749894f);
-            slewDotSizeL = (sin(0.1618f/psDotSizeL)*6.18f)+(sqrt(slewL)*0.1618f);
-            bassDotSizeL = sqrt(meterZeroL*0.1f*dataPL[count]);
-            if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmax((slewL-(peakL*0.945433426957143f)),0.0f)*0.029f,
-                                                                           fmax(((peakL*0.945433426957143f)-slewL),0.0f)*0.012f, 1.0f, 1.0f));
-            else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((64.0f+slewL)/128.0f,1.0f), 0.0f, 0.0f, 1.0f));
-            else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((160.0f-peakL)/160.0f,0.0f), 0.0f, 1.0f)); //set COLOR
-            g.fillRect((float)count, (float)((400.0f - peakL)*vS), psDotSizeL+0.618f, (psDotSizeL+0.618f)*vS);
-            if (slewL > 194.0f) g.fillRect((float)count, (float)((599.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
-            else g.fillRect((float)count, (float)((600.0f-slewL)*vS), slewDotSizeL+0.618f, slewDotSizeL*vS); //draw slew
-            if (bassL < 199.0f-(bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f))) g.fillRect((float)count, bassL*vS, bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f), (bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f))*vS); //zero cross subs
-        } //end draw dots on meters L
+        psDotSizeL = (dataPL[count]*64.0f) / (fabs((peakL*0.945433426957143f)-slewL)+6.18033988749894f);
+        slewDotSizeL = (sin(0.1618f/psDotSizeL)*6.18f)+(sqrt(slewL)*0.1618f);
+        bassDotSizeL = sqrt(meterZeroL*0.1f*dataPL[count]);
+        if (psDotSizeL > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmax((slewL-(peakL*0.945433426957143f)),0.0f)*0.029f,
+                                                                       fmax(((peakL*0.945433426957143f)-slewL),0.0f)*0.012f, 1.0f, 1.0f));
+        else if (slewL > peakL) g.setColour(juce::Colour::fromFloatRGBA(fmin((64.0f+slewL)/128.0f,1.0f), 0.0f, 0.0f, 1.0f));
+        else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((160.0f-peakL)/160.0f,0.0f), 0.0f, 1.0f)); //set COLOR
+        g.fillRect((float)count, (float)((400.0f - peakL)*vS), psDotSizeL+0.618f, (psDotSizeL+0.618f)*vS);
+        if (slewL > 194.0f) g.fillRect((float)count, (float)((599.0f-(sqrt(slewL-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewL-194.0f)*1.618f)*vS);
+        else g.fillRect((float)count, (float)((600.0f-slewL)*vS), slewDotSizeL+0.618f, slewDotSizeL*vS); //draw slew
+        if (bassL < 199.0f-(bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f))) g.fillRect((float)count, bassL*vS, bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f), (bassDotSizeL+fmax(pow(peakL/140.0f,4.0f),0.0f))*vS); //zero cross subs
+        //end draw dots on meters L
         //begin draw dots on meters R
         if (peakR > 197.0f) {
             g.setColour(juce::Colour(255, 0, 0));
-            g.fillRect((float)count, ((219.0f+sustainedClip)*vS), 1.9f, (181.9f-sustainedClip)*vS);
+            g.fillRect((float)count, ((219.0f+(float)sustainedClip)*vS), 1.9f, (181.9f-(float)sustainedClip)*vS);
             sustainedClip *= 0.99f; //peak is clipping!
             if (peakL > 197.0f) sustainedClip *= 0.975f; //if both are clipping, escalate
         } else sustainedClip = 180.0f;
-        if (peakR > 1.0f) { //peak isn't clipping, but is not literally zero so there's something here to work with
-            psDotSizeR = (dataPR[count]*64.0f) / (fabs((peakR*0.945433426957143f)-slewR)+6.18033988749894f);
-            slewDotSizeR = (sin(0.1618f/psDotSizeR)*6.18f)+(sqrt(slewR)*0.1618f);
-            bassDotSizeR = sqrt(meterZeroR*0.1f*dataPR[count]);
-            if (count < dataPosition && count > dataPosition-2) {
-                backR[count] = storeR;
-                backG[count] = storeG;
-                backB[count] = storeB; //RGB backdrop for text
-            }
-            if (psDotSizeR > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmax((slewR-(peakR*0.945433426957143f)),0.0f)*0.029f,
-                                                                           fmax(((peakR*0.945433426957143f)-slewR),0.0f)*0.012f, 1.0f, 1.0f));
-            else if (slewR > peakR) g.setColour(juce::Colour::fromFloatRGBA(fmin((64.0f+slewR)/128.0f,1.0f), 0.0f, 0.0f, 1.0f));
-            else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((160.0f-peakR)/160.0f,0.0f), 0.0f, 1.0f)); //set COLOR
-            g.fillRect((float)count, (float)((400.0f - peakR)*vS), psDotSizeR+0.618f, (psDotSizeR+0.618f)*vS);
-            if (slewR > 194.0f) g.fillRect((float)count, (float)((599.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
-            else g.fillRect((float)count, (float)((600.0f-slewR)*vS), slewDotSizeR+0.618f, slewDotSizeR*vS); //draw slew
-            if (bassR < 199.0f-(bassDotSizeR+fmax(pow(peakR/140.0f,4.0f),0.0f))) g.fillRect((float)count, bassR*vS, bassDotSizeR+fmax(pow(peakR/140.0f,4.0f),0.0f), (bassDotSizeR+fmax(pow(peakL/140.0f,4.0f),0.0f))*vS); //zero cross subs
-        } //end draw dots on meters R
+        psDotSizeR = (dataPR[count]*64.0f) / (fabs((peakR*0.945433426957143f)-slewR)+6.18033988749894f);
+        slewDotSizeR = (sin(0.1618f/psDotSizeR)*6.18f)+(sqrt(slewR)*0.1618f);
+        bassDotSizeR = sqrt(meterZeroR*0.1f*dataPR[count]);
+        if (count < dataPosition && count > dataPosition-2) {
+            backR[count] = (float)storeR;
+            backG[count] = (float)storeG;
+            backB[count] = (float)storeB; //RGB backdrop for text
+        }
+        if (psDotSizeR > 1.0f) g.setColour(juce::Colour::fromFloatRGBA(fmax((slewR-(peakR*0.945433426957143f)),0.0f)*0.029f,
+                                                                       fmax(((peakR*0.945433426957143f)-slewR),0.0f)*0.012f, 1.0f, 1.0f));
+        else if (slewR > peakR) g.setColour(juce::Colour::fromFloatRGBA(fmin((64.0f+slewR)/128.0f,1.0f), 0.0f, 0.0f, 1.0f));
+        else                    g.setColour(juce::Colour::fromFloatRGBA(0.0f, fmax((160.0f-peakR)/160.0f,0.0f), 0.0f, 1.0f)); //set COLOR
+        g.fillRect((float)count, (float)((400.0f - peakR)*vS), psDotSizeR+0.618f, (psDotSizeR+0.618f)*vS);
+        if (slewR > 194.0f) g.fillRect((float)count, (float)((599.0f-(sqrt(slewR-194.0f)*1.618f))*vS), 1.618f, (float)(sqrt(slewR-194.0f)*1.618f)*vS);
+        else g.fillRect((float)count, (float)((600.0f-slewR)*vS), slewDotSizeR+0.618f, slewDotSizeR*vS); //draw slew
+        if (bassR < 199.0f-(bassDotSizeR+fmax(pow(peakR/140.0f,4.0f),0.0f))) g.fillRect((float)count, bassR*vS, bassDotSizeR+fmax(pow(peakR/140.0f,4.0f),0.0f), (bassDotSizeR+fmax(pow(peakL/140.0f,4.0f),0.0f))*vS); //zero cross subs
+        //end draw dots on meters R
         
         g.setColour(juce::Colour::fromFloatRGBA(backR[count], backG[count], backB[count], 1.0f)); //set backdrop colour
         g.fillRect((float)(count)-0.25f, 0.0f, 1.5f, 19.5f*vS); //top bar
-        //g.fillRect((float)(count)-0.25f, 182.5f*vS, 1.5f, 19.5f*vS);
-        //g.fillRect((float)(count)-0.25f, 401.0f*vS, 1.5f, 19.5f*vS); //draw tonecolor bars
         
         unsigned long bintracker;
         bintracker = (unsigned long)((peakL-((180.0f-sustainedClip)*1.618033988749894f)) * (0.005f*(float)totalBins));
@@ -170,7 +166,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             //our volume measurement gets kicked up towards 0 by peak or slew
         }
         if (dataPosition == count) {
-            float applyCurve = fmin(fmin(outputR,outputG),outputB) / fmax(fmax(outputR,outputG),outputB+0.0000001f);
+            float applyCurve = (float)fmin(fmin(outputR,outputG),outputB) / (float)fmax(fmax(outputR+0.000001f,outputG),outputB);
             applyCurve = 1.0f-pow(1.0f-applyCurve,1.618033988749894f);
             cumulative += applyCurve * outputVol;
             duration += outputVol;
@@ -178,12 +174,15 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             //that means on varying tracks it'll care more about the main part than intros/outros.
         }
         if (count == (unsigned long)dataPosition-1) { //only update text score display more infrequently
-            if (pow(peakScore, 1.618033988749894f) > peakGrade) peakGrade = pow(peakScore, 1.618033988749894f);
-            if (pow(slewScore, 1.618033988749894f) > slewGrade) slewGrade = pow(slewScore, 1.618033988749894f);
-            if (pow(bassScore, 1.618033988749894f) > bassGrade) bassGrade = pow(bassScore, 1.618033988749894f);
+            if (pow(peakScore, 1.618033988749894f) > peakGrade && peakPrevGrade > peakGrade) peakGrade++;
+            if (pow(slewScore, 1.618033988749894f) > slewGrade && slewPrevGrade > slewGrade) slewGrade++;
+            if (pow(bassScore, 1.618033988749894f) > bassGrade && bassPrevGrade > bassGrade) bassGrade++;
+            peakPrevGrade = (int)pow(peakScore, 1.618033988749894f); //directly store the value so we can
+            slewPrevGrade = (int)pow(slewScore, 1.618033988749894f); //always check to see if it's been higher
+            bassPrevGrade = (int)pow(bassScore, 1.618033988749894f); //for two measurements in a row.
             if (peakGrade < 0) peakGrade = 0;
             if (peakGrade > 28) peakGrade = 28;
-            switch ((int)peakGrade) {
+            switch (peakGrade) {
                 case 0:
                     power = juce::String("s"); break;
                 case 1:
@@ -246,7 +245,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             
             if (slewGrade < 0) slewGrade = 0;
             if (slewGrade > 32) slewGrade = 32;
-            switch ((int)slewGrade) {
+            switch (slewGrade) {
                 case 0:
                     detail = juce::String("w"); break;
                 case 1:
@@ -317,7 +316,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             
             if (bassGrade < 0) bassGrade = 0;
             if (bassGrade > 28) bassGrade = 28;
-            switch ((int)bassGrade) {
+            switch (bassGrade) {
                 case 0:
                     authority = juce::String("s"); break;
                 case 1:
@@ -442,19 +441,19 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             } //this is our letter score, incorporating all the measurements
             
             durationPlus += 1.0;
-            if (abs((int)(peakGrade) - (int)(slewGrade-4.0f)) < 2
-                && abs((int)(bassGrade) - (int)(slewGrade-4.0f)) < 2
-                && abs((int)(peakGrade) - (int)(bassGrade)) < 2) {
-                totalPackage = "+"+totalPackage;
+            if (abs((int)(peakGrade) - (int)(slewGrade-4.0f)) < 3
+                && abs((int)(bassGrade) - (int)(slewGrade-4.0f)) < 3
+                && abs((int)(peakGrade) - (int)(bassGrade)) < 3) {
                 cumulativePlus += 1.0;
             }
-            finalPercent = " "+juce::String((int)((cumulativePlus/durationPlus)*100.0))+"%";
-            if (finalPercent.compare(" 0%") < 1) finalPercent = juce::String();
+            bonusScore = juce::String(100-(int)((cumulativePlus/durationPlus)*100.0));
+            if (bonusScore.compare("100") < 1) bonusScore = juce::String();
+            else bonusScore = bonusScore + "-";
             //our new metric is, plus if none of the measurement areas are more than one letter grade away from each other.
             //so, aba is fine, but abc has c and a too far apart, and doesn't get a plus. This tracks less aggressive hits,
             //and allows for less twitchy comparisons than needing them all identical letters to get the plus.
             //Note that slew is tweaked slightly to get in the balance zone.
-
+            
             directions = juce::String(" ");
             directionsOpacity = fmax(0.925f-backdropColour.getLightness(),0.0f)*1.618033988749894f;
             float directionsHue = backdropColour.getHue()*30.0f;
@@ -565,11 +564,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         
         g.setOpacity(0.618f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+authority+power+detail+finalPercent, 1, 1, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
+        g.drawText(bonusScore+totalPackage+authority+power+detail, 1, 1, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
         //underdrawing in white for areas prone to get covered up with dots
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText(totalPackage+authority+power+detail+finalPercent, 0, 0, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
+        g.drawText(bonusScore+totalPackage+authority+power+detail, 0, 0, displayWidth, (int)(20.0f*vS), juce::Justification::centred);
        //the Hit Record Letter Grade is 'totalPackage' followed by Power, Detail and Scale in order. If you have different priorities,
         //it's fair to want those in a different order for your quality metric: bass music might go scale first, pop might want detail.
         //I'm using power first simply because it is the most spectacular contrast between modern production and lasting hit status,
@@ -637,14 +636,14 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.setFont(scaleFont*11.0f); //larger font for the tiny window, and the style seen in ConsoleX3
         g.setOpacity(0.21f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+authority+power+detail+finalPercent, 0, 1, displayWidth, displayHeight+1, juce::Justification::centred, false);
-        g.drawText(totalPackage+authority+power+detail+finalPercent, 1, 0, displayWidth+1, displayHeight, juce::Justification::centred, false);
+        g.drawText(bonusScore+totalPackage+authority+power+detail, 0, 1, displayWidth, displayHeight+1, juce::Justification::centred, false);
+        g.drawText(bonusScore+totalPackage+authority+power+detail, 1, 0, displayWidth+1, displayHeight, juce::Justification::centred, false);
         g.setOpacity(0.51f);
         g.setColour(juce::Colours::white);
-        g.drawText(totalPackage+authority+power+detail+finalPercent, 1, 1, displayWidth+1, displayHeight+1, juce::Justification::centred, false);
+        g.drawText(bonusScore+totalPackage+authority+power+detail, 1, 1, displayWidth+1, displayHeight+1, juce::Justification::centred, false);
         g.setOpacity(1.0f);
         g.setColour(juce::Colours::black);
-        g.drawText(totalPackage+authority+power+detail+finalPercent, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
+        g.drawText(bonusScore+totalPackage+authority+power+detail, 0, 0, displayWidth, displayHeight, juce::Justification::centred, false);
     }
     
     g.setColour(juce::Colours::grey);
