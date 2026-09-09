@@ -447,7 +447,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
                 cumulativePlus += 1.0;
             }
             bonusScore = juce::String(100-(int)((cumulativePlus/durationPlus)*100.0));
-            if (bonusScore.compare("100") < 1) bonusScore = juce::String();
+            if (bonusScore.compare("100") < 1 && !(bonusScore.compare("10") < 1)) bonusScore = juce::String();
             else bonusScore = bonusScore + "-";
             //our new metric is, plus if none of the measurement areas are more than one letter grade away from each other.
             //so, aba is fine, but abc has c and a too far apart, and doesn't get a plus. This tracks less aggressive hits,
