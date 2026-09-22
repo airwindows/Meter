@@ -84,7 +84,7 @@ public:
     };
     //This is kinds of information the audio thread can give the interface.
     
-    template <typename T, int qSize = 4096> class LockFreeQueue
+    template <typename T, int qSize = 4096> class LockFreeQueue //4096
     {
       public:
         LockFreeQueue() : af(qSize) {}

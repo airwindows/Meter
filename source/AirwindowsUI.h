@@ -155,7 +155,7 @@ struct AirwindowsMeter : public juce::Component
 {
     void mouseDown(const juce::MouseEvent &event) override;
     void paint(juce::Graphics &g) override;
-    
+
     static constexpr int dataPoints = 5151;
     static constexpr int totalBins = 14;
     juce::Colour backdropColour = juce::Colours::white;
@@ -196,19 +196,19 @@ struct AirwindowsMeter : public juce::Component
     double sustainedClip;
     bool meterPlaying;
     
-    std::array<float, totalBins> peakTrack;
-    std::array<float, totalBins> slewTrack;
-    std::array<float, totalBins> bassTrack;
+    std::array<float, totalBins+2> peakTrack; //arrays can be counted from zero and have X elements
+    std::array<float, totalBins+2> slewTrack; //there's a place where Meter works with <= totalBins
+    std::array<float, totalBins+2> bassTrack; //let's make sure the arrays don't exceed their boundaries
     
-    std::array<float, dataPoints> dataPL;
-    std::array<float, dataPoints> dataPR;
-    std::array<float, dataPoints> dataSL;
-    std::array<float, dataPoints> dataSR;
-    std::array<float, dataPoints> dataZL;
-    std::array<float, dataPoints> dataZR;
-    std::array<float, dataPoints> backR;//backdrop red channel: loud
-    std::array<float, dataPoints> backG;//backdrop green channel: bright
-    std::array<float, dataPoints> backB;//backdrop blue channel: bass
+    std::array<float, dataPoints+2> dataPL;
+    std::array<float, dataPoints+2> dataPR;
+    std::array<float, dataPoints+2> dataSL;
+    std::array<float, dataPoints+2> dataSR;
+    std::array<float, dataPoints+2> dataZL;
+    std::array<float, dataPoints+2> dataZR;
+    std::array<float, dataPoints+2> backR;//backdrop red channel: loud
+    std::array<float, dataPoints+2> backG;//backdrop green channel: bright
+    std::array<float, dataPoints+2> backB;//backdrop blue channel: bass
 
     void pushPeakL(float X) {dataPL[dataPosition] = X; dataPL[dataPosition+1] = X;}
     void pushPeakR(float X) {dataPR[dataPosition] = X; dataPR[dataPosition+1] = X;}
