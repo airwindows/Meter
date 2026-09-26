@@ -167,9 +167,9 @@ struct AirwindowsMeter : public juce::Component
     int peakGrade = 0;
     int slewGrade = 0;
     int bassGrade = 0;
-    int peakPrevGrade = 0;
-    int slewPrevGrade = 0;
-    int bassPrevGrade = 0;
+    double peakPrevGrade = 0.0;
+    double slewPrevGrade = 0.0;
+    double bassPrevGrade = 0.0;
     double cumulative = 0.0000001;
     double duration = 0.00001;
     double cumulativePlus = 0.0000001;
@@ -226,9 +226,9 @@ struct AirwindowsMeter : public juce::Component
         peakGrade = 0;
         slewGrade = 0;
         bassGrade = 0;
-        peakPrevGrade = 0;
-        slewPrevGrade = 0;
-        bassPrevGrade = 0; //to bump a grade you have to exceed it twice
+        peakPrevGrade = 0.0;
+        slewPrevGrade = 0.0;
+        bassPrevGrade = 0.0; //to bump a grade you have to exceed it persistently
         totalPackage = juce::String();
         bonusScore = juce::String();
         directions = juce::String();

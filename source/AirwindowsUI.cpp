@@ -174,12 +174,12 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             //that means on varying tracks it'll care more about the main part than intros/outros.
         }
         if (count == (unsigned long)dataPosition-1) { //only update text score display more infrequently
-            if (pow(peakScore, 1.618033988749894f) > peakGrade && peakPrevGrade > peakGrade) peakGrade++;
-            if (pow(slewScore, 1.618033988749894f) > slewGrade && slewPrevGrade > slewGrade) slewGrade++;
-            if (pow(bassScore, 1.618033988749894f) > bassGrade && bassPrevGrade > bassGrade) bassGrade++;
-            peakPrevGrade = (int)pow(peakScore, 1.618033988749894f); //directly store the value so we can
-            slewPrevGrade = (int)pow(slewScore, 1.618033988749894f); //always check to see if it's been higher
-            bassPrevGrade = (int)pow(bassScore, 1.618033988749894f); //for two measurements in a row.
+            if (pow(peakScore, 1.618033988749894f) > peakPrevGrade) peakPrevGrade = (peakPrevGrade*0.8)+(pow(peakScore, 1.618033988749894f)*0.2);
+            if (pow(slewScore, 1.618033988749894f) > slewPrevGrade) slewPrevGrade = (slewPrevGrade*0.8)+(pow(slewScore, 1.618033988749894f)*0.2);
+            if (pow(bassScore, 1.618033988749894f) > bassPrevGrade) bassPrevGrade = (bassPrevGrade*0.8)+(pow(bassScore, 1.618033988749894f)*0.2);
+            peakGrade = (int)peakPrevGrade; //directly store the value so we can
+            slewGrade = (int)slewPrevGrade; //always check to see if it's been higher
+            bassGrade = (int)bassPrevGrade; //for two measurements in a row.
             if (peakGrade < 0) peakGrade = 0;
             if (peakGrade > 28) peakGrade = 28;
             switch (peakGrade) {
