@@ -174,9 +174,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             //that means on varying tracks it'll care more about the main part than intros/outros.
         }
         if (count == (unsigned long)dataPosition-1) { //only update text score display more infrequently
-            if (pow(peakScore, 1.618033988749894f) > peakPrevGrade) peakPrevGrade = (peakPrevGrade*0.8)+(pow(peakScore, 1.618033988749894f)*0.2);
-            if (pow(slewScore, 1.618033988749894f) > slewPrevGrade) slewPrevGrade = (slewPrevGrade*0.8)+(pow(slewScore, 1.618033988749894f)*0.2);
-            if (pow(bassScore, 1.618033988749894f) > bassPrevGrade) bassPrevGrade = (bassPrevGrade*0.8)+(pow(bassScore, 1.618033988749894f)*0.2);
+            if (pow(peakScore, 1.618033988749894f) > peakPrevGrade) peakPrevGrade = (peakPrevGrade*0.9)+(pow(peakScore, 1.618033988749894f)*0.1);
+            if (pow(slewScore, 1.618033988749894f) > slewPrevGrade) slewPrevGrade = (slewPrevGrade*0.9)+(pow(slewScore, 1.618033988749894f)*0.1);
+            if (pow(bassScore, 1.618033988749894f) > bassPrevGrade) bassPrevGrade = (bassPrevGrade*0.9)+(pow(bassScore, 1.618033988749894f)*0.1);
             peakGrade = (int)peakPrevGrade; //directly store the value so we can
             slewGrade = (int)slewPrevGrade; //always check to see if it's been higher
             bassGrade = (int)bassPrevGrade; //for two measurements in a row.
@@ -247,71 +247,71 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (slewGrade > 32) slewGrade = 32;
             switch (slewGrade) {
                 case 0:
-                    detail = juce::String("w"); break;
-                case 1:
                     detail = juce::String("v"); break;
-                case 2:
+                case 1:
                     detail = juce::String("u"); break;
-                case 3:
+                case 2:
                     detail = juce::String("t"); break;
-                case 4:
+                case 3:
                     detail = juce::String("s"); break;
-                case 5:
+                case 4:
                     detail = juce::String("r"); break;
-                case 6:
+                case 5:
                     detail = juce::String("q"); break;
-                case 7:
+                case 6:
                     detail = juce::String("p"); break;
-                case 8:
+                case 7:
                     detail = juce::String("o"); break;
-                case 9:
+                case 8:
                     detail = juce::String("n"); break;
-                case 10:
+                case 9:
                     detail = juce::String("m"); break;
-                case 11:
+                case 10:
                     detail = juce::String("l"); break;
-                case 12:
+                case 11:
                     detail = juce::String("k"); break;
-                case 13:
+                case 12:
                     detail = juce::String("j"); break;
-                case 14:
+                case 13:
                     detail = juce::String("i"); break;
-                case 15:
+                case 14:
                     detail = juce::String("h"); break;
-                case 16:
+                case 15:
                     detail = juce::String("g"); break;
-                case 17:
+                case 16:
                     detail = juce::String("f"); break;
-                case 18:
+                case 17:
                     detail = juce::String("e"); break;
-                case 19:
+                case 18:
                     detail = juce::String("d"); break;
-                case 20:
+                case 19:
                     detail = juce::String("c"); break;
-                case 21:
+                case 20:
                     detail = juce::String("b"); break;
-                case 22:
+                case 21:
                     detail = juce::String("a"); break;
-                case 23:
+                case 22:
                     detail = juce::String("A"); break;
-                case 24:
+                case 23:
                     detail = juce::String("B"); break;
-                case 25:
+                case 24:
                     detail = juce::String("C"); break;
-                case 26:
+                case 25:
                     detail = juce::String("D"); break;
-                case 27:
+                case 26:
                     detail = juce::String("E"); break;
-                case 28:
+                case 27:
                     detail = juce::String("F"); break;
-                case 29:
+                case 28:
                     detail = juce::String("G"); break;
-                case 30:
+                case 29:
                     detail = juce::String("H"); break;
-                case 31:
+                case 30:
                     detail = juce::String("I"); break;
-                case 32:
+                case 31:
                     detail = juce::String("J"); break;
+                case 32:
+                    detail = juce::String("K"); break;
             } //this is our two letter score, incorporating all the measurements
             
             if (bassGrade < 0) bassGrade = 0;
@@ -441,12 +441,14 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             } //this is our letter score, incorporating all the measurements
             
             durationPlus += 1.0;
-            if (abs((int)(peakGrade) - (int)(slewGrade-4.0f)) < 3
-                && abs((int)(bassGrade) - (int)(slewGrade-4.0f)) < 3
-                && abs((int)(peakGrade) - (int)(bassGrade)) < 3) {
-                cumulativePlus += 1.0;
-            }
-            bonusScore = juce::String(100-(int)((cumulativePlus/durationPlus)*100.0));
+            double cumulativeAmount = 1.0;
+            cumulativeAmount = fmax(fabs((peakPrevGrade) - (slewPrevGrade-3.0)),cumulativeAmount);
+            cumulativeAmount = fmax(fabs((bassPrevGrade) - (slewPrevGrade-3.0)),cumulativeAmount);
+            cumulativeAmount = fmax(fabs((peakPrevGrade) - (bassPrevGrade)),cumulativeAmount);
+            cumulativePlus += (1.0/(cumulativeAmount*cumulativeAmount*cumulativeAmount));
+            if (cumulativePlus > durationPlus) cumulativePlus = durationPlus;
+            
+            bonusScore = juce::String(100-(int)fmin((cumulativePlus/durationPlus)*100.0,99.0));
             if (bonusScore.compare("100") < 1 && !(bonusScore.compare("10") < 1)) bonusScore = juce::String();
             else bonusScore = bonusScore + "-";
             //our new metric is, plus if none of the measurement areas are more than one letter grade away from each other.
