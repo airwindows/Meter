@@ -451,10 +451,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             bonusScore = juce::String(100-(int)fmin((cumulativePlus/durationPlus)*100.0,99.0));
             if (bonusScore.compare("100") < 1 && !(bonusScore.compare("10") < 1)) bonusScore = juce::String();
             else bonusScore = bonusScore + "-";
-            //our new metric is, plus if none of the measurement areas are more than one letter grade away from each other.
-            //so, aba is fine, but abc has c and a too far apart, and doesn't get a plus. This tracks less aggressive hits,
-            //and allows for less twitchy comparisons than needing them all identical letters to get the plus.
-            //Note that slew is tweaked slightly to get in the balance zone.
+            if (100-(int)((cumulativePlus/durationPlus)*100.0) > 80) bonusScore = juce::String();
+            //Meter is going to do not a top 40, but a top double 40.
+            //When we include from 81 to 99 in there, it starts filling up with too many extra tracks
+            //that are better tracked just using the letter rating and letter grades, which end up
+            //being more predictive than the number when it's over 80.
             
             directions = juce::String(" ");
             directionsOpacity = fmax(0.925f-backdropColour.getLightness(),0.0f)*1.618033988749894f;
