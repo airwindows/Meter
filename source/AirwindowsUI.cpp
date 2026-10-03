@@ -452,7 +452,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             if (bonusScore.compare("100") < 1 && !(bonusScore.compare("10") < 1)) bonusScore = juce::String();
             else bonusScore = bonusScore + "-";
             if (100-(int)((cumulativePlus/durationPlus)*100.0) > 80) bonusScore = juce::String();
-            //Meter is going to do not a top 40, but a top double 40.
+            //Meter is going to do not a top 40, but a top double 40. 1 to 80, then nothing.
             //When we include from 81 to 99 in there, it starts filling up with too many extra tracks
             //that are better tracked just using the letter rating and letter grades, which end up
             //being more predictive than the number when it's over 80.
