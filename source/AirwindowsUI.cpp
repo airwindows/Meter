@@ -191,6 +191,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             peakGrade = (int)peakPrevGrade; //directly store the value so we can
             slewGrade = (int)slewPrevGrade; //always check to see if it's been higher
             bassGrade = (int)bassPrevGrade; //for two measurements in a row.
+            
             if (peakGrade < 0) peakGrade = 0;
             if (peakGrade > 28) peakGrade = 28;
             switch (peakGrade) {
@@ -453,10 +454,11 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             
             durationPlus += 1.0;
             double cumulativeAmount = 1.0;
+            double blackLine = fmax(0.0f,5.0f-(dataDL[count]+dataDR[count])*1500.0f) * 100.0f * fmax(dataBL[count],dataBR[count])*0.2;
             cumulativeAmount = fmax(fabs((peakPrevGrade) - (slewPrevGrade-3.0)),cumulativeAmount);
             cumulativeAmount = fmax(fabs((bassPrevGrade) - (slewPrevGrade-3.0)),cumulativeAmount);
             cumulativeAmount = fmax(fabs((peakPrevGrade) - (bassPrevGrade)),cumulativeAmount);
-            cumulativePlus += (1.0/(cumulativeAmount*cumulativeAmount*cumulativeAmount));
+            cumulativePlus += (blackLine/(cumulativeAmount*cumulativeAmount));
             if (cumulativePlus > durationPlus) cumulativePlus = durationPlus;
             
             bonusScore = juce::String(100-(int)fmin((cumulativePlus/durationPlus)*100.0,99.0));
