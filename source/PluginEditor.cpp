@@ -145,6 +145,10 @@ void PluginEditor::idle()
             case PluginProcessor::AudioToUIMessage::SLEW_RIGHT: meter.pushSlewR(msg.newValue); break;
             case PluginProcessor::AudioToUIMessage::ZERO_LEFT: meter.pushZeroL(msg.newValue); break;
             case PluginProcessor::AudioToUIMessage::ZERO_RIGHT: meter.pushZeroR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::BEAM_LEFT: meter.pushBeamL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::BEAM_RIGHT: meter.pushBeamR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::DEPT_LEFT: meter.pushDeptL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::DEPT_RIGHT: meter.pushDeptR(msg.newValue); break;
             case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(); repaintTS = true;
                 

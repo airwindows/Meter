@@ -203,6 +203,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     
     double windowSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
+    double beamScale = 1.0/getSampleRate();
     
     for (int i = 0; i < buffer.getNumSamples(); ++i)
     {
@@ -226,11 +227,17 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             previousLeft = inputSampleL;
             previousRight = inputSampleR;
             
+            if (fabs(beamLeft-currentslewL) < 0.2) beamLeft = (beamLeft*(1.0-beamScale)) + (currentslewL*beamScale);
+            else beamLeft = (beamLeft*(1.0-beamScale));
+            if (fabs(beamRight-currentslewR) < 0.2) beamRight = (beamRight*(1.0-beamScale)) + (currentslewR*beamScale);
+            else beamRight = (beamRight*(1.0-beamScale));
+            departureLeft = (departureLeft*(1.0-beamScale)) + (fabs(beamLeft-currentslewL)*beamScale);
+            departureRight = (departureRight*(1.0-beamScale)) + (fabs(beamRight-currentslewR)*beamScale);
+            
             double rectifiedL = fabs(inputSampleL);
             double rectifiedR = fabs(inputSampleR);
             if (rectifiedL > peakLeft) peakLeft = rectifiedL;
             if (rectifiedR > peakRight) peakRight = rectifiedR;
-            windowCount++;
             
             zeroLeft += zeroCrossScale;
             if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
@@ -250,6 +257,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
                 wasPositiveR = true;
                 zeroRight = 0.0;
             }
+            windowCount++;
         }
         
         *outL = (float)inputSampleL;
@@ -264,6 +272,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             msg.what = AudioToUIMessage::SLEW_RIGHT; msg.newValue = (float)slewRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BEAM_LEFT; msg.newValue = (float)beamLeft; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BEAM_RIGHT; msg.newValue = (float)beamRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DEPT_LEFT; msg.newValue = (float)departureLeft; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DEPT_RIGHT; msg.newValue = (float)departureRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
             peakLeft = 0.0;
             peakRight = 0.0;
@@ -271,6 +283,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             slewRight = 0.0; //reset our variables to do the RMS again
             zeroLeft = 0.0;
             zeroRight = 0.0;
+            departureLeft = 0.0;
+            departureRight = 0.0;
             longestZeroLeft = 0.0;
             longestZeroRight = 0.0;
             windowCount = 0;
@@ -311,6 +325,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
     
     double windowSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
+    double beamScale = 1.0/getSampleRate();
 
     for (int i = 0; i < buffer.getNumSamples(); ++i)
     {
@@ -334,13 +349,19 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             previousLeft = inputSampleL;
             previousRight = inputSampleR;
             
+            if (fabs(beamLeft-currentslewL) < 0.2) beamLeft = (beamLeft*(1.0-beamScale)) + (currentslewL*beamScale);
+            else beamLeft = (beamLeft*(1.0-beamScale));
+            if (fabs(beamRight-currentslewR) < 0.2) beamRight = (beamRight*(1.0-beamScale)) + (currentslewR*beamScale);
+            else beamRight = (beamRight*(1.0-beamScale));
+            departureLeft = (departureLeft*(1.0-beamScale)) + (fabs(beamLeft-currentslewL)*beamScale);
+            departureRight = (departureRight*(1.0-beamScale)) + (fabs(beamRight-currentslewR)*beamScale);
+
             double rectifiedL = fabs(inputSampleL);
             double rectifiedR = fabs(inputSampleR);
             if (rectifiedL > peakLeft) peakLeft = rectifiedL;
             if (rectifiedR > peakRight) peakRight = rectifiedR;
-            windowCount++;
             
-            zeroLeft += zeroCrossScale;
+             zeroLeft += zeroCrossScale;
             if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
             if (wasPositiveL && inputSampleL < 0.0) {
                 wasPositiveL = false;
@@ -358,6 +379,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
                 wasPositiveR = true;
                 zeroRight = 0.0;
             }
+            windowCount++;
         }
         
         *outL = inputSampleL;
@@ -372,6 +394,10 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             msg.what = AudioToUIMessage::SLEW_RIGHT; msg.newValue = (float)slewRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BEAM_LEFT; msg.newValue = (float)beamLeft; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BEAM_RIGHT; msg.newValue = (float)beamRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DEPT_LEFT; msg.newValue = (float)departureLeft; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DEPT_RIGHT; msg.newValue = (float)departureRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
             peakLeft = 0.0;
             peakRight = 0.0;
@@ -379,6 +405,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             slewRight = 0.0; //reset our variables to do the RMS again
             zeroLeft = 0.0;
             zeroRight = 0.0;
+            departureLeft = 0.0;
+            departureRight = 0.0;
             longestZeroLeft = 0.0;
             longestZeroRight = 0.0;
             windowCount = 0;

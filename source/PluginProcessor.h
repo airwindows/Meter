@@ -77,6 +77,10 @@ public:
             SLEW_RIGHT,
             ZERO_LEFT,
             ZERO_RIGHT,
+            BEAM_LEFT,
+            BEAM_RIGHT,
+            DEPT_LEFT,
+            DEPT_RIGHT,
             INCREMENT
         } what{NEW_VALUE};
         Parameters which;
@@ -131,6 +135,10 @@ public:
     double zeroRight = 0.0;
     double longestZeroLeft = 0.0;
     double longestZeroRight = 0.0;
+    double beamLeft = 0.0;
+    double beamRight = 0.0;
+    double departureLeft = 0.0;
+    double departureRight = 0.0;
     bool wasPositiveL = false;
     bool wasPositiveR = false;
     int windowCount = 0;

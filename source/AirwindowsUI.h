@@ -206,6 +206,10 @@ struct AirwindowsMeter : public juce::Component
     std::array<float, dataPoints+2> dataSR;
     std::array<float, dataPoints+2> dataZL;
     std::array<float, dataPoints+2> dataZR;
+    std::array<float, dataPoints+2> dataBL;
+    std::array<float, dataPoints+2> dataBR;
+    std::array<float, dataPoints+2> dataDL;
+    std::array<float, dataPoints+2> dataDR;
     std::array<float, dataPoints+2> backR;//backdrop red channel: loud
     std::array<float, dataPoints+2> backG;//backdrop green channel: bright
     std::array<float, dataPoints+2> backB;//backdrop blue channel: bass
@@ -216,6 +220,10 @@ struct AirwindowsMeter : public juce::Component
     void pushSlewR(float X) {dataSR[dataPosition] = X; dataSR[dataPosition+1] = X;}
     void pushZeroL(float X) {dataZL[dataPosition] = X; dataZL[dataPosition+1] = X;}
     void pushZeroR(float X) {dataZR[dataPosition] = X; dataZR[dataPosition+1] = X;}
+    void pushBeamL(float X) {dataBL[dataPosition] = X; dataBL[dataPosition+1] = X;}
+    void pushBeamR(float X) {dataBR[dataPosition] = X; dataBR[dataPosition+1] = X;}
+    void pushDeptL(float X) {dataDL[dataPosition] = X; dataDL[dataPosition+1] = X;}
+    void pushDeptR(float X) {dataDR[dataPosition] = X; dataDR[dataPosition+1] = X;}
     void pushIncrement() {
         dataPosition++;
         if (dataPosition >= (unsigned long)fmin(displayWidth,5150)) dataPosition = 0;
@@ -269,6 +277,10 @@ struct AirwindowsMeter : public juce::Component
             dataSR[count] = 0.0f;
             dataZL[count] = 0.0f;
             dataZR[count] = 0.0f;
+            dataBL[count] = 0.0f;
+            dataBR[count] = 0.0f;
+            dataDL[count] = 0.0f;
+            dataDR[count] = 0.0f;
             backR[count] = pluginColour.getFloatRed();
             backG[count] = pluginColour.getFloatGreen();
             backB[count] = pluginColour.getFloatBlue();
