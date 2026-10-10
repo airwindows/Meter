@@ -619,12 +619,18 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         g.drawText("45 Hz", (int)scaleFont, (int)(164.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("35 Hz", (int)scaleFont, (int)(175.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         
+        g.drawText("top edge means the output is clipping or beyond clipping", (int)scaleFont, (int)(205.0f*vS)-7, displayWidth, (int)scaleFont, juce::Justification::centredBottom);
         g.drawText("-6 dB", (int)scaleFont, (int)(260.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("-12 dB", (int)scaleFont, (int)(301.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("-18 dB", (int)scaleFont, (int)(330.02f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("-24 dB", (int)scaleFont, (int)(350.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("-30 dB", (int)scaleFont, (int)(364.9f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
         g.drawText("-36 dB", (int)scaleFont, (int)(375.2f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+
+        g.drawText("top edge means enough intensity to be alarming and scary", (int)scaleFont, (int)(405.0f*vS)-7, displayWidth, (int)scaleFont, juce::Justification::centredBottom);
+        g.drawText("exciting", (int)scaleFont, (int)(455.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("present", (int)scaleFont, (int)(496.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
+        g.drawText("absent", (int)scaleFont, (int)(525.0f*vS)-7, displayWidth/2, (int)scaleFont, juce::Justification::bottomLeft);
 
         g.setColour(juce::Colours::darkgrey);
         g.setOpacity(1.0f);
