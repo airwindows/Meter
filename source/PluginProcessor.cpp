@@ -203,8 +203,9 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
     
     double windowSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
-    double beamScale = 1.0/getSampleRate();
-    
+    double beamLinePos = 1.0/getSampleRate();
+    double beamLineWeight = 1.618/getSampleRate();
+
     for (int i = 0; i < buffer.getNumSamples(); ++i)
     {
         auto outL = mainOutput.getWritePointer(0, i);
@@ -227,36 +228,50 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             previousLeft = inputSampleL;
             previousRight = inputSampleR;
             
-            if (fabs(beamLeft-currentslewL) < 0.2) beamLeft = (beamLeft*(1.0-beamScale)) + (currentslewL*beamScale);
-            else beamLeft = (beamLeft*(1.0-beamScale));
-            if (fabs(beamRight-currentslewR) < 0.2) beamRight = (beamRight*(1.0-beamScale)) + (currentslewR*beamScale);
-            else beamRight = (beamRight*(1.0-beamScale));
-            departureLeft = (departureLeft*(1.0-beamScale)) + (fabs(beamLeft-currentslewL)*beamScale);
-            departureRight = (departureRight*(1.0-beamScale)) + (fabs(beamRight-currentslewR)*beamScale);
+            if (fabs(beamSlewL-currentslewL) < 0.2) beamSlewL = (beamSlewL*(1.0-beamLinePos)) + (currentslewL*beamLinePos);
+            else beamSlewL = (beamSlewL*(1.0-beamLinePos));
+            if (fabs(beamSlewR-currentslewR) < 0.2) beamSlewR = (beamSlewR*(1.0-beamLinePos)) + (currentslewR*beamLinePos);
+            else beamSlewR = (beamSlewR*(1.0-beamLinePos));
+            departureSlewL = (departureSlewL*(1.0-beamLineWeight)) + (fabs(beamSlewL-currentslewL)*beamLineWeight);
+            departureSlewR = (departureSlewR*(1.0-beamLineWeight)) + (fabs(beamSlewR-currentslewR)*beamLineWeight);
             
             double rectifiedL = fabs(inputSampleL);
             double rectifiedR = fabs(inputSampleR);
             if (rectifiedL > peakLeft) peakLeft = rectifiedL;
             if (rectifiedR > peakRight) peakRight = rectifiedR;
             
+            beamRMSL = (beamRMSL*(1.0-beamLinePos)) + (rectifiedL*beamLinePos);
+            beamRMSR = (beamRMSR*(1.0-beamLinePos)) + (rectifiedR*beamLinePos);
+            departureRMSL = (departureRMSL*(1.0-beamLineWeight)) + (fabs(fabs(beamRMSL)-holdPeakLeft)*beamLineWeight);
+            departureRMSR = (departureRMSR*(1.0-beamLineWeight)) + (fabs(fabs(beamRMSR)-holdPeakRight)*beamLineWeight);
+            
             zeroLeft += zeroCrossScale;
             if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
             if (wasPositiveL && inputSampleL < 0.0) {
                 wasPositiveL = false;
+                holdZeroLeft = zeroLeft;
                 zeroLeft = 0.0;
             } else if (!wasPositiveL && inputSampleL > 0.0) {
                 wasPositiveL = true;
+                holdZeroLeft = zeroLeft;
                 zeroLeft = 0.0;
             }
             zeroRight += zeroCrossScale;
             if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
             if (wasPositiveR && inputSampleR < 0.0) {
                 wasPositiveR = false;
+                holdZeroRight = zeroRight;
                 zeroRight = 0.0;
             } else if (!wasPositiveR && inputSampleR > 0.0) {
                 wasPositiveR = true;
+                holdZeroRight = zeroRight;
                 zeroRight = 0.0;
             }
+            beamZeroL = (beamZeroL*(1.0-beamLinePos)) + (holdZeroLeft*beamLinePos);
+            beamZeroR = (beamZeroR*(1.0-beamLinePos)) + (holdZeroRight*beamLinePos);
+            departureZeroL = (departureZeroL*(1.0-beamLineWeight)) + (fabs(beamZeroL-holdZeroLeft)*beamLineWeight);
+            departureZeroR = (departureZeroR*(1.0-beamLineWeight)) + (fabs(beamZeroR-holdZeroRight)*beamLineWeight);
+            
             windowCount++;
         }
         
@@ -272,19 +287,33 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::Midi
             msg.what = AudioToUIMessage::SLEW_RIGHT; msg.newValue = (float)slewRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
-            msg.what = AudioToUIMessage::BEAM_LEFT; msg.newValue = (float)beamLeft; audioToUI.push(msg);
-            msg.what = AudioToUIMessage::BEAM_RIGHT; msg.newValue = (float)beamRight; audioToUI.push(msg);
-            msg.what = AudioToUIMessage::DEPT_LEFT; msg.newValue = (float)departureLeft; audioToUI.push(msg);
-            msg.what = AudioToUIMessage::DEPT_RIGHT; msg.newValue = (float)departureRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BSLW_LEFT; msg.newValue = (float)beamSlewL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BSLW_RIGHT; msg.newValue = (float)beamSlewR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BRMS_LEFT; msg.newValue = (float)beamRMSL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BRMS_RIGHT; msg.newValue = (float)beamRMSR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BZER_LEFT; msg.newValue = (float)beamZeroL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BZER_RIGHT; msg.newValue = (float)beamZeroR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DSLW_LEFT; msg.newValue = (float)departureSlewL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DSLW_RIGHT; msg.newValue = (float)departureSlewR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DRMS_LEFT; msg.newValue = (float)departureRMSL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DRMS_RIGHT; msg.newValue = (float)departureRMSR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DZER_LEFT; msg.newValue = (float)departureZeroL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DZER_RIGHT; msg.newValue = (float)departureZeroR; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
+            holdPeakLeft = peakLeft;
+            holdPeakRight = peakRight;
             peakLeft = 0.0;
             peakRight = 0.0;
             slewLeft = 0.0;
             slewRight = 0.0; //reset our variables to do the RMS again
             zeroLeft = 0.0;
             zeroRight = 0.0;
-            departureLeft = 0.0;
-            departureRight = 0.0;
+            departureSlewL = 0.0;
+            departureSlewR = 0.0;
+            departureRMSL = 0.0;
+            departureRMSR = 0.0;
+            departureZeroL = 0.0;
+            departureZeroR = 0.0;
             longestZeroLeft = 0.0;
             longestZeroRight = 0.0;
             windowCount = 0;
@@ -325,7 +354,8 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
     
     double windowSize = (1881.0 / 44100.0)*getSampleRate(); //higher is slower with larger RMS buffers
     double zeroCrossScale = (1.0 / getSampleRate())*44100.0;
-    double beamScale = 1.0/getSampleRate();
+    double beamLinePos = 1.0/getSampleRate();
+    double beamLineWeight = 1.618/getSampleRate();
 
     for (int i = 0; i < buffer.getNumSamples(); ++i)
     {
@@ -349,36 +379,50 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             previousLeft = inputSampleL;
             previousRight = inputSampleR;
             
-            if (fabs(beamLeft-currentslewL) < 0.2) beamLeft = (beamLeft*(1.0-beamScale)) + (currentslewL*beamScale);
-            else beamLeft = (beamLeft*(1.0-beamScale));
-            if (fabs(beamRight-currentslewR) < 0.2) beamRight = (beamRight*(1.0-beamScale)) + (currentslewR*beamScale);
-            else beamRight = (beamRight*(1.0-beamScale));
-            departureLeft = (departureLeft*(1.0-beamScale)) + (fabs(beamLeft-currentslewL)*beamScale);
-            departureRight = (departureRight*(1.0-beamScale)) + (fabs(beamRight-currentslewR)*beamScale);
-
+            if (fabs(beamSlewL-currentslewL) < 0.2) beamSlewL = (beamSlewL*(1.0-beamLinePos)) + (currentslewL*beamLinePos);
+            else beamSlewL = (beamSlewL*(1.0-beamLinePos));
+            if (fabs(beamSlewR-currentslewR) < 0.2) beamSlewR = (beamSlewR*(1.0-beamLinePos)) + (currentslewR*beamLinePos);
+            else beamSlewR = (beamSlewR*(1.0-beamLinePos));
+            departureSlewL = (departureSlewL*(1.0-beamLineWeight)) + (fabs(beamSlewL-currentslewL)*beamLineWeight);
+            departureSlewR = (departureSlewR*(1.0-beamLineWeight)) + (fabs(beamSlewR-currentslewR)*beamLineWeight);
+            
             double rectifiedL = fabs(inputSampleL);
             double rectifiedR = fabs(inputSampleR);
             if (rectifiedL > peakLeft) peakLeft = rectifiedL;
             if (rectifiedR > peakRight) peakRight = rectifiedR;
             
-             zeroLeft += zeroCrossScale;
+            beamRMSL = (beamRMSL*(1.0-beamLinePos)) + (rectifiedL*beamLinePos);
+            beamRMSR = (beamRMSR*(1.0-beamLinePos)) + (rectifiedR*beamLinePos);
+            departureRMSL = (departureRMSL*(1.0-beamLineWeight)) + (fabs(fabs(beamRMSL)-holdPeakLeft)*beamLineWeight);
+            departureRMSR = (departureRMSR*(1.0-beamLineWeight)) + (fabs(fabs(beamRMSR)-holdPeakRight)*beamLineWeight);
+
+            zeroLeft += zeroCrossScale;
             if (longestZeroLeft < zeroLeft) longestZeroLeft = zeroLeft;
             if (wasPositiveL && inputSampleL < 0.0) {
                 wasPositiveL = false;
+                holdZeroLeft = zeroLeft;
                 zeroLeft = 0.0;
             } else if (!wasPositiveL && inputSampleL > 0.0) {
                 wasPositiveL = true;
+                holdZeroLeft = zeroLeft;
                 zeroLeft = 0.0;
             }
             zeroRight += zeroCrossScale;
             if (longestZeroRight < zeroRight) longestZeroRight = zeroRight;
             if (wasPositiveR && inputSampleR < 0.0) {
                 wasPositiveR = false;
+                holdZeroRight = zeroRight;
                 zeroRight = 0.0;
             } else if (!wasPositiveR && inputSampleR > 0.0) {
                 wasPositiveR = true;
+                holdZeroRight = zeroRight;
                 zeroRight = 0.0;
             }
+            beamZeroL = (beamZeroL*(1.0-beamLinePos)) + (holdZeroLeft*beamLinePos);
+            beamZeroR = (beamZeroR*(1.0-beamLinePos)) + (holdZeroRight*beamLinePos);
+            departureZeroL = (departureZeroL*(1.0-beamLineWeight)) + (fabs(beamZeroL-holdZeroLeft)*beamLineWeight);
+            departureZeroR = (departureZeroR*(1.0-beamLineWeight)) + (fabs(beamZeroR-holdZeroRight)*beamLineWeight);
+            
             windowCount++;
         }
         
@@ -394,19 +438,33 @@ void PluginProcessor::processBlock (juce::AudioBuffer<double>& buffer, juce::Mid
             msg.what = AudioToUIMessage::SLEW_RIGHT; msg.newValue = (float)slewRight; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_LEFT; msg.newValue = (float)longestZeroLeft; audioToUI.push(msg);
             msg.what = AudioToUIMessage::ZERO_RIGHT; msg.newValue = (float)longestZeroRight; audioToUI.push(msg);
-            msg.what = AudioToUIMessage::BEAM_LEFT; msg.newValue = (float)beamLeft; audioToUI.push(msg);
-            msg.what = AudioToUIMessage::BEAM_RIGHT; msg.newValue = (float)beamRight; audioToUI.push(msg);
-            msg.what = AudioToUIMessage::DEPT_LEFT; msg.newValue = (float)departureLeft; audioToUI.push(msg);
-            msg.what = AudioToUIMessage::DEPT_RIGHT; msg.newValue = (float)departureRight; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BSLW_LEFT; msg.newValue = (float)beamSlewL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BSLW_RIGHT; msg.newValue = (float)beamSlewR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BRMS_LEFT; msg.newValue = (float)beamRMSL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BRMS_RIGHT; msg.newValue = (float)beamRMSR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BZER_LEFT; msg.newValue = (float)beamZeroL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::BZER_RIGHT; msg.newValue = (float)beamZeroR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DSLW_LEFT; msg.newValue = (float)departureSlewL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DSLW_RIGHT; msg.newValue = (float)departureSlewR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DRMS_LEFT; msg.newValue = (float)departureRMSL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DRMS_RIGHT; msg.newValue = (float)departureRMSR; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DZER_LEFT; msg.newValue = (float)departureZeroL; audioToUI.push(msg);
+            msg.what = AudioToUIMessage::DZER_RIGHT; msg.newValue = (float)departureZeroR; audioToUI.push(msg);
             msg.what = AudioToUIMessage::INCREMENT; msg.newValue = 1200.0f; audioToUI.push(msg);
+            holdPeakLeft = peakLeft;
+            holdPeakRight = peakRight;
             peakLeft = 0.0;
             peakRight = 0.0;
             slewLeft = 0.0;
             slewRight = 0.0; //reset our variables to do the RMS again
             zeroLeft = 0.0;
             zeroRight = 0.0;
-            departureLeft = 0.0;
-            departureRight = 0.0;
+            departureSlewL = 0.0;
+            departureSlewR = 0.0;
+            departureRMSL = 0.0;
+            departureRMSR = 0.0;
+            departureZeroL = 0.0;
+            departureZeroR = 0.0;
             longestZeroLeft = 0.0;
             longestZeroRight = 0.0;
             windowCount = 0;

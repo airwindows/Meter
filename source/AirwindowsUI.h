@@ -206,10 +206,18 @@ struct AirwindowsMeter : public juce::Component
     std::array<float, dataPoints+2> dataSR;
     std::array<float, dataPoints+2> dataZL;
     std::array<float, dataPoints+2> dataZR;
-    std::array<float, dataPoints+2> dataBL;
-    std::array<float, dataPoints+2> dataBR;
-    std::array<float, dataPoints+2> dataDL;
-    std::array<float, dataPoints+2> dataDR;
+    std::array<float, dataPoints+2> dataBSL;
+    std::array<float, dataPoints+2> dataBSR;
+    std::array<float, dataPoints+2> dataBRL;
+    std::array<float, dataPoints+2> dataBRR;
+    std::array<float, dataPoints+2> dataBZL;
+    std::array<float, dataPoints+2> dataBZR;
+    std::array<float, dataPoints+2> dataDSL;
+    std::array<float, dataPoints+2> dataDSR;
+    std::array<float, dataPoints+2> dataDRL;
+    std::array<float, dataPoints+2> dataDRR;
+    std::array<float, dataPoints+2> dataDZL;
+    std::array<float, dataPoints+2> dataDZR;
     std::array<float, dataPoints+2> backR;//backdrop red channel: loud
     std::array<float, dataPoints+2> backG;//backdrop green channel: bright
     std::array<float, dataPoints+2> backB;//backdrop blue channel: bass
@@ -220,10 +228,18 @@ struct AirwindowsMeter : public juce::Component
     void pushSlewR(float X) {dataSR[dataPosition] = X; dataSR[dataPosition+1] = X;}
     void pushZeroL(float X) {dataZL[dataPosition] = X; dataZL[dataPosition+1] = X;}
     void pushZeroR(float X) {dataZR[dataPosition] = X; dataZR[dataPosition+1] = X;}
-    void pushBeamL(float X) {dataBL[dataPosition] = X; dataBL[dataPosition+1] = X;}
-    void pushBeamR(float X) {dataBR[dataPosition] = X; dataBR[dataPosition+1] = X;}
-    void pushDeptL(float X) {dataDL[dataPosition] = X; dataDL[dataPosition+1] = X;}
-    void pushDeptR(float X) {dataDR[dataPosition] = X; dataDR[dataPosition+1] = X;}
+    void pushBSLWL(float X) {dataBSL[dataPosition] = X; dataBSL[dataPosition+1] = X;}
+    void pushBSLWR(float X) {dataBSR[dataPosition] = X; dataBSR[dataPosition+1] = X;}
+    void pushBRMSL(float X) {dataBRL[dataPosition] = X; dataBRL[dataPosition+1] = X;}
+    void pushBRMSR(float X) {dataBRR[dataPosition] = X; dataBRR[dataPosition+1] = X;}
+    void pushBZERL(float X) {dataBZL[dataPosition] = X; dataBZL[dataPosition+1] = X;}
+    void pushBZERR(float X) {dataBZR[dataPosition] = X; dataBZR[dataPosition+1] = X;}
+    void pushDSLWL(float X) {dataDSL[dataPosition] = X; dataDSL[dataPosition+1] = X;}
+    void pushDSLWR(float X) {dataDSR[dataPosition] = X; dataDSR[dataPosition+1] = X;}
+    void pushDRMSL(float X) {dataDRL[dataPosition] = X; dataDRL[dataPosition+1] = X;}
+    void pushDRMSR(float X) {dataDRR[dataPosition] = X; dataDRR[dataPosition+1] = X;}
+    void pushDZERL(float X) {dataDZL[dataPosition] = X; dataDZL[dataPosition+1] = X;}
+    void pushDZERR(float X) {dataDZR[dataPosition] = X; dataDZR[dataPosition+1] = X;}
     void pushIncrement() {
         dataPosition++;
         if (dataPosition >= (unsigned long)fmin(displayWidth,5150)) dataPosition = 0;
@@ -277,10 +293,18 @@ struct AirwindowsMeter : public juce::Component
             dataSR[count] = 0.0f;
             dataZL[count] = 0.0f;
             dataZR[count] = 0.0f;
-            dataBL[count] = 0.0f;
-            dataBR[count] = 0.0f;
-            dataDL[count] = 0.0f;
-            dataDR[count] = 0.0f;
+            dataBSL[count] = 0.0f;
+            dataBSR[count] = 0.0f;
+            dataBRL[count] = 0.0f;
+            dataBRR[count] = 0.0f;
+            dataBZL[count] = 1000.0f;
+            dataBZR[count] = 1000.0f;
+            dataDSL[count] = 0.0f;
+            dataDSR[count] = 0.0f;
+            dataDRL[count] = 0.0f;
+            dataDRR[count] = 0.0f;
+            dataDZL[count] = 0.0f;
+            dataDZR[count] = 0.0f;
             backR[count] = pluginColour.getFloatRed();
             backG[count] = pluginColour.getFloatGreen();
             backB[count] = pluginColour.getFloatBlue();

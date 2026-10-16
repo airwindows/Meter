@@ -77,10 +77,18 @@ public:
             SLEW_RIGHT,
             ZERO_LEFT,
             ZERO_RIGHT,
-            BEAM_LEFT,
-            BEAM_RIGHT,
-            DEPT_LEFT,
-            DEPT_RIGHT,
+            BSLW_LEFT,
+            BSLW_RIGHT,
+            BZER_LEFT,
+            BZER_RIGHT,
+            BRMS_LEFT,
+            BRMS_RIGHT,
+            DSLW_LEFT,
+            DSLW_RIGHT,
+            DZER_LEFT,
+            DZER_RIGHT,
+            DRMS_LEFT,
+            DRMS_RIGHT,
             INCREMENT
         } what{NEW_VALUE};
         Parameters which;
@@ -133,12 +141,24 @@ public:
     double previousRight = 0.0;
     double zeroLeft = 0.0;
     double zeroRight = 0.0;
+    double holdZeroLeft = 0.0;
+    double holdZeroRight = 0.0;
+    double holdPeakLeft = 0.0;
+    double holdPeakRight = 0.0;
     double longestZeroLeft = 0.0;
     double longestZeroRight = 0.0;
-    double beamLeft = 0.0;
-    double beamRight = 0.0;
-    double departureLeft = 0.0;
-    double departureRight = 0.0;
+    double beamSlewL = 0.0;
+    double beamSlewR = 0.0;
+    double beamZeroL = 0.0;
+    double beamZeroR = 0.0;
+    double beamRMSL = 0.0;
+    double beamRMSR = 0.0;
+    double departureSlewL = 0.0;
+    double departureSlewR = 0.0;
+    double departureZeroL = 0.0;
+    double departureZeroR = 0.0;
+    double departureRMSL = 0.0;
+    double departureRMSR = 0.0;
     bool wasPositiveL = false;
     bool wasPositiveR = false;
     int windowCount = 0;

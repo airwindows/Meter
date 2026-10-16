@@ -145,10 +145,18 @@ void PluginEditor::idle()
             case PluginProcessor::AudioToUIMessage::SLEW_RIGHT: meter.pushSlewR(msg.newValue); break;
             case PluginProcessor::AudioToUIMessage::ZERO_LEFT: meter.pushZeroL(msg.newValue); break;
             case PluginProcessor::AudioToUIMessage::ZERO_RIGHT: meter.pushZeroR(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::BEAM_LEFT: meter.pushBeamL(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::BEAM_RIGHT: meter.pushBeamR(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::DEPT_LEFT: meter.pushDeptL(msg.newValue); break;
-            case PluginProcessor::AudioToUIMessage::DEPT_RIGHT: meter.pushDeptR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::BSLW_LEFT: meter.pushBSLWL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::BSLW_RIGHT: meter.pushBSLWR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::BRMS_LEFT: meter.pushBRMSL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::BRMS_RIGHT: meter.pushBRMSR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::BZER_LEFT: meter.pushBZERL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::BZER_RIGHT: meter.pushBZERR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::DSLW_LEFT: meter.pushDSLWL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::DSLW_RIGHT: meter.pushDSLWR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::DRMS_LEFT: meter.pushDRMSL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::DRMS_RIGHT: meter.pushDRMSR(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::DZER_LEFT: meter.pushDZERL(msg.newValue); break;
+            case PluginProcessor::AudioToUIMessage::DZER_RIGHT: meter.pushDZERR(msg.newValue); break;
             case PluginProcessor::AudioToUIMessage::INCREMENT: //Increment is running at 24 FPS and giving the above calculations
                 meter.pushIncrement(); repaintTS = true;
                 
