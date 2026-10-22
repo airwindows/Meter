@@ -78,8 +78,9 @@ void AirwindowsMeter::paint(juce::Graphics &g)
         float departureRMS = fmin(6.18033988749894f,(dataDRL[count]*dataDRR[count])*12000.0f);
         
         float beamSlew = fmin(199.0f,sqrt(dataBSL[count]+dataBSR[count])*618.033988749894f);
-        float departureSlew = fmin(6.18033988749894f,fmax(0.0f,(5.0f-(dataDSL[count]+dataDSR[count])) * sqrt(fmax(dataBSL[count],dataBSR[count]))) * 6.18033988749894f);
-        
+        float departureSlew = fmin(6.18033988749894f/(1.0f+(fmax(beamSlew-186.0f,0.0f)*0.2f)),
+                                   fmax(0.0f,(5.0f-(dataDSL[count]+dataDSR[count])) * sqrt(fmax(dataBSL[count],dataBSR[count]))) * 6.18033988749894f);
+        if (beamSlew > 198.0f) departureSlew = 199.0f-beamSlew; //narrow to sub-one-pixel line, even zero
         //begin draw dots on meters L
         if (peakL > 197.0f) {
             g.setColour(juce::Colour(255, 0, 0));
@@ -476,57 +477,59 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             cumulativePlus += (blackLine/(cumulativeAmount));
             if (cumulativePlus > durationPlus*1.618f) cumulativePlus = durationPlus*1.618f;
             
+            directionsOpacity = 0.0;
+            directions = juce::String(" ");
+
             bonusScore = juce::String(100-(int)fmin((cumulativePlus/durationPlus)*100.0,99.0));
             if (bonusScore.compare("100") < 1 && !(bonusScore.compare("10") < 1)) bonusScore = juce::String();
             else bonusScore = bonusScore + "-";
-            if (100-(int)((cumulativePlus/durationPlus)*100.0) > 80) bonusScore = juce::String();
-            
-            directions = juce::String(" ");
-            directionsOpacity = fmax(0.925f-backdropColour.getLightness(),0.0f)*1.618033988749894f;
-            float directionsHue = backdropColour.getHue()*30.0f;
-            switch ((int)directionsHue) {
-                case 0:
-                    directions = juce::String("less bright"); break;
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                    directions = juce::String("too much air"); break;
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                    directions = juce::String("allow fullness"); break;
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                    directions = juce::String("allow detail"); break;
-                case 14:
-                case 15:
-                case 16:
-                case 17:
-                case 18:
-                    directions = juce::String("allow activity"); break;
-                case 19:
-                case 20:
-                case 21:
-                case 22:
-                    directions = juce::String("less boring"); break;
-                case 23:
-                case 24:
-                case 25:
-                    directions = juce::String("less harrowing"); break;
-                case 26:
-                case 27:
-                case 28:
-                    directions = juce::String("more calm"); break;
-                case 29:
-                case 30:
-                    directions = juce::String("less bright"); break;
-            } //this is tone color interpreted as instructions. Not an AI, it's just what you'd do!
-            //the opacity will be a factor of balance, so if you don't want to see it, mix right
+            if (100-(int)((cumulativePlus/durationPlus)*100.0) > 80) {
+                bonusScore = juce::String();
+                directionsOpacity = 1.0; //if you're NOT getting into the number zone, directions appear!
+                float directionsHue = backdropColour.getHue()*30.0f; //not always used
+                switch ((int)directionsHue) {
+                    case 0:
+                        directions = juce::String("less bright"); break;
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                        directions = juce::String("too much air"); break;
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                    case 9:
+                        directions = juce::String("allow fullness"); break;
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                        directions = juce::String("allow detail"); break;
+                    case 14:
+                    case 15:
+                    case 16:
+                    case 17:
+                    case 18:
+                        directions = juce::String("allow activity"); break;
+                    case 19:
+                    case 20:
+                    case 21:
+                    case 22:
+                        directions = juce::String("less boring"); break;
+                    case 23:
+                    case 24:
+                    case 25:
+                        directions = juce::String("less harrowing"); break;
+                    case 26:
+                    case 27:
+                    case 28:
+                        directions = juce::String("more calm"); break;
+                    case 29:
+                    case 30:
+                        directions = juce::String("less bright"); break;
+                } //this is tone color interpreted as instructions. Not an AI, it's just what you'd do!
+            }
         }
     }
     
