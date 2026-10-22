@@ -483,7 +483,7 @@ void AirwindowsMeter::paint(juce::Graphics &g)
             bonusScore = juce::String(100-(int)fmin((cumulativePlus/durationPlus)*100.0,99.0));
             if (bonusScore.compare("100") < 1 && !(bonusScore.compare("10") < 1)) bonusScore = juce::String();
             else bonusScore = bonusScore + "-";
-            if (100-(int)((cumulativePlus/durationPlus)*100.0) > 80 || (int)allMatch < 27) {
+            if (100-(int)((cumulativePlus/durationPlus)*100.0) > 99 || (int)allMatch < 27) {
                 bonusScore = juce::String(); //also you have to have correct tonal balance to get into the number zone
                 directionsOpacity = 1.0; //if you're NOT getting into the number zone, directions appear!
                 float directionsHue = backdropColour.getHue()*30.0f; //not always used
